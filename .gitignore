@@ -1,0 +1,8 @@
+.DS_Store
+TODO.md
+vendor
+.glide
+.idea
+.vscode
+debug.test
+.history
