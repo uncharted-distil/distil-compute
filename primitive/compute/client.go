@@ -148,6 +148,34 @@ func NewClientWithRunner(serverAddr string, runnerAddr string, trace bool, userA
 	return client, nil
 }
 
+// NewRunner creates a new pipline request dispatcher instance. This will establish
+// the connection to the solution server or return an error on fail
+func NewRunner(runnerAddr string, trace bool, userAgent string, pullTimeout time.Duration, pullMax int, skipPreprocessing bool) (*Client, error) {
+
+	client := &Client{
+		UserAgent:         userAgent,
+		PullTimeout:       pullTimeout,
+		PullMax:           pullMax,
+		SkipPreprocessing: skipPreprocessing,
+	}
+
+	log.Infof("connecting to ta2 runner at %s", runnerAddr)
+
+	runner, err := grpc.Dial(
+		runnerAddr,
+		grpc.WithInsecure(),
+		grpc.WithBlock(),
+	)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to connect to %s", runnerAddr)
+	}
+
+	log.Infof("connected to %s", runnerAddr)
+
+	client.runner = runner
+	return client, nil
+}
+
 // Close the connection to the solution service
 func (c *Client) Close() {
 	log.Infof("client connection closed")
