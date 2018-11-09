@@ -25,7 +25,8 @@ const (
 	ExcludeFilter = "exclude"
 )
 
-func stringSliceEqual(a, b []string) bool {
+// StringSliceEqual compares 2 string slices to see if they are equal.
+func StringSliceEqual(a, b []string) bool {
 	if a == nil && b == nil {
 		return true
 	}

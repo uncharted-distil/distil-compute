@@ -37,6 +37,53 @@ const (
 	ResTypeText = "text"
 	// ResTypeTime is a time series data resource type
 	ResTypeTime = "timeseries"
+
+	// FeatureTypeTrain is the training feature type.
+	FeatureTypeTrain = "train"
+	// FeatureTypeTarget is the target feature type.
+	FeatureTypeTarget = "target"
+	// RoleIndex is the role used for index fields.
+	RoleIndex = "index"
+	// D3MIndexFieldName denotes the name of the index field.
+	D3MIndexFieldName = "d3mIndex"
+	// MetadataVarPrefix is the prefix of a metadata var name.
+	MetadataVarPrefix = "_feature_"
+
+	// Variables is the field name which stores the variables in elasticsearch.
+	Variables = "variables"
+	// VarNameField is the field name for the variable name.
+	VarNameField = "colName"
+	// VarIndexField is the field name for the variable index.
+	VarIndexField = "colIndex"
+	// VarRoleField is the field name for the variable role.
+	VarRoleField = "role"
+	// VarSelectedRoleField is the field name for the selected variable role.
+	VarSelectedRoleField = "selectedRole"
+	// VarDisplayVariableField is the field name for the display variable.
+	VarDisplayVariableField = "colDisplayName"
+	// VarOriginalVariableField is the field name for the original variable.
+	VarOriginalVariableField = "colOriginalName"
+	// VarTypeField is the field name for the variable type.
+	VarTypeField = "colType"
+	// VarOriginalTypeField is the field name for the orginal variable type.
+	VarOriginalTypeField = "colOriginalType"
+	// VarImportanceField is the field name for the variable importnace.
+	VarImportanceField = "importance"
+	// VarSuggestedTypesField is the field name for the suggested variable types.
+	VarSuggestedTypesField = "suggestedTypes"
+	// VarRoleIndex is the variable role of an index field.
+	VarRoleIndex = "index"
+	// VarDistilRole is the variable role in distil.
+	VarDistilRole = "distilRole"
+	// VarDeleted flags whether the variable is deleted.
+	VarDeleted = "deleted"
+
+	// TypeTypeField is the type field of a suggested type
+	TypeTypeField = "type"
+	// TypeProbabilityField is the probability field of a suggested type
+	TypeProbabilityField = "probability"
+	// TypeProvenanceField is the provenance field of a suggested type
+	TypeProvenanceField = "provenance"
 )
 
 var (
@@ -51,10 +98,10 @@ type Variable struct {
 	SelectedRole     string                 `json:"selectedRole,omitempty"`
 	Role             []string               `json:"role,omitempty"`
 	DistilRole       string                 `json:"distilRole,omitempty"`
-	OriginalVariable string                 `json:"varOriginalName"`
+	OriginalVariable string                 `json:"colOriginalVariable"`
 	OriginalName     string                 `json:"colOriginalName,omitempty"`
 	DisplayName      string                 `json:"colDisplayName,omitempty"`
-	Importance       int                    `json:"importance,omitempty"`
+	Importance       int                    `json:"importance"`
 	Index            int                    `json:"colIndex"`
 	SuggestedTypes   []*SuggestedType       `json:"suggestedTypes,omitempty"`
 	RefersTo         map[string]interface{} `json:"refersTo,omitempty"`
