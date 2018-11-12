@@ -130,7 +130,8 @@ func GetMetricLabel(metric string) string {
 	return metricLabel[metric]
 }
 
-func convertMetricsFromTA3ToTA2(metrics []string) []*pipeline.ProblemPerformanceMetric {
+// ConvertMetricsFromTA3ToTA2 converts metrics from TA3 to TA2 values.
+func ConvertMetricsFromTA3ToTA2(metrics []string) []*pipeline.ProblemPerformanceMetric {
 	var res []*pipeline.ProblemPerformanceMetric
 	for _, metric := range metrics {
 		ta2Metric := ConvertProblemMetricToTA2(metric)
@@ -154,7 +155,8 @@ func convertMetricsFromTA3ToTA2(metrics []string) []*pipeline.ProblemPerformance
 	return res
 }
 
-func convertTaskTypeFromTA3ToTA2(taskType string) pipeline.TaskType {
+// ConvertTaskTypeFromTA3ToTA2 converts a task from TA3 to TA2.
+func ConvertTaskTypeFromTA3ToTA2(taskType string) pipeline.TaskType {
 	ta2Task := ConvertProblemTaskToTA2(taskType)
 	if ta2Task == "" {
 		log.Warnf("unrecognized task type ('%s'), defaulting to undefined", taskType)
@@ -168,7 +170,8 @@ func convertTaskTypeFromTA3ToTA2(taskType string) pipeline.TaskType {
 	return pipeline.TaskType(task)
 }
 
-func convertTaskSubTypeFromTA3ToTA2(taskSubType string) pipeline.TaskSubtype {
+// ConvertTaskSubTypeFromTA3ToTA2 converts a task sub type from TA3 to TA2.
+func ConvertTaskSubTypeFromTA3ToTA2(taskSubType string) pipeline.TaskSubtype {
 	ta2TaskSub := ConvertProblemTaskSubToTA2(taskSubType)
 	if ta2TaskSub == "" {
 		log.Warnf("unrecognized task sub type ('%s'), defaulting to undefined", taskSubType)
@@ -182,7 +185,8 @@ func convertTaskSubTypeFromTA3ToTA2(taskSubType string) pipeline.TaskSubtype {
 	return pipeline.TaskSubtype(task)
 }
 
-func convertTargetFeaturesTA3ToTA2(target string, columnIndex int) []*pipeline.ProblemTarget {
+// ConvertTargetFeaturesTA3ToTA2 creates a problem target from a target name.
+func ConvertTargetFeaturesTA3ToTA2(target string, columnIndex int) []*pipeline.ProblemTarget {
 	return []*pipeline.ProblemTarget{
 		{
 			ColumnName:  target,
@@ -193,7 +197,8 @@ func convertTargetFeaturesTA3ToTA2(target string, columnIndex int) []*pipeline.P
 	}
 }
 
-func convertDatasetTA3ToTA2(dataset string) string {
+// ConvertDatasetTA3ToTA2 converts a dataset name from TA3 to TA2.
+func ConvertDatasetTA3ToTA2(dataset string) string {
 	return dataset
 }
 

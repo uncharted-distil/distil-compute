@@ -247,7 +247,7 @@ func (c *Client) GenerateSolutionScores(ctx context.Context, solutionID string, 
 				},
 			},
 		},
-		PerformanceMetrics: convertMetricsFromTA3ToTA2(metrics),
+		PerformanceMetrics: ConvertMetricsFromTA3ToTA2(metrics),
 		Configuration: &pipeline.ScoringConfiguration{
 			Method:         pipeline.EvaluationMethod_HOLDOUT,
 			TrainTestRatio: defaultTrainTestRatio,
