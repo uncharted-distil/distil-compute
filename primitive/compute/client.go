@@ -49,9 +49,6 @@ const (
 	// D3MResourceFormat is the resource format of persisted dataset
 	D3MResourceFormat = "text/csv"
 
-	trainFilenamePrefix = "train"
-	testFilenamePrefix  = "test"
-
 	defaultTrainTestRatio = 3
 )
 
