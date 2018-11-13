@@ -297,6 +297,34 @@ func CreateDenormalizePipeline(name string, description string) (*pipeline.Pipel
 	return pipeline, nil
 }
 
+// CreateTargetRankingPipeline creates a pipeline to run feature ranking on an input dataset.
+func CreateTargetRankingPipeline(name string, description string, target string, features []*model.Variable) (*pipeline.PipelineDescription, error) {
+	// compute index associated with column name
+	targetIdx := -1
+	for _, f := range features {
+		if strings.EqualFold(target, f.Name) {
+			targetIdx = f.Index
+			break
+		}
+	}
+	if targetIdx < 0 {
+		return nil, errors.Errorf("can't find var '%s'", name)
+	}
+
+	// insantiate the pipeline
+	pipeline, err := NewBuilder(name, description).
+		Add(NewDenormalizeStep()).            // denormalize
+		Add(NewDatasetToDataframeStep()).     // extract main dataframe
+		Add(NewColumnParserStep()).           // convert obj/str to python raw types
+		Add(NewTargetRankingStep(targetIdx)). // compute feature ranks relative to target
+		Compile()
+
+	if err != nil {
+		return nil, err
+	}
+	return pipeline, nil
+}
+
 func mapColumns(allFeatures []*model.Variable, selectedSet map[string]bool) map[string]int {
 	colIndices := make(map[string]int)
 	index := 0
