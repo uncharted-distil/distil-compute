@@ -7,8 +7,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+// PullFunc is a function that pulls from an api.
 type PullFunc func() error
 
+// PullFromAPI pulls from the api.
 func PullFromAPI(maxPulls int, timeout time.Duration, pull PullFunc) error {
 
 	recvChan := make(chan error)
