@@ -126,7 +126,6 @@ var (
 		StateType:       true,
 		URIType:         true,
 		UnknownType:     true,
-		TimeSeriesType:  true,
 	}
 	numericalTypes = map[string]bool{
 		LongitudeType: true,
@@ -247,9 +246,14 @@ func IsDateTime(typ string) bool {
 	return typ == DateTimeType
 }
 
-// HasMetadataVar indicates whether or not a schema type has a corresponding metadata var.
-func HasMetadataVar(typ string) bool {
-	return IsImage(typ) || IsTimeSeries(typ)
+// HasFeatureVar indicates whether or not a schema type has a corresponding feature var.
+func HasFeatureVar(typ string) bool {
+	return IsImage(typ)
+}
+
+// HasClusterVar indicates whether or not a schema type has a corresponding cluster var.
+func HasClusterVar(typ string) bool {
+	return IsTimeSeries(typ)
 }
 
 // MapTA2Type maps an internal Distil type to a TA2 type.
