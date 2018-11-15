@@ -17,6 +17,10 @@ func ParseResultCSV(path string) ([][]interface{}, error) {
 		return nil, errors.Wrapf(err, "error opening result file '%s'", path)
 	}
 
+	// instantiate the parser
+	field := &ComplexField{}
+	field.Init()
+
 	csvReader := csv.NewReader(csvFile)
 	results := [][]interface{}{}
 	for {
@@ -26,10 +30,6 @@ func ParseResultCSV(path string) ([][]interface{}, error) {
 		} else if err != nil {
 			return nil, errors.Wrapf(err, "error parsing result file - '%s'", line)
 		}
-
-		// instantiate the parser
-		field := &ComplexField{}
-		field.Init()
 
 		record := []interface{}{}
 		for _, elem := range line {
