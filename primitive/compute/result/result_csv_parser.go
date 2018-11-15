@@ -27,30 +27,32 @@ func ParseResultCSV(path string) ([][]interface{}, error) {
 			return nil, errors.Wrapf(err, "error parsing result file - '%s'", line)
 		}
 
+		// instantiate the parser
+		field := &ComplexField{}
+		field.Init()
+
 		record := []interface{}{}
 		for _, elem := range line {
 			// parse value into float, int, string, or array
-			record = append(record, parseVal(elem))
+			record = append(record, parseVal(elem, field))
 		}
 		results = append(results, record)
 	}
 	return results, nil
 }
 
-func parseVal(val string) interface{} {
+func parseVal(val string, field *ComplexField) interface{} {
 	// check to see if we can parse the value as an array - if not we leave it as a string
-	arrayVal, err := parseArray(val)
+	arrayVal, err := parseArray(val, field)
 	if err == nil {
 		return arrayVal
 	}
 	return val
 }
 
-func parseArray(val string) ([]interface{}, error) {
-	field := &ComplexField{
-		Buffer: val,
-	}
-	field.Init()
+func parseArray(val string, field *ComplexField) ([]interface{}, error) {
+	field.Buffer = val
+	field.Reset()
 
 	err := field.Parse()
 	if err != nil {

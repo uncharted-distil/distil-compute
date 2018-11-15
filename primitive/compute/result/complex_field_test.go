@@ -2,6 +2,7 @@ package result
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -123,4 +124,35 @@ func TestParserNestedMixed(t *testing.T) {
 
 	assert.Equal(t, []interface{}{"alpha", "bravo"}, field.arrayElements.elements[0].([]interface{})[3].([]interface{}))
 	assert.Equal(t, []interface{}{"40", "50", "60"}, field.arrayElements.elements[1].([]interface{}))
+}
+
+func TestParserReset(t *testing.T) {
+	start := time.Now()
+	field := &ComplexField{Buffer: "  ['c ar'  , '\\'plane', 'b* oat']"} // single quote can be escaped in python
+	field.Init()
+
+	err := field.Parse()
+	assert.NoError(t, err)
+
+	field.Execute()
+
+	elapsed := time.Since(start)
+	t.Logf("With init: %v", elapsed)
+
+	assert.Equal(t, []interface{}{"c ar", "'plane", "b* oat"}, field.arrayElements.elements)
+
+	start = time.Now()
+
+	field.Buffer = "[\"&car\"  , \"\\plane\", \"boat's\"]"
+	field.Reset()
+
+	err = field.Parse()
+	assert.NoError(t, err)
+
+	field.Execute()
+
+	elapsed = time.Since(start)
+	t.Logf("With reset: %v", elapsed)
+
+	assert.Equal(t, []interface{}{"&car", "\\plane", "boat's"}, field.arrayElements.elements)
 }

@@ -1,18 +1,24 @@
 package result
 
 import (
-	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCSVResultParser(t *testing.T) {
+
+	start := time.Now()
 	result, err := ParseResultCSV("./testdata/test.csv")
+	elapsed := time.Since(start)
+
+	t.Logf("Elapsed: %s", elapsed)
+
 	assert.NoError(t, err)
 	assert.NotEmpty(t, result)
 
-	fmt.Printf("%v", result)
+	t.Logf("%v", result)
 
 	assert.Equal(t, []interface{}{"idx", "col a", "col b"}, result[0])
 	assert.Equal(t, []interface{}{"0", []interface{}{"alpha", "bravo"}, "foxtrot"}, result[1])
