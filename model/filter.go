@@ -47,7 +47,7 @@ func StringSliceEqual(a, b []string) bool {
 }
 
 // Bounds defines a bounding box
-type Bounds {
+type Bounds struct {
 	MinX float64 `json:"minX"`
 	MaxX float64 `json:"maxX"`
 	MinY float64 `json:"minY"`
@@ -61,7 +61,7 @@ type Filter struct {
 	Mode       string   `json:"mode"`
 	Min        *float64 `json:"min"`
 	Max        *float64 `json:"max"`
-	Bounds     *Bounds `json:bounds`
+	Bounds     *Bounds  `json:"bounds"`
 	Categories []string `json:"categories"`
 	D3mIndices []string `json:"d3mIndices"`
 }
