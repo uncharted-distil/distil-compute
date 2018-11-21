@@ -325,6 +325,49 @@ func CreateTargetRankingPipeline(name string, description string, target string,
 	return pipeline, nil
 }
 
+// CreateGoatForwardPipeline creates a forward geocoding pipeline.
+func CreateGoatForwardPipeline(name string, description string, source string, features []*model.Variable) (*pipeline.PipelineDescription, error) {
+	// compute index associated with column name
+	sourceIndex, err := getIndex(features, source)
+	if err != nil {
+		return nil, err
+	}
+
+	// insantiate the pipeline
+	pipeline, err := NewBuilder(name, description).
+		Add(NewDenormalizeStep()).            // denormalize
+		Add(NewDatasetToDataframeStep()).     // extract main dataframe
+		Add(NewGoatForwardStep(sourceIndex)). // geocod
+		Compile()
+
+	if err != nil {
+		return nil, err
+	}
+	return pipeline, nil
+}
+
+// CreateGoatReversePipeline creates a forward geocoding pipeline.
+func CreateGoatReversePipeline(name string, description string, lonSource string, latSource string,
+	features []*model.Variable) (*pipeline.PipelineDescription, error) {
+	// map col names to indices
+	indices := mapColumns(features, map[string]bool{lonSource: true, latSource: true})
+	if len(indices) != 2 {
+		return nil, errors.Errorf("can't find one of %s, %s", lonSource, latSource)
+	}
+
+	// insantiate the pipeline
+	pipeline, err := NewBuilder(name, description).
+		Add(NewDenormalizeStep()).                                       // denormalize
+		Add(NewDatasetToDataframeStep()).                                // extract main dataframe
+		Add(NewGoatReverseStep(indices[lonSource], indices[latSource])). // geocode
+		Compile()
+
+	if err != nil {
+		return nil, err
+	}
+	return pipeline, nil
+}
+
 func mapColumns(allFeatures []*model.Variable, selectedSet map[string]bool) map[string]int {
 	colIndices := make(map[string]int)
 	index := 0

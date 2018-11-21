@@ -178,3 +178,36 @@ func TestCreateDukePipeline(t *testing.T) {
 	err = ioutil.WriteFile("/tmp/create_duke.pln", data, 0644)
 	assert.NoError(t, err)
 }
+
+func TestCreateGoatForwardPipeline(t *testing.T) {
+	vars := []*model.Variable{
+		{Name: "region", Index: 10}, // corresponds to region col idx in acled dataset
+	}
+
+	pipeline, err := CreateGoatForwardPipeline("goat_forward_test", "test goat forward geocoding pipeline", "region", vars)
+	assert.NoError(t, err)
+
+	data, err := proto.Marshal(pipeline)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+
+	err = ioutil.WriteFile("/tmp/create_goat_forward.pln", data, 0644)
+	assert.NoError(t, err)
+}
+
+func TestCreateGoatReversePipeline(t *testing.T) {
+	vars := []*model.Variable{
+		{Name: "lat", Index: 11}, // lat/lon col inidices in acled dataset
+		{Name: "lon", Index: 12},
+	}
+
+	pipeline, err := CreateGoatReversePipeline("goat_reverse_test", "test goat reverse geocoding pipeline", "lat", "lon", vars)
+	assert.NoError(t, err)
+
+	data, err := proto.Marshal(pipeline)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+
+	err = ioutil.WriteFile("/tmp/create_goat_reverse.pln", data, 0644)
+	assert.NoError(t, err)
+}
