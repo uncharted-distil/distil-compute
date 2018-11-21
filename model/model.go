@@ -48,7 +48,7 @@ const (
 	D3MIndexFieldName = "d3mIndex"
 	// FeatureVarPrefix is the prefix of a metadata var name.
 	FeatureVarPrefix = "_feature_"
-	// FeatureVarPrefix is the prefix of a metadata var name.
+	// ClusterVarPrefix is the prefix of a metadata var name.
 	ClusterVarPrefix = "_cluster_"
 
 	// Variables is the field name which stores the variables in elasticsearch.
