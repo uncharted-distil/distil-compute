@@ -44,13 +44,13 @@ func CreateUserDatasetPipeline(name string, description string, allFeatures []*m
 	// instantiate the pipeline
 	builder := NewBuilder(name, description)
 	for _, v := range updateSemanticTypes {
-		builder = builder.Add(v)
+		builder = builder.AddStep(v)
 	}
 	if removeFeatures != nil {
-		builder = builder.Add(removeFeatures)
+		builder = builder.AddStep(removeFeatures)
 	}
 	for _, f := range filterData {
-		builder = builder.Add(f)
+		builder = builder.AddStep(f)
 	}
 
 	pip, err := builder.AddInferencePoint().Compile()
@@ -103,7 +103,8 @@ func createUpdateSemanticTypes(allFeatures []*model.Variable, selectedSet map[st
 	// remove from multiple columns in a single operation
 	updateMap := map[string]*update{}
 	for _, v := range allFeatures {
-		if selectedSet[strings.ToLower(v.Name)] {
+		// empty selected set means all selected
+		if len(selectedSet) == 0 || selectedSet[strings.ToLower(v.Name)] {
 			addType := model.MapTA2Type(v.Type)
 			if addType == "" {
 				return nil, errors.Errorf("variable `%s` internal type `%s` can't be mapped to ta2", v.Name, v.Type)
@@ -197,10 +198,10 @@ func CreateSlothPipeline(name string, description string, timeColumn string, val
 
 	// insantiate the pipeline
 	pipeline, err := NewBuilder(name, description).
-		Add(NewDenormalizeStep()).
-		Add(NewDatasetToDataframeStep()).
-		Add(NewTimeSeriesLoaderStep(-1, timeIdx, valueIdx)).
-		Add(NewSlothStep()).
+		AddStep(NewDenormalizeStep()).
+		AddStep(NewDatasetToDataframeStep()).
+		AddStep(NewTimeSeriesLoaderStep(-1, timeIdx, valueIdx)).
+		AddStep(NewSlothStep()).
 		Compile()
 
 	if err != nil {
@@ -214,8 +215,8 @@ func CreateSlothPipeline(name string, description string, timeColumn string, val
 func CreateDukePipeline(name string, description string) (*pipeline.PipelineDescription, error) {
 	// insantiate the pipeline
 	pipeline, err := NewBuilder(name, description).
-		Add(NewDatasetToDataframeStep()).
-		Add(NewDukeStep()).
+		AddStep(NewDatasetToDataframeStep()).
+		AddStep(NewDukeStep()).
 		Compile()
 
 	if err != nil {
@@ -229,8 +230,8 @@ func CreateDukePipeline(name string, description string) (*pipeline.PipelineDesc
 func CreateSimonPipeline(name string, description string) (*pipeline.PipelineDescription, error) {
 	// insantiate the pipeline
 	pipeline, err := NewBuilder(name, description).
-		Add(NewDatasetToDataframeStep()).
-		Add(NewSimonStep()).
+		AddStep(NewDatasetToDataframeStep()).
+		AddStep(NewSimonStep()).
 		Compile()
 
 	if err != nil {
@@ -243,9 +244,9 @@ func CreateSimonPipeline(name string, description string) (*pipeline.PipelineDes
 func CreateCrocPipeline(name string, description string, targetColumns []string, outputLabels []string) (*pipeline.PipelineDescription, error) {
 	// insantiate the pipeline
 	pipeline, err := NewBuilder(name, description).
-		Add(NewDenormalizeStep()).
-		Add(NewDatasetToDataframeStep()).
-		Add(NewCrocStep(targetColumns, outputLabels)).
+		AddStep(NewDenormalizeStep()).
+		AddStep(NewDatasetToDataframeStep()).
+		AddStep(NewCrocStep(targetColumns, outputLabels)).
 		Compile()
 
 	if err != nil {
@@ -258,9 +259,9 @@ func CreateCrocPipeline(name string, description string, targetColumns []string,
 func CreateUnicornPipeline(name string, description string, targetColumns []string, outputLabels []string) (*pipeline.PipelineDescription, error) {
 	// insantiate the pipeline
 	pipeline, err := NewBuilder(name, description).
-		Add(NewDenormalizeStep()).
-		Add(NewDatasetToDataframeStep()).
-		Add(NewUnicornStep(targetColumns, outputLabels)).
+		AddStep(NewDenormalizeStep()).
+		AddStep(NewDatasetToDataframeStep()).
+		AddStep(NewUnicornStep(targetColumns, outputLabels)).
 		Compile()
 
 	if err != nil {
@@ -273,8 +274,8 @@ func CreateUnicornPipeline(name string, description string, targetColumns []stri
 func CreatePCAFeaturesPipeline(name string, description string) (*pipeline.PipelineDescription, error) {
 	// insantiate the pipeline
 	pipeline, err := NewBuilder(name, description).
-		Add(NewDatasetToDataframeStep()).
-		Add(NewPCAFeaturesStep()).
+		AddStep(NewDatasetToDataframeStep()).
+		AddStep(NewPCAFeaturesStep()).
 		Compile()
 
 	if err != nil {
@@ -287,8 +288,8 @@ func CreatePCAFeaturesPipeline(name string, description string) (*pipeline.Pipel
 func CreateDenormalizePipeline(name string, description string) (*pipeline.PipelineDescription, error) {
 	// insantiate the pipeline
 	pipeline, err := NewBuilder(name, description).
-		Add(NewDenormalizeStep()).
-		Add(NewDatasetToDataframeStep()).
+		AddStep(NewDenormalizeStep()).
+		AddStep(NewDatasetToDataframeStep()).
 		Compile()
 
 	if err != nil {
@@ -311,12 +312,24 @@ func CreateTargetRankingPipeline(name string, description string, target string,
 		return nil, errors.Errorf("can't find var '%s'", name)
 	}
 
+	// ranking is dependent on user updated semantic types, so we need to make sure we apply
+	// those to the original data
+	updateSemanticTypeStep, err := createUpdateSemanticTypes(features, map[string]bool{})
+	if err != nil {
+		return nil, err
+	}
+	steps := []Step{}
+	for _, s := range updateSemanticTypeStep {
+		steps = append(steps, s)
+	}
+
 	// insantiate the pipeline
 	pipeline, err := NewBuilder(name, description).
-		Add(NewDenormalizeStep()).            // denormalize
-		Add(NewDatasetToDataframeStep()).     // extract main dataframe
-		Add(NewColumnParserStep()).           // convert obj/str to python raw types
-		Add(NewTargetRankingStep(targetIdx)). // compute feature ranks relative to target
+		AddStep(NewDenormalizeStep()).            // denormalize
+		AddSteps(steps).                          // apply recorded semantic type changes
+		AddStep(NewDatasetToDataframeStep()).     // extract main dataframe
+		AddStep(NewColumnParserStep()).           // convert obj/str to python raw types
+		AddStep(NewTargetRankingStep(targetIdx)). // compute feature ranks relative to target
 		Compile()
 
 	if err != nil {
@@ -335,9 +348,9 @@ func CreateGoatForwardPipeline(name string, description string, source string, f
 
 	// insantiate the pipeline
 	pipeline, err := NewBuilder(name, description).
-		Add(NewDenormalizeStep()).            // denormalize
-		Add(NewDatasetToDataframeStep()).     // extract main dataframe
-		Add(NewGoatForwardStep(sourceIndex)). // geocod
+		AddStep(NewDenormalizeStep()).            // denormalize
+		AddStep(NewDatasetToDataframeStep()).     // extract main dataframe
+		AddStep(NewGoatForwardStep(sourceIndex)). // geocod
 		Compile()
 
 	if err != nil {
@@ -357,9 +370,9 @@ func CreateGoatReversePipeline(name string, description string, lonSource string
 
 	// insantiate the pipeline
 	pipeline, err := NewBuilder(name, description).
-		Add(NewDenormalizeStep()).                                       // denormalize
-		Add(NewDatasetToDataframeStep()).                                // extract main dataframe
-		Add(NewGoatReverseStep(indices[lonSource], indices[latSource])). // geocode
+		AddStep(NewDenormalizeStep()).                                       // denormalize
+		AddStep(NewDatasetToDataframeStep()).                                // extract main dataframe
+		AddStep(NewGoatReverseStep(indices[lonSource], indices[latSource])). // geocode
 		Compile()
 
 	if err != nil {
