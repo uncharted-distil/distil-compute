@@ -32,7 +32,8 @@ type Compileable interface {
 // a TA2 system should be filling in the rest of the pipeline.
 type Builder interface {
 	Compileable
-	Add(stepData Step) Builder
+	AddStep(stepData Step) Builder
+	AddSteps(stepData []Step) Builder
 	AddInferencePoint() Compileable
 }
 
@@ -47,8 +48,14 @@ func NewBuilder(name, description string) Builder {
 }
 
 // Add a new step to the pipeline builder
-func (p *builder) Add(step Step) Builder {
+func (p *builder) AddStep(step Step) Builder {
 	p.steps = append(p.steps, step)
+	return p
+}
+
+// Adds new steps to the pipeline builder
+func (p *builder) AddSteps(steps []Step) Builder {
+	p.steps = append(p.steps, steps...)
 	return p
 }
 
