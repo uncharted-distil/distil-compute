@@ -3,7 +3,7 @@ package model
 import (
 	"fmt"
 	"regexp"
-
+	"time"
 	"github.com/jeffail/gabs"
 )
 
@@ -86,6 +86,15 @@ const (
 	TypeProbabilityField = "probability"
 	// TypeProvenanceField is the provenance field of a suggested type
 	TypeProvenanceField = "provenance"
+
+	// Database data types
+	dataTypeText    = "TEXT"
+	dataTypeDouble  = "double precision"
+	dataTypeFloat   = "FLOAT8"
+	dataTypeVector  = "FLOAT8[]"
+	dataTypeInteger = "INTEGER"
+	dataTypeDate    = "TIMESTAMP"
+	dateFormat = "2006-01-02T15:04:05Z"
 )
 
 var (
@@ -289,4 +298,39 @@ func (v *Variable) IsMediaReference() bool {
 		}
 	}
 	return mediaReference
+}
+
+func MapD3MTypeToPostgresType(typ string) string {
+	// Integer types can be returned as floats.
+	switch typ {
+	case IndexType:
+		return dataTypeInteger
+	case IntegerType, FloatType, LongitudeType, LatitudeType, RealType:
+		return dataTypeFloat
+	case OrdinalType, CategoricalType, TextType, StringType:
+		return dataTypeText
+	case DateTimeType:
+		return dataTypeDate
+	case RealVectorType:
+		return dataTypeVector
+	default:
+		return dataTypeText
+	}
+}
+
+func DefaultPostgresValueFromType(typ string) interface{} {
+	switch typ {
+	case dataTypeDouble:
+		return float64(0)
+	case dataTypeFloat:
+		return float64(0)
+	case dataTypeInteger:
+		return int(0)
+	case dataTypeDate:
+		return fmt.Sprintf("'%s'", time.Time{}.Format(dateFormat))
+	case dataTypeVector:
+		return "'{}'"
+	default:
+		return "''"
+	}
 }

@@ -13,6 +13,8 @@ const (
 	CategoricalFilter = "categorical"
 	// NumericalFilter represents a numerical filter type.
 	NumericalFilter = "numerical"
+	// BivariateFilter represents a numerical filter type.
+	BivariateFilter = "bivariate"
 	// FeatureFilter represents a feature filter type.
 	FeatureFilter = "feature"
 	// TextFilter represents a text filter type.
@@ -44,6 +46,14 @@ func StringSliceEqual(a, b []string) bool {
 	return true
 }
 
+// Bounds defines a bounding box
+type Bounds struct {
+	MinX float64 `json:"minX"`
+	MaxX float64 `json:"maxX"`
+	MinY float64 `json:"minY"`
+	MaxY float64 `json:"maxY"`
+}
+
 // Filter defines a variable filter.
 type Filter struct {
 	Key        string   `json:"key"`
@@ -51,6 +61,7 @@ type Filter struct {
 	Mode       string   `json:"mode"`
 	Min        *float64 `json:"min"`
 	Max        *float64 `json:"max"`
+	Bounds     *Bounds  `json:"bounds"`
 	Categories []string `json:"categories"`
 	D3mIndices []string `json:"d3mIndices"`
 }
@@ -63,6 +74,21 @@ func NewNumericalFilter(key string, mode string, min float64, max float64) *Filt
 		Mode: mode,
 		Min:  &min,
 		Max:  &max,
+	}
+}
+
+// NewBivariateFilter instantiates a numerical filter.
+func NewBivariateFilter(key string, mode string, minX float64, maxX float64, minY float64, maxY float64) *Filter {
+	return &Filter{
+		Key:  key,
+		Type: BivariateFilter,
+		Mode: mode,
+		Bounds: &Bounds{
+			MinX: minX,
+			MaxX: maxX,
+			MinY: minY,
+			MaxY: maxY,
+		},
 	}
 }
 
