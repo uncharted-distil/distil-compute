@@ -158,16 +158,17 @@ func TestPipelineCompile(t *testing.T) {
 	step0 := createTestStep(0)
 	step1 := createTestStep(1)
 	step2 := createTestStep(2)
+	step3 := createTestStep(3)
 
 	desc, err := NewBuilder("test pipeline", "test pipelne consisting of 3 stages").
-		Add(step0).
-		Add(step1).
-		Add(step2).
+		AddStep(step0).
+		AddStep(step1).
+		AddSteps([]Step{step2, step3}).
 		Compile()
 	assert.NoError(t, err)
 
 	steps := desc.GetSteps()
-	assert.Equal(t, len(steps), 3)
+	assert.Equal(t, len(steps), 4)
 
 	// validate step inputs
 	assert.Equal(t, "inputs.0", steps[0].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
@@ -179,9 +180,12 @@ func TestPipelineCompile(t *testing.T) {
 	assert.Equal(t, "steps.1.produce", steps[2].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
 	testStep(t, 2, step2, steps)
 
+	assert.Equal(t, "steps.2.produce", steps[3].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
+	testStep(t, 3, step3, steps)
+
 	// validate outputs
 	assert.Equal(t, 1, len(desc.GetOutputs()))
-	assert.Equal(t, "steps.2.produce", desc.GetOutputs()[0].GetData())
+	assert.Equal(t, "steps.3.produce", desc.GetOutputs()[0].GetData())
 }
 
 // Tests proper compilation of an inference point.
@@ -191,8 +195,8 @@ func TestPipelineCompileWithInference(t *testing.T) {
 	step1 := createTestStep(1)
 
 	desc, err := NewBuilder("test pipeline", "test pipelne consisting of 3 stages").
-		Add(step0).
-		Add(step1).
+		AddStep(step0).
+		AddStep(step1).
 		AddInferencePoint().
 		Compile()
 	assert.NoError(t, err)
