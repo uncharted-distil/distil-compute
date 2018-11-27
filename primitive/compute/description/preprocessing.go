@@ -1,6 +1,7 @@
 package description
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -129,9 +130,17 @@ func createUpdateSemanticTypes(allFeatures []*model.Variable, selectedSet map[st
 		}
 	}
 
-	// Copy the created maps into the column update structure used by the primitive
+	// Copy the created maps into the column update structure used by the primitive.  Force
+	// alpha ordering to make debugging / testing predictable
+	keys := make([]string, 0, len(updateMap))
+	for k := range updateMap {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
 	semanticTypeUpdates := []*StepData{}
-	for k, v := range updateMap {
+	for _, k := range keys {
+		v := updateMap[k]
 		var addKey string
 		if len(v.addIndices) > 0 {
 			addKey = k

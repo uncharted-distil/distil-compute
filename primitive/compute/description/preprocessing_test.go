@@ -62,7 +62,6 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 	assert.Equal(t, []int64{2}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
 
 	assert.NoError(t, err)
-	t.Logf("\n%s", proto.MarshalTextString(pipeline))
 }
 
 func TestCreateUserDatasetPipelineMappingError(t *testing.T) {
@@ -76,10 +75,9 @@ func TestCreateUserDatasetPipelineMappingError(t *testing.T) {
 		},
 	}
 
-	pipeline, err := CreateUserDatasetPipeline(
+	_, err := CreateUserDatasetPipeline(
 		"test_user_pipeline", "a test user pipeline", variables, "test_target", []string{"test_var_0"}, nil)
 	assert.Error(t, err)
-	t.Logf("\n%s", proto.MarshalTextString(pipeline))
 }
 
 func TestCreateUserDatasetEmpty(t *testing.T) {
@@ -98,8 +96,6 @@ func TestCreateUserDatasetEmpty(t *testing.T) {
 
 	assert.Nil(t, pipeline)
 	assert.Nil(t, err)
-
-	t.Logf("\n%s", proto.MarshalTextString(pipeline))
 }
 
 func TestCreatePCAFeaturesPipeline(t *testing.T) {
