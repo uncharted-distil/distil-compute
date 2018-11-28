@@ -19,7 +19,7 @@ git submodule init
 git submodule update
 ```
 
-#### Install protocol buffer compiler
+#### [OPTIONAL] Install protocol buffer compiler
 
 Linux
 
@@ -43,16 +43,15 @@ mv protoc3/bin/protoc /usr/bin/protoc
 make install
 ```
 
-#### Generate code
+#### [OPTIONAL] Generate code
 
-To generate TA3TA2 interface protobuf files run:
+To generate TA3TA2 interface protobuf files if the `pipeline/execute.proto` or `pipeline/ta3ta2-api/*.proto` have changed run:
 
 ```bash
 make proto
 ```
 
-**OPTIONAL**
-To regenerate the PANDAS dataframe parser if the `compute/result/complex_field.peg` file is changed, run:
+To regenerate the PANDAS dataframe parser if the `primitive/compute/result/complex_field.peg` file is changed, run:
 
 ```bash
 make peg
