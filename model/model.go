@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"time"
+
 	"github.com/jeffail/gabs"
 )
 
@@ -94,7 +95,7 @@ const (
 	dataTypeVector  = "FLOAT8[]"
 	dataTypeInteger = "INTEGER"
 	dataTypeDate    = "TIMESTAMP"
-	dateFormat = "2006-01-02T15:04:05Z"
+	dateFormat      = "2006-01-02T15:04:05Z"
 )
 
 var (
@@ -300,6 +301,8 @@ func (v *Variable) IsMediaReference() bool {
 	return mediaReference
 }
 
+// MapD3MTypeToPostgresType maps a D3M schema type to an internal
+// postgres type.
 func MapD3MTypeToPostgresType(typ string) string {
 	// Integer types can be returned as floats.
 	switch typ {
@@ -318,6 +321,8 @@ func MapD3MTypeToPostgresType(typ string) string {
 	}
 }
 
+// DefaultPostgresValueFromType generates a default value for a given
+// postgres value type.
 func DefaultPostgresValueFromType(typ string) interface{} {
 	switch typ {
 	case dataTypeDouble:

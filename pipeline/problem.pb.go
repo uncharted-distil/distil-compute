@@ -3,10 +3,12 @@
 
 package pipeline
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
-import _ "github.com/golang/protobuf/protoc-gen-go/descriptor"
+import (
+	fmt "fmt"
+	proto "github.com/golang/protobuf/proto"
+	_ "github.com/golang/protobuf/protoc-gen-go/descriptor"
+	math "math"
+)
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -52,6 +54,7 @@ var TaskType_name = map[int32]string{
 	10: "COLLABORATIVE_FILTERING",
 	11: "OBJECT_DETECTION",
 }
+
 var TaskType_value = map[string]int32{
 	"TASK_TYPE_UNDEFINED":     0,
 	"CLASSIFICATION":          1,
@@ -70,8 +73,9 @@ var TaskType_value = map[string]int32{
 func (x TaskType) String() string {
 	return proto.EnumName(TaskType_name, int32(x))
 }
+
 func (TaskType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_problem_21650f98b898c36f, []int{0}
+	return fileDescriptor_b319862c9661813c, []int{0}
 }
 
 // Secondary classification of the problem.
@@ -102,23 +106,25 @@ var TaskSubtype_name = map[int32]string{
 	7: "OVERLAPPING",
 	8: "NONOVERLAPPING",
 }
+
 var TaskSubtype_value = map[string]int32{
 	"TASK_SUBTYPE_UNDEFINED": 0,
-	"NONE":           1,
-	"BINARY":         2,
-	"MULTICLASS":     3,
-	"MULTILABEL":     4,
-	"UNIVARIATE":     5,
-	"MULTIVARIATE":   6,
-	"OVERLAPPING":    7,
-	"NONOVERLAPPING": 8,
+	"NONE":                   1,
+	"BINARY":                 2,
+	"MULTICLASS":             3,
+	"MULTILABEL":             4,
+	"UNIVARIATE":             5,
+	"MULTIVARIATE":           6,
+	"OVERLAPPING":            7,
+	"NONOVERLAPPING":         8,
 }
 
 func (x TaskSubtype) String() string {
 	return proto.EnumName(TaskSubtype_name, int32(x))
 }
+
 func (TaskSubtype) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_problem_21650f98b898c36f, []int{1}
+	return fileDescriptor_b319862c9661813c, []int{1}
 }
 
 // The evaluation metric for any potential solution.
@@ -176,6 +182,7 @@ var PerformanceMetric_name = map[int32]string{
 	18:  "OBJECT_DETECTION_AVERAGE_PRECISION",
 	100: "LOSS",
 }
+
 var PerformanceMetric_value = map[string]int32{
 	"METRIC_UNDEFINED":                   0,
 	"ACCURACY":                           1,
@@ -196,14 +203,15 @@ var PerformanceMetric_value = map[string]int32{
 	"JACCARD_SIMILARITY_SCORE":           16,
 	"PRECISION_AT_TOP_K":                 17,
 	"OBJECT_DETECTION_AVERAGE_PRECISION": 18,
-	"LOSS": 100,
+	"LOSS":                               100,
 }
 
 func (x PerformanceMetric) String() string {
 	return proto.EnumName(PerformanceMetric_name, int32(x))
 }
+
 func (PerformanceMetric) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_problem_21650f98b898c36f, []int{2}
+	return fileDescriptor_b319862c9661813c, []int{2}
 }
 
 type ProblemPerformanceMetric struct {
@@ -220,16 +228,17 @@ func (m *ProblemPerformanceMetric) Reset()         { *m = ProblemPerformanceMetr
 func (m *ProblemPerformanceMetric) String() string { return proto.CompactTextString(m) }
 func (*ProblemPerformanceMetric) ProtoMessage()    {}
 func (*ProblemPerformanceMetric) Descriptor() ([]byte, []int) {
-	return fileDescriptor_problem_21650f98b898c36f, []int{0}
+	return fileDescriptor_b319862c9661813c, []int{0}
 }
+
 func (m *ProblemPerformanceMetric) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ProblemPerformanceMetric.Unmarshal(m, b)
 }
 func (m *ProblemPerformanceMetric) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ProblemPerformanceMetric.Marshal(b, m, deterministic)
 }
-func (dst *ProblemPerformanceMetric) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ProblemPerformanceMetric.Merge(dst, src)
+func (m *ProblemPerformanceMetric) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProblemPerformanceMetric.Merge(m, src)
 }
 func (m *ProblemPerformanceMetric) XXX_Size() int {
 	return xxx_messageInfo_ProblemPerformanceMetric.Size(m)
@@ -280,16 +289,17 @@ func (m *Problem) Reset()         { *m = Problem{} }
 func (m *Problem) String() string { return proto.CompactTextString(m) }
 func (*Problem) ProtoMessage()    {}
 func (*Problem) Descriptor() ([]byte, []int) {
-	return fileDescriptor_problem_21650f98b898c36f, []int{1}
+	return fileDescriptor_b319862c9661813c, []int{1}
 }
+
 func (m *Problem) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Problem.Unmarshal(m, b)
 }
 func (m *Problem) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Problem.Marshal(b, m, deterministic)
 }
-func (dst *Problem) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Problem.Merge(dst, src)
+func (m *Problem) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Problem.Merge(m, src)
 }
 func (m *Problem) XXX_Size() int {
 	return xxx_messageInfo_Problem.Size(m)
@@ -364,16 +374,17 @@ func (m *ProblemTarget) Reset()         { *m = ProblemTarget{} }
 func (m *ProblemTarget) String() string { return proto.CompactTextString(m) }
 func (*ProblemTarget) ProtoMessage()    {}
 func (*ProblemTarget) Descriptor() ([]byte, []int) {
-	return fileDescriptor_problem_21650f98b898c36f, []int{2}
+	return fileDescriptor_b319862c9661813c, []int{2}
 }
+
 func (m *ProblemTarget) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ProblemTarget.Unmarshal(m, b)
 }
 func (m *ProblemTarget) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ProblemTarget.Marshal(b, m, deterministic)
 }
-func (dst *ProblemTarget) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ProblemTarget.Merge(dst, src)
+func (m *ProblemTarget) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProblemTarget.Merge(m, src)
 }
 func (m *ProblemTarget) XXX_Size() int {
 	return xxx_messageInfo_ProblemTarget.Size(m)
@@ -435,16 +446,17 @@ func (m *ProblemInput) Reset()         { *m = ProblemInput{} }
 func (m *ProblemInput) String() string { return proto.CompactTextString(m) }
 func (*ProblemInput) ProtoMessage()    {}
 func (*ProblemInput) Descriptor() ([]byte, []int) {
-	return fileDescriptor_problem_21650f98b898c36f, []int{3}
+	return fileDescriptor_b319862c9661813c, []int{3}
 }
+
 func (m *ProblemInput) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ProblemInput.Unmarshal(m, b)
 }
 func (m *ProblemInput) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ProblemInput.Marshal(b, m, deterministic)
 }
-func (dst *ProblemInput) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ProblemInput.Merge(dst, src)
+func (m *ProblemInput) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProblemInput.Merge(m, src)
 }
 func (m *ProblemInput) XXX_Size() int {
 	return xxx_messageInfo_ProblemInput.Size(m)
@@ -486,16 +498,17 @@ func (m *ProblemDescription) Reset()         { *m = ProblemDescription{} }
 func (m *ProblemDescription) String() string { return proto.CompactTextString(m) }
 func (*ProblemDescription) ProtoMessage()    {}
 func (*ProblemDescription) Descriptor() ([]byte, []int) {
-	return fileDescriptor_problem_21650f98b898c36f, []int{4}
+	return fileDescriptor_b319862c9661813c, []int{4}
 }
+
 func (m *ProblemDescription) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ProblemDescription.Unmarshal(m, b)
 }
 func (m *ProblemDescription) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ProblemDescription.Marshal(b, m, deterministic)
 }
-func (dst *ProblemDescription) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ProblemDescription.Merge(dst, src)
+func (m *ProblemDescription) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProblemDescription.Merge(m, src)
 }
 func (m *ProblemDescription) XXX_Size() int {
 	return xxx_messageInfo_ProblemDescription.Size(m)
@@ -521,19 +534,19 @@ func (m *ProblemDescription) GetInputs() []*ProblemInput {
 }
 
 func init() {
+	proto.RegisterEnum("TaskType", TaskType_name, TaskType_value)
+	proto.RegisterEnum("TaskSubtype", TaskSubtype_name, TaskSubtype_value)
+	proto.RegisterEnum("PerformanceMetric", PerformanceMetric_name, PerformanceMetric_value)
 	proto.RegisterType((*ProblemPerformanceMetric)(nil), "ProblemPerformanceMetric")
 	proto.RegisterType((*Problem)(nil), "Problem")
 	proto.RegisterType((*ProblemTarget)(nil), "ProblemTarget")
 	proto.RegisterType((*ProblemInput)(nil), "ProblemInput")
 	proto.RegisterType((*ProblemDescription)(nil), "ProblemDescription")
-	proto.RegisterEnum("TaskType", TaskType_name, TaskType_value)
-	proto.RegisterEnum("TaskSubtype", TaskSubtype_name, TaskSubtype_value)
-	proto.RegisterEnum("PerformanceMetric", PerformanceMetric_name, PerformanceMetric_value)
 }
 
-func init() { proto.RegisterFile("problem.proto", fileDescriptor_problem_21650f98b898c36f) }
+func init() { proto.RegisterFile("problem.proto", fileDescriptor_b319862c9661813c) }
 
-var fileDescriptor_problem_21650f98b898c36f = []byte{
+var fileDescriptor_b319862c9661813c = []byte{
 	// 966 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x55, 0xdb, 0x72, 0xdb, 0x36,
 	0x10, 0x2d, 0x75, 0xd7, 0xea, 0x62, 0x18, 0x49, 0x13, 0x35, 0x6e, 0x26, 0x8a, 0x66, 0x9a, 0x7a,

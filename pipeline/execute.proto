@@ -10,7 +10,6 @@ message PipelineExecuteRequest {
 
 message PipelineExecuteResponse {
     string resultURI = 1;
-    string error = 2;
 }
 
 service Executor {

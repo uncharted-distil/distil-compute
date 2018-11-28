@@ -29,7 +29,12 @@ test: compile
 	@go test ./...
 
 proto:
-	@protoc -I /usr/local/include -I api/pipeline/ta3ta2-api api/pipeline/ta3ta2-api/*.proto --go_out=plugins=grpc:api/pipeline
+	@protoc -I /usr/local/include \
+		-I ./pipeline/ta3ta2-api \
+		-I ./pipeline \
+		--go_out=plugins=grpc:pipeline \
+		./pipeline/ta3ta2-api/*.proto \
+		./pipeline/execute.proto
 
 peg:
 	@peg -inline ./api/compute/result/complex_field.peg
