@@ -208,12 +208,7 @@ func TestCreateGoatForwardPipeline(t *testing.T) {
 }
 
 func TestCreateGoatReversePipeline(t *testing.T) {
-	vars := []*model.Variable{
-		{Name: "lat", Index: 11}, // lat/lon col inidices in acled dataset
-		{Name: "lon", Index: 12},
-	}
-
-	pipeline, err := CreateGoatReversePipeline("goat_reverse_test", "test goat reverse geocoding pipeline", "lat", "lon", vars)
+	pipeline, err := CreateGoatReversePipeline("goat_reverse_test", "test goat reverse geocoding pipeline", "lat", "lon")
 	assert.NoError(t, err)
 
 	data, err := proto.Marshal(pipeline)

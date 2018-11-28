@@ -348,12 +348,12 @@ func CreateTargetRankingPipeline(name string, description string, target string,
 }
 
 // CreateGoatForwardPipeline creates a forward geocoding pipeline.
-func CreateGoatForwardPipeline(name string, description string, source string) (*pipeline.PipelineDescription, error) {
+func CreateGoatForwardPipeline(name string, description string, placeCol string) (*pipeline.PipelineDescription, error) {
 	// insantiate the pipeline
 	pipeline, err := NewBuilder(name, description).
-		AddStep(NewDenormalizeStep()).        // denormalize
-		AddStep(NewDatasetToDataframeStep()). // extract main dataframe
-		AddStep(NewGoatForwardStep(source)).  // geocode
+		AddStep(NewDenormalizeStep()).         // denormalize
+		AddStep(NewDatasetToDataframeStep()).  // extract main dataframe
+		AddStep(NewGoatForwardStep(placeCol)). // geocod
 		Compile()
 
 	if err != nil {
@@ -363,19 +363,12 @@ func CreateGoatForwardPipeline(name string, description string, source string) (
 }
 
 // CreateGoatReversePipeline creates a forward geocoding pipeline.
-func CreateGoatReversePipeline(name string, description string, lonSource string, latSource string,
-	features []*model.Variable) (*pipeline.PipelineDescription, error) {
-	// map col names to indices
-	indices := mapColumns(features, map[string]bool{lonSource: true, latSource: true})
-	if len(indices) != 2 {
-		return nil, errors.Errorf("can't find one of %s, %s", lonSource, latSource)
-	}
-
+func CreateGoatReversePipeline(name string, description string, lonSource string, latSource string) (*pipeline.PipelineDescription, error) {
 	// insantiate the pipeline
 	pipeline, err := NewBuilder(name, description).
-		AddStep(NewDenormalizeStep()).                                       // denormalize
-		AddStep(NewDatasetToDataframeStep()).                                // extract main dataframe
-		AddStep(NewGoatReverseStep(indices[lonSource], indices[latSource])). // geocode
+		AddStep(NewDenormalizeStep()).                     // denormalize
+		AddStep(NewDatasetToDataframeStep()).              // extract main dataframe
+		AddStep(NewGoatReverseStep(lonSource, latSource)). // geocode
 		Compile()
 
 	if err != nil {
