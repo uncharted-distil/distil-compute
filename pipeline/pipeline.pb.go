@@ -866,7 +866,7 @@ type PipelineDescriptionUser struct {
 	// Globally unique ID for this user. It can be opaque, but it should identify the same user
 	// across sessions. Consider using UUID variant 5 with namespace set to the name of your system
 	// and name to an ID in your system's database. It does not have to map to any real ID, just
-	// that it is possible to connect multiple pipelines/templates by the same user together,
+	// that it is possible to connect mutliple pipelines/templates by the same user together,
 	// if necessary.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// A natural language description of what the user did to be on the list, e.g., "Picked
@@ -1023,14 +1023,14 @@ type PrimitivePipelineDescriptionStep struct {
 	// can be automatically created from other information. All these arguments are listed as kind
 	// "PIPELINE" in primitive's metadata.
 	Arguments map[string]*PrimitiveStepArgument `protobuf:"bytes,2,rep,name=arguments,proto3" json:"arguments,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// List of produce methods providing data. One can reference using data reference these outputs
+	// List of produce metods providing data. One can reference using data reference these outputs
 	// then in arguments (inputs) in other steps or pipeline outputs.
 	Outputs []*StepOutput `protobuf:"bytes,3,rep,name=outputs,proto3" json:"outputs,omitempty"`
 	// Some hyper-parameters are not really tunable and should be fixed as part of template/pipeline.
 	// This can be done here. Hyper-parameters listed here cannot be tuned or overridden. Author of a
 	// template/pipeline decides which hyper-parameter are which, probably based on their semantic type.
 	// TA3 can specify a list of hyper-parameters to fix, and TA2 can add to the list additional
-	// hyper-parameters in found pipelines.
+	// hyper-paramaters in found pipelines.
 	Hyperparams map[string]*PrimitiveStepHyperparameter `protobuf:"bytes,4,rep,name=hyperparams,proto3" json:"hyperparams,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// List of users associated with selection of this primitive/arguments/hyper-parameters. Optional.
 	Users                []*PipelineDescriptionUser `protobuf:"bytes,5,rep,name=users,proto3" json:"users,omitempty"`
@@ -1395,7 +1395,7 @@ func _PipelineDescriptionStep_OneofSizer(msg proto.Message) (n int) {
 // It serves two purposes: describing found pipelines by TA2 to TA3, and communicating pipeline
 // templates by TA3 to TA2. Because of this some fields are reasonable only in one of those uses.
 // They are marked with "TA2" or "TA3" in the comment, for fields which are primarily to be set
-// only by TA2 or only by TA3, respectively.
+// only by TA2 or only by TA3, respectivelly.
 type PipelineDescription struct {
 	// TA2: UUID of the pipeline. Templates do not have IDs. But TA3 might provide it for a fully
 	// specified pipeline. It does not necessary have to match "solution_id" from

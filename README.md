@@ -15,8 +15,6 @@ mkdir -p $GOPATH/src/github.com/unchartedsoftware
 cd $GOPATH/src/github.com/unchartedsoftware
 git clone git@github.com:unchartedsoftware/distil-compute.git
 cd distil-compute
-git submodule init
-git submodule update
 ```
 
 #### [OPTIONAL] Install protocol buffer compiler
@@ -45,7 +43,7 @@ make install
 
 #### [OPTIONAL] Generate code
 
-To generate TA3TA2 interface protobuf files if the `pipeline/execute.proto` or `pipeline/ta3ta2-api/*.proto` have changed run:
+To generate TA3TA2 interface protobuf files if the `pipeline/*.proto` files have changed, run:
 
 ```bash
 make proto

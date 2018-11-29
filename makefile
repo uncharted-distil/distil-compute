@@ -30,11 +30,9 @@ test: compile
 
 proto:
 	@protoc -I /usr/local/include \
-		-I ./pipeline/ta3ta2-api \
 		-I ./pipeline \
 		--go_out=plugins=grpc:pipeline \
-		./pipeline/ta3ta2-api/*.proto \
-		./pipeline/execute.proto
+		./pipeline/*.proto 
 
 peg:
 	@peg -inline ./api/compute/result/complex_field.peg
