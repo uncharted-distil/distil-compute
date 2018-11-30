@@ -301,8 +301,7 @@ func (v *Variable) IsMediaReference() bool {
 	return mediaReference
 }
 
-// MapD3MTypeToPostgresType maps a D3M schema type to an internal
-// postgres type.
+// MapD3MTypeToPostgresType generates a postgres type from a d3m type.
 func MapD3MTypeToPostgresType(typ string) string {
 	// Integer types can be returned as floats.
 	switch typ {
@@ -321,19 +320,18 @@ func MapD3MTypeToPostgresType(typ string) string {
 	}
 }
 
-// DefaultPostgresValueFromType generates a default value for a given
-// postgres value type.
-func DefaultPostgresValueFromType(typ string) interface{} {
+// DefaultPostgresValueFromD3MType generates a default postgres value from a d3m type.
+func DefaultPostgresValueFromD3MType(typ string) interface{} {
 	switch typ {
-	case dataTypeDouble:
+	case IndexType:
 		return float64(0)
-	case dataTypeFloat:
+	case FloatType, LongitudeType, LatitudeType, RealType:
 		return float64(0)
-	case dataTypeInteger:
+	case IntegerType:
 		return int(0)
-	case dataTypeDate:
+	case DateTimeType:
 		return fmt.Sprintf("'%s'", time.Time{}.Format(dateFormat))
-	case dataTypeVector:
+	case RealVectorType:
 		return "'{}'"
 	default:
 		return "''"
