@@ -106,7 +106,7 @@ func TestCreatePCAFeaturesPipeline(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
-	err = ioutil.WriteFile("/tmp/create_pca_features.pln", data, 0644)
+	err = ioutil.WriteFile("/tmp/pca_features.pln", data, 0644)
 	assert.NoError(t, err)
 }
 
@@ -118,7 +118,7 @@ func TestCreateSimonPipeline(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
-	err = ioutil.WriteFile("/tmp/create_simon.pln", data, 0644)
+	err = ioutil.WriteFile("/tmp/simon.pln", data, 0644)
 	assert.NoError(t, err)
 }
 
@@ -130,7 +130,7 @@ func TestCreateCrocPipeline(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
-	err = ioutil.WriteFile("/tmp/create_croc.pln", data, 0644)
+	err = ioutil.WriteFile("/tmp/croc.pln", data, 0644)
 	assert.NoError(t, err)
 }
 
@@ -142,7 +142,7 @@ func TestCreateUnicornPipeline(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
-	err = ioutil.WriteFile("/tmp/create_unicorn.pln", data, 0644)
+	err = ioutil.WriteFile("/tmp/unicorn.pln", data, 0644)
 	assert.NoError(t, err)
 }
 
@@ -159,7 +159,7 @@ func TestCreateSlothPipeline(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
-	err = ioutil.WriteFile("/tmp/create_sloth.pln", data, 0644)
+	err = ioutil.WriteFile("/tmp/sloth.pln", data, 0644)
 	assert.NoError(t, err)
 }
 
@@ -171,7 +171,27 @@ func TestCreateDukePipeline(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
-	err = ioutil.WriteFile("/tmp/create_duke.pln", data, 0644)
+	err = ioutil.WriteFile("/tmp/duke.pln", data, 0644)
+	assert.NoError(t, err)
+}
+
+func TestCreateTargetRankingPipeline(t *testing.T) {
+	vars := []*model.Variable{
+		{
+			Name:         "hall_of_fame",
+			Index:        18,
+			Type:         model.CategoricalType,
+			OriginalType: model.CategoricalType,
+		},
+	}
+	pipeline, err := CreateTargetRankingPipeline("target_ranking_test", "test target_ranking pipeline", "hall_of_fame", vars)
+	assert.NoError(t, err)
+
+	data, err := proto.Marshal(pipeline)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+
+	err = ioutil.WriteFile("/tmp/target_ranking.pln", data, 0644)
 	assert.NoError(t, err)
 }
 
@@ -187,7 +207,7 @@ func TestCreateGoatForwardPipeline(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
-	err = ioutil.WriteFile("/tmp/create_goat_forward.pln", data, 0644)
+	err = ioutil.WriteFile("/tmp/goat_forward.pln", data, 0644)
 	assert.NoError(t, err)
 }
 
@@ -204,6 +224,6 @@ func TestCreateGoatReversePipeline(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
-	err = ioutil.WriteFile("/tmp/create_goat_reverse.pln", data, 0644)
+	err = ioutil.WriteFile("/tmp/goat_reverse.pln", data, 0644)
 	assert.NoError(t, err)
 }
