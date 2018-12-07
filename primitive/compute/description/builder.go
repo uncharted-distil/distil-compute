@@ -130,7 +130,15 @@ func (p *builder) Compile() (*pipeline.PipelineDescription, error) {
 	lastOutput := p.steps[lastStep].GetOutputMethods()[0]
 	pipelineOutputs := []*pipeline.PipelineDescriptionOutput{
 		{
+			Name: "outputs",
 			Data: fmt.Sprintf("steps.%d.%s", lastStep, lastOutput),
+		},
+	}
+
+	// Set the input to to the placeholder
+	pipelineInputs := []*pipeline.PipelineDescriptionInput{
+		{
+			Name: "input",
 		},
 	}
 
@@ -148,7 +156,9 @@ func (p *builder) Compile() (*pipeline.PipelineDescription, error) {
 		Name:        p.name,
 		Description: p.description,
 		Steps:       descriptionSteps,
+		Inputs:      pipelineInputs,
 		Outputs:     pipelineOutputs,
+		Context:     pipeline.PipelineContext_TESTING,
 	}
 
 	return pipelineDesc, nil
