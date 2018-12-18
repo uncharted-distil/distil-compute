@@ -314,9 +314,9 @@ func NewTimeSeriesLoaderStep(fileColIndex int, timeColIndex int, valueColIndex i
 // containing a place name or address is passed in, and the primitive will
 // return a DataFrame containing the lat/lon coords of the place.  If location could
 // not be found, the row in the data frame will be empty.
-func NewGoatForwardStep(sourceColIndex int) *StepData {
+func NewGoatForwardStep(targetCol string) *StepData {
 	args := map[string]interface{}{
-		"source_col_index": sourceColIndex,
+		"target_columns": []string{targetCol},
 	}
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
