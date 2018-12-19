@@ -111,7 +111,7 @@ func ConvertToNestedIntMap(dict *pipeline.ValueDict) map[string][]int64 {
 	return mp
 }
 
-func testStep(t *testing.T, index int64, step *StepData, steps []*pipeline.PipelineDescriptionStep) {
+func testStep(t *testing.T, index int64, step Step, steps []*pipeline.PipelineDescriptionStep) {
 	labels := createLabels(index)
 
 	assert.Equal(t, "produce", steps[index].GetPrimitive().GetOutputs()[0].GetId())
