@@ -348,18 +348,12 @@ func CreateTargetRankingPipeline(name string, description string, target string,
 }
 
 // CreateGoatForwardPipeline creates a forward geocoding pipeline.
-func CreateGoatForwardPipeline(name string, description string, source string, features []*model.Variable) (*pipeline.PipelineDescription, error) {
-	// compute index associated with column name
-	sourceIndex, err := getIndex(features, source)
-	if err != nil {
-		return nil, err
-	}
-
+func CreateGoatForwardPipeline(name string, description string, source string) (*pipeline.PipelineDescription, error) {
 	// insantiate the pipeline
 	pipeline, err := NewBuilder(name, description).
-		AddStep(NewDenormalizeStep()).            // denormalize
-		AddStep(NewDatasetToDataframeStep()).     // extract main dataframe
-		AddStep(NewGoatForwardStep(sourceIndex)). // geocod
+		AddStep(NewDenormalizeStep()).        // denormalize
+		AddStep(NewDatasetToDataframeStep()). // extract main dataframe
+		AddStep(NewGoatForwardStep(source)).  // geocode
 		Compile()
 
 	if err != nil {

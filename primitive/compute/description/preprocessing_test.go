@@ -196,11 +196,7 @@ func TestCreateTargetRankingPipeline(t *testing.T) {
 }
 
 func TestCreateGoatForwardPipeline(t *testing.T) {
-	vars := []*model.Variable{
-		{Name: "region", Index: 10}, // corresponds to region col idx in acled dataset
-	}
-
-	pipeline, err := CreateGoatForwardPipeline("goat_forward_test", "test goat forward geocoding pipeline", "region", vars)
+	pipeline, err := CreateGoatForwardPipeline("goat_forward_test", "test goat forward geocoding pipeline", "region")
 	assert.NoError(t, err)
 
 	data, err := proto.Marshal(pipeline)
