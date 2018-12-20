@@ -314,14 +314,14 @@ func NewTimeSeriesLoaderStep(fileColIndex int, timeColIndex int, valueColIndex i
 // containing a place name or address is passed in, and the primitive will
 // return a DataFrame containing the lat/lon coords of the place.  If location could
 // not be found, the row in the data frame will be empty.
-func NewGoatForwardStep(targetCol string) *StepData {
+func NewGoatForwardStep(placeCol string) *StepData {
 	args := map[string]interface{}{
-		"target_columns": []string{targetCol},
+		"target_columns": []string{placeCol},
 	}
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
 			Id:         "c7c61da3-cf57-354e-8841-664853370106",
-			Version:    "0.1.0",
+			Version:    "1.0.2",
 			Name:       "Goat.forward",
 			PythonPath: "d3m.primitives.distil.Goat.forward",
 			Digest:     "",
@@ -335,15 +335,15 @@ func NewGoatForwardStep(targetCol string) *StepData {
 // containing lat and lon values are passed in, and the primitive will
 // return a DataFrame containing the name of the place, with an
 // empty value for coords that no meaningful place could be computed.
-func NewGoatReverseStep(lonColIndex int, latColIndex int) *StepData {
+func NewGoatReverseStep(lonCol string, latCol string) *StepData {
 	args := map[string]interface{}{
-		"lon_col_index": lonColIndex,
-		"lat_col_index": latColIndex,
+		"lon_col_index": lonCol,
+		"lat_col_index": latCol,
 	}
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
 			Id:         "f6e4880b-98c7-32f0-b687-a4b1d74c8f99",
-			Version:    "0.1.0",
+			Version:    "1.0.2",
 			Name:       "Goat.reverse",
 			PythonPath: "d3m.primitives.distil.Goat.reverse",
 			Digest:     "",
