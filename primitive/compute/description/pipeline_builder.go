@@ -5,6 +5,7 @@ package description
 
 import (
 	"fmt"
+	"sync/atomic"
 
 	"github.com/pkg/errors"
 	"github.com/unchartedsoftware/distil-compute/pipeline"
@@ -16,9 +17,12 @@ const (
 	pipelineOutputsName = "outputs"
 )
 
+// if this needs to be thread safe make use a sync/atomic
+var nextNodeID uint64
+
 // PipelineNode creates a pipeline node that can be added to the pipeline DAG.
 type PipelineNode struct {
-	nodeID    int
+	nodeID    uint64
 	step      Step
 	children  []*PipelineNode
 	parents   []*PipelineNode
@@ -43,11 +47,12 @@ func (s *PipelineNode) Add(outgoing *PipelineNode) error {
 // ensure internal structure are properly initialized.
 func NewPipelineNode(step Step) *PipelineNode {
 	newStep := &PipelineNode{
-		nodeID:   -1,
+		nodeID:   nextNodeID,
 		step:     step,
 		children: []*PipelineNode{},
 		parents:  []*PipelineNode{},
 	}
+	atomic.AddUint64(&nextNodeID, 1)
 	return newStep
 }
 
@@ -69,7 +74,6 @@ type PipelineBuilder struct {
 	sources     []*PipelineNode
 	compiled    bool
 	inferred    bool
-	nextNodeID  int
 }
 
 // NewPipelineBuilder creates a new pipeline builder instance.  Source nodes need to be added in a subsequent call.
@@ -90,8 +94,6 @@ func (p *PipelineBuilder) AddSource(child *PipelineNode) {
 // Compile creates the protobuf pipeline description from the step graph.  It can only be
 // called once.
 func (p *PipelineBuilder) Compile() (*pipeline.PipelineDescription, error) {
-	// TODO: Add a check for cycles.  There is no enforcement of acyclic constraint currently.
-
 	if p.compiled {
 		return nil, errors.New("compile failed: pipeline already compiled")
 	}
@@ -101,7 +103,14 @@ func (p *PipelineBuilder) Compile() (*pipeline.PipelineDescription, error) {
 	}
 
 	pipelineNodes := []*PipelineNode{}
+	idToIndexMap := map[uint64]int{}
 	traversalQueue := []*PipelineNode{}
+
+	// ensure that there aren't any cycles in the graph - the traversal above assigns node IDs
+	// so it needs to be deferred until after
+	if checkCycles(p.sources) {
+		return nil, errors.Errorf("compile error: detected cycle in graph")
+	}
 
 	// start processing from the roots
 	for i, sourceNode := range p.sources {
@@ -129,7 +138,7 @@ func (p *PipelineBuilder) Compile() (*pipeline.PipelineDescription, error) {
 		node := traversalQueue[0]
 		traversalQueue = traversalQueue[1:]
 		var err error
-		pipelineNodes, err = p.processNode(node, pipelineNodes)
+		pipelineNodes, err = p.processNode(node, pipelineNodes, idToIndexMap)
 		if err != nil {
 			return nil, err
 		}
@@ -147,7 +156,7 @@ func (p *PipelineBuilder) Compile() (*pipeline.PipelineDescription, error) {
 			for _, outputMethod := range node.step.GetOutputMethods() {
 				output := &pipeline.PipelineDescriptionOutput{
 					Name: fmt.Sprintf("%s %d", pipelineOutputsName, i),
-					Data: fmt.Sprintf("%s.%d.%s", stepKey, node.nodeID, outputMethod),
+					Data: fmt.Sprintf("%s.%d.%s", stepKey, idToIndexMap[node.nodeID], outputMethod),
 				}
 				pipelineOutputs = append(pipelineOutputs, output)
 			}
@@ -210,7 +219,7 @@ func validate(node *PipelineNode) error {
 	return nil
 }
 
-func (p *PipelineBuilder) processNode(node *PipelineNode, pipelineNodes []*PipelineNode) ([]*PipelineNode, error) {
+func (p *PipelineBuilder) processNode(node *PipelineNode, pipelineNodes []*PipelineNode, idToIndexMap map[uint64]int) ([]*PipelineNode, error) {
 	// don't re-process
 	if node.visited {
 		return pipelineNodes, nil
@@ -239,18 +248,44 @@ func (p *PipelineBuilder) processNode(node *PipelineNode, pipelineNodes []*Pipel
 		}
 
 		parentOutput := parent.step.GetOutputMethods()[nextOutputIdx]
-		inputsRef := fmt.Sprintf("%s.%d.%s", stepKey, parent.nodeID, parentOutput)
+		inputsRef := fmt.Sprintf("%s.%d.%s", stepKey, idToIndexMap[parent.nodeID], parentOutput)
 		node.step.UpdateArguments(stepInputsKey, inputsRef)
 	}
 
-	node.nodeID = p.nextNodeID
-	p.nextNodeID++
-
 	// add to the node list
 	pipelineNodes = append(pipelineNodes, node)
+	idToIndexMap[node.nodeID] = len(pipelineNodes) - 1
 
 	// Mark as visited so we don't reprocess
 	node.visited = true
 
 	return pipelineNodes, nil
+}
+
+func checkCycles(sources []*PipelineNode) bool {
+	ids := map[uint64]bool{}
+	for _, sourceNode := range sources {
+		cycle := checkNode(sourceNode, ids)
+		if cycle {
+			return true
+		}
+	}
+	return false
+}
+
+func checkNode(node *PipelineNode, ids map[uint64]bool) bool {
+
+	if _, ok := ids[node.nodeID]; ok {
+		return true
+	}
+
+	ids[node.nodeID] = true
+	for _, childNode := range node.children {
+		cycle := checkNode(childNode, ids)
+		if cycle {
+			return true
+		}
+	}
+	delete(ids, node.nodeID)
+	return false
 }

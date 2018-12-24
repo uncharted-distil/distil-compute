@@ -232,6 +232,23 @@ func TestInferenceChildFailure(t *testing.T) {
 	assert.Nil(t, desc)
 }
 
+func TestCycleFailure(t *testing.T) {
+	builder := NewPipelineBuilder("test", "test pipeline")
+
+	step0 := NewPipelineNode(createTestStep(0))
+	step1 := NewPipelineNode(createTestStep(1))
+	step2 := NewPipelineNode(createTestStep(2))
+
+	step0.Add(step1)
+	step1.Add(step2)
+	step2.Add(step0)
+	builder.AddSource(step0)
+	desc, err := builder.Compile()
+
+	assert.Error(t, err)
+	assert.Nil(t, desc)
+}
+
 func createLabels(counter int64) []string {
 	return []string{fmt.Sprintf("alpha-%d", counter), fmt.Sprintf("bravo-%d", counter)}
 }
