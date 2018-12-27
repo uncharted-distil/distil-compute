@@ -9,7 +9,6 @@ import (
 )
 
 func TestBasicPipelineCompile(t *testing.T) {
-	builder := NewPipelineBuilder("test", "test pipeline")
 
 	step0 := NewPipelineNode(createTestStep(0))
 	step1 := NewPipelineNode(createTestStep(1))
@@ -18,8 +17,7 @@ func TestBasicPipelineCompile(t *testing.T) {
 	step0.Add(step1)
 	step1.Add(step2)
 
-	builder.AddSource(step0)
-	desc, err := builder.Compile()
+	desc, err := NewPipelineBuilder("test", "test pipeline", step0).Compile()
 	assert.NotNil(t, desc)
 	assert.NoError(t, err)
 
@@ -42,7 +40,6 @@ func TestBasicPipelineCompile(t *testing.T) {
 }
 
 func TestMultiInputPipelineCompile(t *testing.T) {
-	builder := NewPipelineBuilder("test", "test pipeline")
 
 	step0 := NewPipelineNode(createTestStep(0))
 	step1 := NewPipelineNode(createTestStep(1))
@@ -50,10 +47,8 @@ func TestMultiInputPipelineCompile(t *testing.T) {
 
 	step0.Add(step2)
 
-	builder.AddSource(step0)
-	builder.AddSource(step1)
+	desc, err := NewPipelineBuilder("test", "test pipeline", step0, step1).Compile()
 
-	desc, err := builder.Compile()
 	assert.NotNil(t, desc)
 	assert.NoError(t, err)
 
@@ -77,17 +72,14 @@ func TestMultiInputPipelineCompile(t *testing.T) {
 }
 
 func TestBranchPipelineCompile(t *testing.T) {
-	builder := NewPipelineBuilder("test", "test pipeline")
 
 	step0 := NewPipelineNode(createTestStepWithOutputs(0, []string{"produce.0", "produce.1"}))
 	step1 := NewPipelineNode(createTestStep(1))
 	step2 := NewPipelineNode(createTestStep(2))
-
 	step0.Add(step1)
 	step0.Add(step2)
 
-	builder.AddSource(step0)
-	desc, err := builder.Compile()
+	desc, err := NewPipelineBuilder("test", "test pipeline", step0).Compile()
 	assert.NotNil(t, desc)
 	assert.NoError(t, err)
 
@@ -111,7 +103,6 @@ func TestBranchPipelineCompile(t *testing.T) {
 }
 
 func TestDiamondPipeline(t *testing.T) {
-	builder := NewPipelineBuilder("test", "test pipeline")
 
 	step0 := NewPipelineNode(createTestStepWithOutputs(0, []string{"produce.0", "produce.1"}))
 	step1 := NewPipelineNode(createTestStep(1))
@@ -123,8 +114,7 @@ func TestDiamondPipeline(t *testing.T) {
 	step1.Add(step3)
 	step2.Add(step3)
 
-	builder.AddSource(step0)
-	desc, err := builder.Compile()
+	desc, err := NewPipelineBuilder("test", "test pipeline", step0).Compile()
 	assert.NotNil(t, desc)
 	assert.NoError(t, err)
 
@@ -153,7 +143,6 @@ func TestDiamondPipeline(t *testing.T) {
 }
 
 func TestBasicInferenceCompile(t *testing.T) {
-	builder := NewPipelineBuilder("test", "test pipeline")
 
 	step0 := NewPipelineNode(createTestStep(0))
 	step1 := NewPipelineNode(createTestStep(1))
@@ -162,8 +151,7 @@ func TestBasicInferenceCompile(t *testing.T) {
 	step0.Add(step1)
 	step1.Add(step2)
 
-	builder.AddSource(step0)
-	desc, err := builder.Compile()
+	desc, err := NewPipelineBuilder("test", "test pipeline", step0).Compile()
 	assert.NotNil(t, desc)
 	assert.NoError(t, err)
 
@@ -183,8 +171,6 @@ func TestBasicInferenceCompile(t *testing.T) {
 }
 
 func TestRecompileFailure(t *testing.T) {
-	builder := NewPipelineBuilder("test", "test pipeline")
-
 	step0 := NewPipelineNode(createTestStep(0))
 	step1 := NewPipelineNode(createTestStep(1))
 	step2 := NewPipelineNode(createTestStep(2))
@@ -192,49 +178,43 @@ func TestRecompileFailure(t *testing.T) {
 	step0.Add(step1)
 	step1.Add(step2)
 
-	builder.AddSource(step0)
+	builder := NewPipelineBuilder("test", "test pipeline", step0)
 	desc, err := builder.Compile()
-
 	desc, err = builder.Compile()
+
 	assert.Nil(t, desc)
 	assert.Error(t, err)
 }
 
 func TestMultiInferenceFailure(t *testing.T) {
-	builder := NewPipelineBuilder("test", "test pipeline")
 
 	step0 := NewPipelineNode(createTestStepWithOutputs(0, []string{"produce.0", "produce.1"}))
 	step1 := NewPipelineNode(NewInferenceStepData())
 	step2 := NewPipelineNode(NewInferenceStepData())
 
 	step0.Add(step1)
-	step0.Add(step2)
-	builder.AddSource(step0)
-	desc, err := builder.Compile()
+	step1.Add(step2)
+
+	desc, err := NewPipelineBuilder("test", "test pipeline", step0).Compile()
 
 	assert.Error(t, err)
 	assert.Nil(t, desc)
 }
 
 func TestInferenceChildFailure(t *testing.T) {
-	builder := NewPipelineBuilder("test", "test pipeline")
-
 	step0 := NewPipelineNode(createTestStep(0))
 	step1 := NewPipelineNode(NewInferenceStepData())
 	step2 := NewPipelineNode(createTestStep(1))
 
 	step0.Add(step1)
 	step1.Add(step2)
-	builder.AddSource(step0)
-	desc, err := builder.Compile()
+	desc, err := NewPipelineBuilder("test", "test pipeline", step0).Compile()
 
 	assert.Error(t, err)
 	assert.Nil(t, desc)
 }
 
 func TestCycleFailure(t *testing.T) {
-	builder := NewPipelineBuilder("test", "test pipeline")
-
 	step0 := NewPipelineNode(createTestStep(0))
 	step1 := NewPipelineNode(createTestStep(1))
 	step2 := NewPipelineNode(createTestStep(2))
@@ -242,8 +222,7 @@ func TestCycleFailure(t *testing.T) {
 	step0.Add(step1)
 	step1.Add(step2)
 	step2.Add(step0)
-	builder.AddSource(step0)
-	desc, err := builder.Compile()
+	desc, err := NewPipelineBuilder("test", "test pipeline", step0).Compile()
 
 	assert.Error(t, err)
 	assert.Nil(t, desc)

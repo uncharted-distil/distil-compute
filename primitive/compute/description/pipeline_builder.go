@@ -77,18 +77,13 @@ type PipelineBuilder struct {
 }
 
 // NewPipelineBuilder creates a new pipeline builder instance.  Source nodes need to be added in a subsequent call.
-func NewPipelineBuilder(name string, description string) *PipelineBuilder {
+func NewPipelineBuilder(name string, description string, sources ...*PipelineNode) *PipelineBuilder {
 	builder := &PipelineBuilder{
-		sources:     []*PipelineNode{},
+		sources:     sources,
 		name:        name,
 		description: description,
 	}
 	return builder
-}
-
-// AddSource adds a root node to the pipeline builder.
-func (p *PipelineBuilder) AddSource(child *PipelineNode) {
-	p.sources = append(p.sources, child)
 }
 
 // Compile creates the protobuf pipeline description from the step graph.  It can only be
