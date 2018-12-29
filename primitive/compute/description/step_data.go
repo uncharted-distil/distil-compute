@@ -17,16 +17,21 @@ const (
 type Step interface {
 	BuildDescriptionStep() (*pipeline.PipelineDescriptionStep, error)
 	GetPrimitive() *pipeline.Primitive
-	GetArguments() map[string]string
+	GetArguments() []*Argument
 	UpdateArguments(string, string)
 	GetHyperparameters() map[string]interface{}
 	GetOutputMethods() []string
 }
 
+type Argument struct {
+	Name    string
+	DataRef string
+}
+
 // StepData contains the minimum amount of data used to describe a pipeline step
 type StepData struct {
 	Primitive       *pipeline.Primitive
-	Arguments       map[string]string
+	Arguments       []*Argument
 	Hyperparameters map[string]interface{}
 	OutputMethods   []string
 }
@@ -39,10 +44,28 @@ func NewStepData(primitive *pipeline.Primitive, outputMethods []string) *StepDat
 // NewStepDataWithHyperparameters creates a pipeline step instance from the required field subset.  Hyperparameters are
 // optional so nil is a valid value, valid types fror hyper parameters are intXX, string, bool.
 func NewStepDataWithHyperparameters(primitive *pipeline.Primitive, outputMethods []string, hyperparameters map[string]interface{}) *StepData {
+	return NewStepDataWithAll(primitive, outputMethods, hyperparameters, nil)
+}
+
+func NewStepDataWithAll(
+	primitive *pipeline.Primitive,
+	outputMethods []string,
+	hyperparameters map[string]interface{},
+	arguments []string) *StepData {
+
+	args := []*Argument{}
+	if len(arguments) == 0 {
+		args = append(args, &Argument{stepInputsKey, ""})
+	} else {
+		for _, arg := range arguments {
+			args = append(args, &Argument{arg, ""})
+		}
+	}
+
 	return &StepData{
 		Primitive:       primitive,
 		Hyperparameters: hyperparameters, // optional, nil is valid
-		Arguments:       map[string]string{},
+		Arguments:       args,
 		OutputMethods:   outputMethods,
 	}
 }
@@ -54,18 +77,24 @@ func (s *StepData) GetPrimitive() *pipeline.Primitive {
 
 // GetArguments returns a map of arguments that will be passed to the methods
 // of the primitive step.
-func (s *StepData) GetArguments() map[string]string {
-	copy := map[string]string{}
-	for k, v := range s.Arguments {
-		copy[k] = v
+func (s *StepData) GetArguments() []*Argument {
+	copy := []*Argument{}
+	for _, arg := range s.Arguments {
+		copy = append(copy, &Argument{arg.Name, arg.DataRef})
 	}
 	return copy
 }
 
 // UpdateArguments updates the arguments map that will be passed to the methods
 // of primtive step.
-func (s *StepData) UpdateArguments(key string, value string) {
-	s.Arguments[key] = value
+func (s *StepData) UpdateArguments(name string, dataRef string) {
+	for _, arg := range s.Arguments {
+		if arg.Name == name {
+			arg.DataRef = dataRef
+			return
+		}
+	}
+	s.Arguments = append(s.Arguments, &Argument{name, dataRef})
 }
 
 // GetHyperparameters returns a map of arguments that will be passed to the primitive methods
@@ -86,12 +115,12 @@ func (s *StepData) BuildDescriptionStep() (*pipeline.PipelineDescriptionStep, er
 
 	// generate arguments entries
 	arguments := map[string]*pipeline.PrimitiveStepArgument{}
-	for k, v := range s.Arguments {
-		arguments[k] = &pipeline.PrimitiveStepArgument{
+	for _, arg := range s.Arguments {
+		arguments[arg.Name] = &pipeline.PrimitiveStepArgument{
 			// only handle container args rights now - extend to others if required
 			Argument: &pipeline.PrimitiveStepArgument_Container{
 				Container: &pipeline.ContainerArgument{
-					Data: v,
+					Data: arg.DataRef,
 				},
 			},
 		}
