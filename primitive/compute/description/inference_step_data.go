@@ -30,12 +30,12 @@ func (s *InferenceStepData) GetPrimitive() *pipeline.Primitive {
 
 // GetArguments adapts the internal placeholder step argument type to the primitive
 // step argument type.
-func (s *InferenceStepData) GetArguments() map[string]string {
-	argMap := map[string]string{}
+func (s *InferenceStepData) GetArguments() []*Argument {
+	args := []*Argument{}
 	for i, input := range s.Inputs {
-		argMap[fmt.Sprintf("%s.%d", stepInputsKey, i)] = input
+		args = append(args, &Argument{fmt.Sprintf("%s.%d", stepInputsKey, i), input})
 	}
-	return argMap
+	return args
 }
 
 // UpdateArguments updates the placheolder step argument.

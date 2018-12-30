@@ -1,7 +1,9 @@
 package description
 
 // Provides an interface to assemble a D3M pipeline DAG as a protobuf PipelineDescription.  This created
-// description can be passed to a TA2 system for execution and inference.
+// description can be passed to a TA2 system for execution and inference.  The pipeline description is
+// covered in detail at https://gitlab.com/datadrivendiscovery/metalearning#pipeline with example JSON
+// pipeline definitions found in that same repository.
 
 import (
 	"fmt"
@@ -66,6 +68,10 @@ func (s *PipelineNode) isSink() bool {
 	return len(s.children) == 0
 }
 
+func (s *PipelineNode) isSource() bool {
+	return len(s.parents) == 0
+}
+
 // PipelineBuilder compiles a pipeline DAG into a protobuf pipeline description that can
 // be passed to a downstream TA2 for inference (optional) and execution.
 type PipelineBuilder struct {
@@ -101,27 +107,26 @@ func (p *PipelineBuilder) Compile() (*pipeline.PipelineDescription, error) {
 	idToIndexMap := map[uint64]int{}
 	traversalQueue := []*PipelineNode{}
 
-	// ensure that there aren't any cycles in the graph - the traversal above assigns node IDs
-	// so it needs to be deferred until after
+	// ensure that there aren't any cycles in the graph
 	if checkCycles(p.sources) {
 		return nil, errors.Errorf("compile error: detected cycle in graph")
 	}
 
 	// start processing from the roots
-	for i, sourceNode := range p.sources {
+	refCount := 0
+	for _, sourceNode := range p.sources {
 		err := validate(sourceNode)
 		if err != nil {
 			return nil, err
 		}
 
-		// set the input to the dataset by default for each of the root steps
-		key := fmt.Sprintf("%s.%d", pipelineInputsKey, i)
+		// set the primitive inputs to the pipeline inputs in a 1:1 fashion in order
 		args := sourceNode.step.GetArguments()
-		_, ok := args[key]
-		if ok {
-			return nil, errors.Errorf("compile failed: argument `%s` is reserved for internal use", key)
+		for _, arg := range args {
+			key := fmt.Sprintf("%s.%d", pipelineInputsKey, refCount)
+			sourceNode.step.UpdateArguments(arg.Name, key)
+			refCount++
 		}
-		sourceNode.step.UpdateArguments(pipelineInputsKey, key) // TODO: will just overwite until args can be a list
 
 		// add to traversal queue
 		traversalQueue = append(traversalQueue, sourceNode)
@@ -235,16 +240,27 @@ func (p *PipelineBuilder) processNode(node *PipelineNode, pipelineNodes []*Pipel
 	}
 
 	// Connect each input to the next unattached parent output
-	for _, parent := range node.parents {
-		numParentOutputs := len(parent.step.GetOutputMethods())
-		nextOutputIdx := parent.nextOutput()
-		if nextOutputIdx >= numParentOutputs {
-			return nil, errors.Errorf("compile failed: step \"%s\" can't find parent input", node.step.GetPrimitive().GetName())
+	for _, arg := range node.step.GetArguments() {
+		foundFreeOutput := false
+		for _, parent := range node.parents {
+			nextOutputIdx := parent.nextOutput()
+			numParentOutputs := len(parent.step.GetOutputMethods())
+			if nextOutputIdx < numParentOutputs {
+				parentOutput := parent.step.GetOutputMethods()[nextOutputIdx]
+				inputsRef := fmt.Sprintf("%s.%d.%s", stepKey, idToIndexMap[parent.nodeID], parentOutput)
+				node.step.UpdateArguments(arg.Name, inputsRef)
+
+				foundFreeOutput = true
+				break
+			}
 		}
 
-		parentOutput := parent.step.GetOutputMethods()[nextOutputIdx]
-		inputsRef := fmt.Sprintf("%s.%d.%s", stepKey, idToIndexMap[parent.nodeID], parentOutput)
-		node.step.UpdateArguments(stepInputsKey, inputsRef)
+		if !foundFreeOutput && !node.isSource() {
+			return nil, errors.Errorf(
+				"compile failed: can't find output for step \"%s\" arg \"%s\"",
+				node.step.GetPrimitive().GetName(),
+				arg.Name)
+		}
 	}
 
 	// add to the node list

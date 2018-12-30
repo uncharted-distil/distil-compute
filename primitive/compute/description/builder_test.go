@@ -71,6 +71,39 @@ func TestMultiInputPipelineCompile(t *testing.T) {
 	assert.Equal(t, "steps.2.produce", desc.GetOutputs()[1].GetData())
 }
 
+func TestMultiInputNamedArgPipelineCompile(t *testing.T) {
+
+	step0 := NewPipelineNode(createTestStepWithAll(0, []string{"produce"}, []string{"arg.0", "arg.1"}))
+	step1 := NewPipelineNode(createTestStep(1))
+	step2 := NewPipelineNode(createTestStep(2))
+
+	step0.Add(step2)
+
+	desc, err := NewPipelineBuilder("test", "test pipeline", step0, step1).Compile()
+
+	assert.NotNil(t, desc)
+	assert.NoError(t, err)
+
+	steps := desc.GetSteps()
+	assert.Equal(t, 3, len(steps))
+
+	// validate step inputs
+	assert.Equal(t, "inputs.0", steps[0].GetPrimitive().GetArguments()["arg.0"].GetContainer().GetData())
+	assert.Equal(t, "inputs.1", steps[0].GetPrimitive().GetArguments()["arg.1"].GetContainer().GetData())
+	testStep(t, 0, step0.step, steps)
+
+	assert.Equal(t, "inputs.2", steps[1].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
+	testStep(t, 1, step1.step, steps)
+
+	assert.Equal(t, "steps.0.produce", steps[2].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
+	testStep(t, 2, step2.step, steps)
+
+	// validate outputs
+	assert.Equal(t, 2, len(desc.GetOutputs()))
+	assert.Equal(t, "steps.1.produce", desc.GetOutputs()[0].GetData())
+	assert.Equal(t, "steps.2.produce", desc.GetOutputs()[1].GetData())
+}
+
 func TestBranchPipelineCompile(t *testing.T) {
 
 	step0 := NewPipelineNode(createTestStepWithOutputs(0, []string{"produce.0", "produce.1"}))
@@ -102,12 +135,41 @@ func TestBranchPipelineCompile(t *testing.T) {
 	assert.Equal(t, "steps.2.produce", desc.GetOutputs()[1].GetData())
 }
 
+func TestBasicNamedArgCompile(t *testing.T) {
+
+	step0 := NewPipelineNode(createTestStepWithOutputs(0, []string{"produce.0", "produce.1"}))
+	step1 := NewPipelineNode(createTestStepWithAll(1, []string{"produce"}, []string{"arg.0", "arg.1"}))
+	step2 := NewPipelineNode(createTestStep(2))
+
+	step0.Add(step1)
+	step1.Add(step2)
+
+	desc, err := NewPipelineBuilder("test", "test pipeline", step0).Compile()
+	assert.NotNil(t, desc)
+	assert.NoError(t, err)
+
+	steps := desc.GetSteps()
+	assert.Equal(t, 3, len(steps))
+
+	// validate step inputs
+	assert.Equal(t, "inputs.0", steps[0].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
+	testStep(t, 0, step0.step, steps)
+
+	assert.Equal(t, "steps.0.produce.0", steps[1].GetPrimitive().GetArguments()["arg.0"].GetContainer().GetData())
+	assert.Equal(t, "steps.0.produce.1", steps[1].GetPrimitive().GetArguments()["arg.1"].GetContainer().GetData())
+	testStep(t, 1, step1.step, steps)
+
+	// validate outputs
+	assert.Equal(t, 1, len(desc.GetOutputs()))
+	assert.Equal(t, "steps.2.produce", desc.GetOutputs()[0].GetData())
+}
+
 func TestDiamondPipeline(t *testing.T) {
 
 	step0 := NewPipelineNode(createTestStepWithOutputs(0, []string{"produce.0", "produce.1"}))
 	step1 := NewPipelineNode(createTestStep(1))
-	step2 := NewPipelineNode(createTestStep(2))
-	step3 := NewPipelineNode(createTestStep(3))
+	step2 := NewPipelineNode(createTestStepWithOutputs(2, []string{"produce.0", "produce.1"}))
+	step3 := NewPipelineNode(createTestStepWithAll(3, []string{"produce"}, []string{"arg.0", "arg.1", "arg.2"}))
 
 	step0.Add(step1)
 	step0.Add(step2)
@@ -131,10 +193,9 @@ func TestDiamondPipeline(t *testing.T) {
 	assert.Equal(t, "steps.0.produce.1", steps[2].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
 	testStep(t, 2, step2.step, steps)
 
-	// TODO: Arguments values are currently strings.  An MR is in progress to allow for them to be variadic, but until then,
-	// we just overwrite the input value with the last parent output.
-	// assert.Equal(t, "steps.1.produce", steps[3].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
-	assert.Equal(t, "steps.2.produce", steps[3].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
+	assert.Equal(t, "steps.1.produce", steps[3].GetPrimitive().GetArguments()["arg.0"].GetContainer().GetData())
+	assert.Equal(t, "steps.2.produce.0", steps[3].GetPrimitive().GetArguments()["arg.1"].GetContainer().GetData())
+	assert.Equal(t, "steps.2.produce.1", steps[3].GetPrimitive().GetArguments()["arg.2"].GetContainer().GetData())
 	testStep(t, 3, step3.step, steps)
 
 	// validate outputs
@@ -187,7 +248,6 @@ func TestRecompileFailure(t *testing.T) {
 }
 
 func TestMultiInferenceFailure(t *testing.T) {
-
 	step0 := NewPipelineNode(createTestStepWithOutputs(0, []string{"produce.0", "produce.1"}))
 	step1 := NewPipelineNode(NewInferenceStepData())
 	step2 := NewPipelineNode(NewInferenceStepData())
@@ -233,8 +293,16 @@ func createLabels(counter int64) []string {
 }
 
 func createTestStepWithOutputs(step int64, outputMethods []string) *StepData {
+	return createTestStepWithAll(step, outputMethods, nil)
+}
+
+func createTestStep(step int64) *StepData {
+	return createTestStepWithOutputs(step, []string{"produce"})
+}
+
+func createTestStepWithAll(step int64, outputMethods []string, arguments []string) *StepData {
 	labels := createLabels(step)
-	return NewStepDataWithHyperparameters(
+	return NewStepDataWithAll(
 		&pipeline.Primitive{
 			Id:         fmt.Sprintf("0000-primtive-%d", step),
 			Version:    "1.0.0",
@@ -256,11 +324,8 @@ func createTestStepWithOutputs(step int64, outputMethods []string) *StepData {
 			"testNestedIntArray": [][]int64{{step, step + 1}, {step + 2, step + 3}},
 			"testNestedIntMap":   map[string][]int64{labels[0]: {step, step + 1}, labels[1]: {step + 2, step + 3}},
 		},
+		arguments,
 	)
-}
-
-func createTestStep(step int64) *StepData {
-	return createTestStepWithOutputs(step, []string{"produce"})
 }
 
 func ConvertToStringArray(list *pipeline.ValueList) []string {
