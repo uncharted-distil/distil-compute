@@ -352,3 +352,18 @@ func NewGoatReverseStep(lonCol string, latCol string) *StepData {
 		args,
 	)
 }
+
+func NewJoinStep(joinCol string) *StepData {
+	return NewStepDataWithAll(
+		&pipeline.Primitive{
+			Id:         "placeholder",
+			Version:    "0.1.0",
+			Name:       "Join",
+			PythonPath: "d3m.primitives.distil.join",
+			Digest:     "",
+		},
+		[]string{"produce"},
+		map[string]interface{}{"join_col": joinCol},
+		[]string{"left", "right"},
+	)
+}

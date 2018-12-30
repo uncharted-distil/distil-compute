@@ -378,6 +378,28 @@ func CreateGoatReversePipeline(name string, description string, lonSource string
 	return pipeline, nil
 }
 
+// CreateJoinPipeline creates a pipeline that joins two input datasets on a caller supplied column.
+func CreateJoinPipeline(name string, description string, joinCol string) (*pipeline.PipelineDescription, error) {
+	// insantiate the pipeline - this merges two intput streams via a single join call
+	step0_0 := NewPipelineNode(NewDenormalizeStep())
+	step0_1 := NewPipelineNode(NewDatasetToDataframeStep())
+	step0_0.Add(step0_1)
+
+	step1_0 := NewPipelineNode(NewDenormalizeStep())
+	step1_1 := NewPipelineNode(NewDatasetToDataframeStep())
+	step1_0.Add(step1_1)
+
+	step2 := NewPipelineNode(NewJoinStep(joinCol))
+	step0_1.Add(step2)
+	step1_1.Add(step2)
+
+	pipeline, err := NewPipelineBuilder(name, description, step0_0, step1_0).Compile()
+	if err != nil {
+		return nil, err
+	}
+	return pipeline, nil
+}
+
 func mapColumns(allFeatures []*model.Variable, selectedSet map[string]bool) map[string]int {
 	colIndices := make(map[string]int)
 	index := 0
