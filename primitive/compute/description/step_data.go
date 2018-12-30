@@ -23,6 +23,9 @@ type Step interface {
 	GetOutputMethods() []string
 }
 
+// Argument defines a primitive argument as a name and a data reference string,
+// which links the argument to another primitive's output, or a pipeline
+// input source.
 type Argument struct {
 	Name    string
 	DataRef string
@@ -47,6 +50,10 @@ func NewStepDataWithHyperparameters(primitive *pipeline.Primitive, outputMethods
 	return NewStepDataWithAll(primitive, outputMethods, hyperparameters, nil)
 }
 
+// NewStepDataWithAll creates a pipeline step instance from the required field subset.  Hyperparameters are
+// optional so nil is a valid value, valid types fror hyper parameters are intXX, string, bool.  Arguments
+// are required, but a nil value is allowed and will result in a single default argument named "input"
+// being defined.
 func NewStepDataWithAll(
 	primitive *pipeline.Primitive,
 	outputMethods []string,
