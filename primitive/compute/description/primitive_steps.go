@@ -353,17 +353,19 @@ func NewGoatReverseStep(lonCol string, latCol string) *StepData {
 	)
 }
 
-func NewJoinStep(joinCol string) *StepData {
+// NewJoinStep creates a step that will attempt to join two datasets a key column
+// from each.  This is currently a placeholder for testing/debugging only.
+func NewJoinStep(leftCol string, rightCol string) *StepData {
 	return NewStepDataWithAll(
 		&pipeline.Primitive{
-			Id:         "placeholder",
+			Id:         "6c3188bf-322d-4f9b-bb91-68151bf1f17f",
 			Version:    "0.1.0",
-			Name:       "Join",
-			PythonPath: "d3m.primitives.distil.join",
+			Name:       "Fuzzy Join Placeholder",
+			PythonPath: "d3m.primitives.distil.FuzzyJoin",
 			Digest:     "",
 		},
 		[]string{"produce"},
-		map[string]interface{}{"join_col": joinCol},
+		map[string]interface{}{"left_col": leftCol, "right_col": rightCol},
 		[]string{"left", "right"},
 	)
 }
