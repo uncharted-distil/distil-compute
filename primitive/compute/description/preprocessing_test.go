@@ -218,3 +218,15 @@ func TestCreateGoatReversePipeline(t *testing.T) {
 	err = ioutil.WriteFile("/tmp/goat_reverse.pln", data, 0644)
 	assert.NoError(t, err)
 }
+
+func TestCreateJoinPipeline(t *testing.T) {
+	pipeline, err := CreateJoinPipeline("join_test", "test join pipeline", "player_name", "player_name")
+	assert.NoError(t, err)
+
+	data, err := proto.Marshal(pipeline)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+
+	err = ioutil.WriteFile("/tmp/join_test.pln", data, 0644)
+	assert.NoError(t, err)
+}
