@@ -9,7 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/unchartedsoftware/distil-compute/pipeline"
-	"github.com/unchartedsoftware/plog"
+	log "github.com/unchartedsoftware/plog"
 )
 
 // ExecPipelineStatus contains status / result information for a pipeline status
@@ -29,7 +29,7 @@ type ExecPipelineStatusListener func(status ExecPipelineStatus)
 // ExecPipelineRequest defines a request that will execute a fully specified pipline
 // on a TA2 system.
 type ExecPipelineRequest struct {
-	datasetURI    string
+	datasetURIs   []string
 	pipelineDesc  *pipeline.PipelineDescription
 	wg            *sync.WaitGroup
 	statusChannel chan ExecPipelineStatus
@@ -38,9 +38,15 @@ type ExecPipelineRequest struct {
 
 // NewExecPipelineRequest creates a new request that will run the supplied dataset through
 // the pipeline description.
-func NewExecPipelineRequest(datasetURI string, pipelineDesc *pipeline.PipelineDescription) *ExecPipelineRequest {
+func NewExecPipelineRequest(datasetURIs []string, pipelineDesc *pipeline.PipelineDescription) *ExecPipelineRequest {
+
+	uris := []string{}
+	for _, uri := range datasetURIs {
+		uris = append(uris, fmt.Sprintf("file://%s", path.Join(uri, D3MDataSchema)))
+	}
+
 	return &ExecPipelineRequest{
-		datasetURI:    fmt.Sprintf("file://%s", path.Join(datasetURI, D3MDataSchema)),
+		datasetURIs:   uris,
 		pipelineDesc:  pipelineDesc,
 		wg:            &sync.WaitGroup{},
 		finished:      make(chan error),
@@ -59,8 +65,9 @@ func (e *ExecPipelineRequest) Listen(listener ExecPipelineStatusListener) error 
 	return <-e.finished
 }
 
-// Dispatch dispatches a pipeline exeucute request for processing by TA2
+// Dispatch dispatches a pipeline execute request for processing by TA2
 func (e *ExecPipelineRequest) Dispatch(client *Client) error {
+
 	requestID, err := client.StartSearch(context.Background(), &pipeline.SearchSolutionsRequest{
 		Version:   GetAPIVersion(),
 		UserAgent: client.UserAgent,
@@ -68,13 +75,7 @@ func (e *ExecPipelineRequest) Dispatch(client *Client) error {
 		AllowedValueTypes: []pipeline.ValueType{
 			pipeline.ValueType_CSV_URI,
 		},
-		Inputs: []*pipeline.Value{
-			{
-				Value: &pipeline.Value_DatasetUri{
-					DatasetUri: e.datasetURI,
-				},
-			},
-		},
+		Inputs: createInputValues(e.datasetURIs),
 	})
 	if err != nil {
 		return err
@@ -146,7 +147,7 @@ func (e *ExecPipelineRequest) dispatchRequest(client *Client, requestID string) 
 
 func (e *ExecPipelineRequest) dispatchFit(statusChan chan ExecPipelineStatus, client *Client, requestID string, solutionID string) string {
 	// run produce - this blocks until all responses are returned
-	responses, err := client.GenerateSolutionFit(context.Background(), solutionID, e.datasetURI)
+	responses, err := client.GenerateSolutionFit(context.Background(), solutionID, e.datasetURIs)
 	if err != nil {
 		e.notifyError(statusChan, requestID, err)
 		return ""
@@ -168,17 +169,11 @@ func (e *ExecPipelineRequest) dispatchFit(statusChan chan ExecPipelineStatus, cl
 	return completed.GetFittedSolutionId()
 }
 
-func (e *ExecPipelineRequest) createProduceSolutionRequest(datsetURI string, solutionID string) *pipeline.ProduceSolutionRequest {
+func (e *ExecPipelineRequest) createProduceSolutionRequest(datasetURIs []string, solutionID string) *pipeline.ProduceSolutionRequest {
 	return &pipeline.ProduceSolutionRequest{
 		FittedSolutionId: solutionID,
-		Inputs: []*pipeline.Value{
-			{
-				Value: &pipeline.Value_DatasetUri{
-					DatasetUri: e.datasetURI,
-				},
-			},
-		},
-		ExposeOutputs: []string{defaultExposedOutputKey},
+		Inputs:           createInputValues(datasetURIs),
+		ExposeOutputs:    []string{defaultExposedOutputKey},
 		ExposeValueTypes: []pipeline.ValueType{
 			pipeline.ValueType_CSV_URI,
 		},
@@ -187,7 +182,7 @@ func (e *ExecPipelineRequest) createProduceSolutionRequest(datsetURI string, sol
 
 func (e *ExecPipelineRequest) dispatchProduce(statusChan chan ExecPipelineStatus, client *Client, requestID string, fittedSolutionID string) {
 	// generate predictions
-	produceRequest := e.createProduceSolutionRequest(e.datasetURI, fittedSolutionID)
+	produceRequest := e.createProduceSolutionRequest(e.datasetURIs, fittedSolutionID)
 
 	// run produce - this blocks until all responses are returned
 	responses, err := client.GeneratePredictions(context.Background(), produceRequest)

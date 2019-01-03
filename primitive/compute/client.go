@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/unchartedsoftware/distil-compute/middleware"
 	"github.com/unchartedsoftware/distil-compute/pipeline"
-	"github.com/unchartedsoftware/plog"
+	log "github.com/unchartedsoftware/plog"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
@@ -290,17 +290,10 @@ func (c *Client) GenerateSolutionScores(ctx context.Context, solutionID string, 
 }
 
 // GenerateSolutionFit generates fit for candidate solutions.
-func (c *Client) GenerateSolutionFit(ctx context.Context, solutionID string, datasetURI string) ([]*pipeline.GetFitSolutionResultsResponse, error) {
-
+func (c *Client) GenerateSolutionFit(ctx context.Context, solutionID string, datasetURIs []string) ([]*pipeline.GetFitSolutionResultsResponse, error) {
 	fitSolutionRequest := &pipeline.FitSolutionRequest{
 		SolutionId: solutionID,
-		Inputs: []*pipeline.Value{
-			{
-				Value: &pipeline.Value_DatasetUri{
-					DatasetUri: datasetURI,
-				},
-			},
-		},
+		Inputs:     createInputValues(datasetURIs),
 	}
 
 	fitSolutionResponse, err := c.client.FitSolution(ctx, fitSolutionRequest)
@@ -409,19 +402,10 @@ func (c *Client) ExportSolution(ctx context.Context, fittedSolutionID string) er
 }
 
 // ExecutePipeline executes a pre-specified pipeline.
-func (c *Client) ExecutePipeline(ctx context.Context, datasetURI string, pipelineDesc *pipeline.PipelineDescription) (*pipeline.PipelineExecuteResponse, error) {
-
-	datasetURI = fmt.Sprintf("file://%s", path.Join(datasetURI, D3MDataSchema))
-
+func (c *Client) ExecutePipeline(ctx context.Context, datasetURIs []string, pipelineDesc *pipeline.PipelineDescription) (*pipeline.PipelineExecuteResponse, error) {
 	in := &pipeline.PipelineExecuteRequest{
 		PipelineDescription: pipelineDesc,
-		Inputs: []*pipeline.Value{
-			{
-				Value: &pipeline.Value_DatasetUri{
-					DatasetUri: datasetURI,
-				},
-			},
-		},
+		Inputs:              createInputValues(datasetURIs),
 	}
 	out := new(pipeline.PipelineExecuteResponse)
 	err := c.runner.Invoke(ctx, "/Executor/ExecutePipeline", in, out)
@@ -429,4 +413,19 @@ func (c *Client) ExecutePipeline(ctx context.Context, datasetURI string, pipelin
 		return nil, err
 	}
 	return out, nil
+}
+
+// createInputValues creates a protobuf value structure for each supplied dataset URI.
+func createInputValues(datasetURIs []string) []*pipeline.Value {
+	inputs := []*pipeline.Value{}
+	for _, uri := range datasetURIs {
+		datasetURI := fmt.Sprintf("file://%s", path.Join(uri, D3MDataSchema))
+		value := &pipeline.Value{
+			Value: &pipeline.Value_DatasetUri{
+				DatasetUri: datasetURI,
+			},
+		}
+		inputs = append(inputs, value)
+	}
+	return inputs
 }
