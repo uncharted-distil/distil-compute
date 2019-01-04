@@ -386,8 +386,10 @@ func CreateJoinPipeline(name string, description string, leftJoinCol string, rig
 	step0_0 := NewPipelineNode(NewDenormalizeStep())
 	step1_0 := NewPipelineNode(NewDenormalizeStep())
 	step2 := NewPipelineNode(NewJoinStep(leftJoinCol, rightJoinCol))
+	step3 := NewPipelineNode(NewDatasetToDataframeStep())
 	step0_0.Add(step2)
 	step1_0.Add(step2)
+	step2.Add(step3)
 
 	pipeline, err := NewPipelineBuilder(name, description, step0_0, step1_0).Compile()
 	if err != nil {
