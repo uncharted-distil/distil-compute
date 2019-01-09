@@ -5,6 +5,10 @@ const (
 	// analytics, and are not the set that is consumable by a downstream TA2
 	// system.
 
+
+	// NOTE: these are copied to `distil/public/util/types.ts` and
+	// should be kept up to date in case of changes.
+
 	// AddressType is the schema type for address values
 	AddressType = "address"
 	// IndexType is the schema type for index values
@@ -51,8 +55,6 @@ const (
 	ImageType = "image"
 	// TimeSeriesType is the schema type for Image values
 	TimeSeriesType = "timeseries"
-	// StringType is the schema type for Image values
-	StringType = "string"
 	// UnknownType is the schema type for unknown values
 	UnknownType = "unknown"
 
@@ -144,7 +146,6 @@ var (
 
 	// Maps from Distil internal type to TA2 supported type
 	ta2TypeMap = map[string]string{
-		StringType:      TA2StringType,
 		AddressType:     TA2StringType,
 		IndexType:       TA2IntegerType,
 		IntegerType:     TA2IntegerType,
@@ -172,7 +173,6 @@ var (
 
 	// Maps from Distil internal type to D3M dataset doc type
 	schemaTypeMap = map[string]string{
-		StringType:      StringSchemaType,
 		AddressType:     StringSchemaType,
 		IndexType:       IntegerSchemaType,
 		IntegerType:     IntegerSchemaType,
@@ -219,7 +219,7 @@ func IsCategorical(typ string) bool {
 // IsText indicates whether or not a schema type is text for the purposes
 // of analysis.
 func IsText(typ string) bool {
-	return typ == TextType || typ == StringType
+	return typ == TextType
 }
 
 // IsVector indicates whether or not a schema type is a vector for the purposes
