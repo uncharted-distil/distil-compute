@@ -5,6 +5,10 @@ const (
 	// analytics, and are not the set that is consumable by a downstream TA2
 	// system.
 
+
+	// NOTE: these are copied to `distil/public/util/types.ts` and
+	// should be kept up to date in case of changes.
+
 	// AddressType is the schema type for address values
 	AddressType = "address"
 	// IndexType is the schema type for index values
