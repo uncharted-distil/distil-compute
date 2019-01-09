@@ -321,7 +321,7 @@ func NewGoatForwardStep(placeCol string) *StepData {
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
 			Id:         "c7c61da3-cf57-354e-8841-664853370106",
-			Version:    "1.0.2",
+			Version:    "1.0.3",
 			Name:       "Goat.forward",
 			PythonPath: "d3m.primitives.distil.Goat.forward",
 			Digest:     "",
