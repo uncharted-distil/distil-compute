@@ -294,7 +294,12 @@ func MapSchemaType(typ string) string {
 
 // MapLLType maps a LL schema type to an internal type.
 func MapLLType(typ string) string {
-	return llTypeMap[typ]
+	mapped := llTypeMap[typ]
+	if mapped == "" {
+		mapped = typ
+	}
+
+	return mapped
 }
 
 // MapSimonType maps a Simon type to an internal data type.
