@@ -5,7 +5,6 @@ const (
 	// analytics, and are not the set that is consumable by a downstream TA2
 	// system.
 
-
 	// NOTE: these are copied to `distil/public/util/types.ts` and
 	// should be kept up to date in case of changes.
 
@@ -57,6 +56,12 @@ const (
 	TimeSeriesType = "timeseries"
 	// UnknownType is the schema type for unknown values
 	UnknownType = "unknown"
+
+	// Simon types
+	// SimonStringType is the Simon type representing a string
+	SimonStringType = "string"
+	// SimonFloatType is the Simon type representing a float
+	SimonFloatType = "float"
 
 	// TA2 Semantic Type Keys - defined in
 	// https://gitlab.com/datadrivendiscovery/d3m/blob/devel/d3m/metadata/schemas/v0/definitions.json
@@ -196,6 +201,12 @@ var (
 		ImageType:       ImageSchemaType,
 		TimeSeriesType:  TimeSeriesSchemaType,
 	}
+
+	// Maps from Simon type to Distil internal type.
+	simonTypeMap = map[string]string{
+		SimonStringType: TextType,
+		SimonFloatType:  RealType,
+	}
 )
 
 // IsNumerical indicates whether or not a schema type is numeric for the purposes
@@ -264,4 +275,14 @@ func MapTA2Type(typ string) string {
 // MapSchemaType maps a type to a D3M dataset doc type.
 func MapSchemaType(typ string) string {
 	return schemaTypeMap[typ]
+}
+
+// MapSimonType maps a Simon type to an internal data type.
+func MapSimonType(typ string) string {
+	mapped := simonTypeMap[typ]
+	if mapped == "" {
+		mapped = typ
+	}
+
+	return mapped
 }
