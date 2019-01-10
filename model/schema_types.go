@@ -202,7 +202,22 @@ var (
 		TimeSeriesType:  TimeSeriesSchemaType,
 	}
 
-	// Maps from Simon type to Distil internal type.
+	// Maps from LL schema types to Distal internal type
+	llTypeMap = map[string]string{
+		BooleanSchemaType:     BoolType,
+		IntegerSchemaType:     IntegerType,
+		RealSchemaType:        RealType,
+		StringSchemaType:      TextType,
+		CategoricalSchemaType: CategoricalType,
+		DatetimeSchemaType:    DateTimeType,
+		RealVectorSchemaType:  RealVectorType,
+		JSONSchemaType:        TextType,
+		GeoJSONSchemaType:     TextType,
+		ImageSchemaType:       ImageType,
+		TimeSeriesSchemaType:  TimeSeriesType,
+	}
+
+	// Maps from Simon type to Distil internal type
 	simonTypeMap = map[string]string{
 		SimonStringType: TextType,
 		SimonFloatType:  RealType,
@@ -275,6 +290,11 @@ func MapTA2Type(typ string) string {
 // MapSchemaType maps a type to a D3M dataset doc type.
 func MapSchemaType(typ string) string {
 	return schemaTypeMap[typ]
+}
+
+// MapLLType maps a LL schema type to an internal type.
+func MapLLType(typ string) string {
+	return llTypeMap[typ]
 }
 
 // MapSimonType maps a Simon type to an internal data type.
