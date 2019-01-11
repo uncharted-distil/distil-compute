@@ -223,14 +223,14 @@ func NewVariable(index int, name, displayName, originalName, typ, originalType s
 		distilRole = VarRoleData
 	}
 	if originalName == "" {
-		originalName = normalizeName
+		originalName = normalized
 	}
 	if displayName == "" {
 		displayName = name
 	}
 
 	return &Variable{
-		Name:             normalizeName,
+		Name:             normalized,
 		Index:            index,
 		Type:             typ,
 		OriginalType:     originalType,
