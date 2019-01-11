@@ -58,6 +58,7 @@ const (
 	UnknownType = "unknown"
 
 	// Simon types
+
 	// SimonStringType is the Simon type representing a string
 	SimonStringType = "string"
 	// SimonFloatType is the Simon type representing a float
