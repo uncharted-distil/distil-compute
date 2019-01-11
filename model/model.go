@@ -192,7 +192,7 @@ func doesNameAlreadyExist(name string, existingVariables []*Variable) bool {
 	return false
 }
 
-func ensureUniqueNameRecursive(name string, existingVariables []*Variable, count: int) string {
+func ensureUniqueNameRecursive(name string, existingVariables []*Variable, count int) string {
 	if doesNameAlreadyExist(name, existingVariables) {
 		return ensureUniqueNameRecursive(name, existingVariables, count+1)
 	}
