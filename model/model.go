@@ -38,6 +38,8 @@ const (
 	ResTypeText = "text"
 	// ResTypeTime is a time series data resource type
 	ResTypeTime = "timeseries"
+	// ResTypeTime is a raw data resource type
+	ResTypeRaw = "raw"
 
 	// FeatureTypeTrain is the training feature type.
 	FeatureTypeTrain = "train"
