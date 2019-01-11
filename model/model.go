@@ -110,8 +110,7 @@ type Variable struct {
 	SelectedRole     string                 `json:"selectedRole,omitempty"`
 	Role             []string               `json:"role,omitempty"`
 	DistilRole       string                 `json:"distilRole,omitempty"`
-	OriginalVariable string                 `json:"colOriginalVariable"`
-	OriginalName     string                 `json:"colOriginalName,omitempty"`
+	OriginalVariable string                 `json:"colOriginalName"`
 	DisplayName      string                 `json:"colDisplayName,omitempty"`
 	Importance       int                    `json:"importance"`
 	Index            int                    `json:"colIndex"`
@@ -181,27 +180,38 @@ func NormalizeVariableName(name string) string {
 	if len(nameNormalized) > variableNameSizeLimit {
 		nameNormalized = nameNormalized[:variableNameSizeLimit]
 	}
-
 	return nameNormalized
+}
+
+func doesNameAlreadyExist(name string, existingVariables []*Variable) bool {
+	for _, v := range existingVariables {
+		if v.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
+func ensureUniqueNameRecursive(name string, existingVariables []*Variable, count: int) string {
+	if doesNameAlreadyExist(name, existingVariables) {
+		return ensureUniqueNameRecursive(name, existingVariables, count+1)
+	}
+	return fmt.Sprintf("%s_%d", name, count)
+}
+
+func ensureUniqueName(name string, existingVariables []*Variable) string {
+	return ensureUniqueNameRecursive(name, existingVariables, 0)
 }
 
 // NewVariable creates a new variable.
 func NewVariable(index int, name, displayName, originalName, typ, originalType string, role []string, distilRole string, refersTo map[string]interface{}, existingVariables []*Variable, normalizeName bool) *Variable {
-	normed := name
+	normalized := name
 	if normalizeName {
 		// normalize name
-		normed = NormalizeVariableName(name)
+		normalized = NormalizeVariableName(name)
 
-		// normed name needs to be unique
-		count := 0
-		for _, v := range existingVariables {
-			if v.Name == normed {
-				count = count + 1
-			}
-		}
-		if count > 0 {
-			normed = fmt.Sprintf("%s_%d", normed, count)
-		}
+		// normalized name needs to be unique
+		normalized = ensureUniqueName(name, existingVariables)
 	}
 
 	// select the first role by default.
@@ -213,15 +223,14 @@ func NewVariable(index int, name, displayName, originalName, typ, originalType s
 		distilRole = VarRoleData
 	}
 	if originalName == "" {
-		originalName = normed
+		originalName = normalizeName
 	}
-
 	if displayName == "" {
 		displayName = name
 	}
 
 	return &Variable{
-		Name:             normed,
+		Name:             normalizeName,
 		Index:            index,
 		Type:             typ,
 		OriginalType:     originalType,
@@ -229,7 +238,6 @@ func NewVariable(index int, name, displayName, originalName, typ, originalType s
 		SelectedRole:     selectedRole,
 		DistilRole:       distilRole,
 		OriginalVariable: originalName,
-		OriginalName:     normed,
 		DisplayName:      displayName,
 		RefersTo:         refersTo,
 		SuggestedTypes:   make([]*SuggestedType, 0),
