@@ -202,7 +202,10 @@ func ensureUniqueNameRecursive(name string, existingVariables []*Variable, count
 }
 
 func ensureUniqueName(name string, existingVariables []*Variable) string {
-	return ensureUniqueNameRecursive(name, existingVariables, 0)
+	if doesNameAlreadyExist(name, existingVariables) {
+		return ensureUniqueNameRecursive(name, existingVariables, 0)
+	}
+	return name
 }
 
 // NewVariable creates a new variable.
