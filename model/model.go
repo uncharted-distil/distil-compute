@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/jeffail/gabs"
@@ -90,6 +91,9 @@ const (
 	// TypeProvenanceField is the provenance field of a suggested type
 	TypeProvenanceField = "provenance"
 
+	// DatasetPrefix is the prefix used for a normalized dataset id
+	DatasetPrefix = "d_"
+
 	// Database data types
 	dataTypeText    = "TEXT"
 	dataTypeDouble  = "double precision"
@@ -174,6 +178,17 @@ func NewDataResource(id string, typ string, format []string) *DataResource {
 		ResFormat: format,
 		Variables: make([]*Variable, 0),
 	}
+}
+
+func NormalizeDatasetName(name string) string {
+	// datasets can't have '.' and should be lowercase.
+	normalized := strings.Replace(name, ".", "_", -1)
+	normalized = strings.ToLower(normalized)
+
+	// add a prefix to handle cases where numbers are the first character.
+	normalized = fmt.Sprintf("%s%s", DatasetPrefix, normalized)
+
+	return normalized
 }
 
 // NormalizeVariableName normalizes a variable name.
