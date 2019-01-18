@@ -162,11 +162,11 @@ type Metadata struct {
 }
 
 // NewMetadata creates a new metadata instance.
-func NewMetadata(id string, name string, description string) *Metadata {
+func NewMetadata(id string, name string, description string, storageName string) *Metadata {
 	return &Metadata{
 		ID:            id,
 		Name:          name,
-		StorageName:   NormalizeDatasetID(id),
+		StorageName:   storageName,
 		Description:   description,
 		DataResources: make([]*DataResource, 0),
 	}
