@@ -166,6 +166,7 @@ func NewMetadata(id string, name string, description string) *Metadata {
 	return &Metadata{
 		ID:            id,
 		Name:          name,
+		StorageName:   NormalizeDatasetID(id),
 		Description:   description,
 		DataResources: make([]*DataResource, 0),
 	}
