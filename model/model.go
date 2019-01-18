@@ -146,6 +146,7 @@ type SuggestedType struct {
 type Metadata struct {
 	ID             string
 	Name           string
+	StorageName    string
 	Description    string
 	Summary        string
 	SummaryMachine string
@@ -180,9 +181,9 @@ func NewDataResource(id string, typ string, format []string) *DataResource {
 	}
 }
 
-func NormalizeDatasetName(name string) string {
+func NormalizeDatasetID(id string) string {
 	// datasets can't have '.' and should be lowercase.
-	normalized := strings.Replace(name, ".", "_", -1)
+	normalized := strings.Replace(id, ".", "_", -1)
 	normalized = strings.ToLower(normalized)
 
 	// add a prefix to handle cases where numbers are the first character.
