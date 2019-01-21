@@ -184,8 +184,7 @@ func NewDataResource(id string, typ string, format []string) *DataResource {
 
 func NormalizeDatasetID(id string) string {
 	// datasets can't have '.' and should be lowercase.
-	normalized := strings.Replace(id, ".", "_", -1)
-	normalized = strings.Replace(id, "-", "_", -1)
+	normalized := nameRegex.ReplaceAllString(id, "_")
 	normalized = strings.ToLower(normalized)
 
 	// add a prefix to handle cases where numbers are the first character.
