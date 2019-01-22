@@ -233,7 +233,7 @@ func NewVariable(index int, name, displayName, originalName, typ, originalType s
 		normalized = NormalizeVariableName(name)
 
 		// normalized name needs to be unique
-		normalized = ensureUniqueName(name, existingVariables)
+		normalized = ensureUniqueName(normalized, existingVariables)
 	}
 
 	// select the first role by default.
