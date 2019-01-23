@@ -182,6 +182,8 @@ func NewDataResource(id string, typ string, format []string) *DataResource {
 	}
 }
 
+// NormalizeDatasetID modifies a dataset ID to be compatible with postgres
+// naming requirements.
 func NormalizeDatasetID(id string) string {
 	// datasets can't have '.' and should be lowercase.
 	normalized := nameRegex.ReplaceAllString(id, "_")

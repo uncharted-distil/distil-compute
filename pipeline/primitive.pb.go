@@ -3,12 +3,10 @@
 
 package pipeline
 
-import (
-	fmt "fmt"
-	proto "github.com/golang/protobuf/proto"
-	_ "github.com/golang/protobuf/protoc-gen-go/descriptor"
-	math "math"
-)
+import proto "github.com/golang/protobuf/proto"
+import fmt "fmt"
+import math "math"
+import _ "github.com/golang/protobuf/protoc-gen-go/descriptor"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -39,17 +37,16 @@ func (m *Primitive) Reset()         { *m = Primitive{} }
 func (m *Primitive) String() string { return proto.CompactTextString(m) }
 func (*Primitive) ProtoMessage()    {}
 func (*Primitive) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c6fad380e09318f4, []int{0}
+	return fileDescriptor_primitive_791c73a92f28dc9a, []int{0}
 }
-
 func (m *Primitive) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Primitive.Unmarshal(m, b)
 }
 func (m *Primitive) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Primitive.Marshal(b, m, deterministic)
 }
-func (m *Primitive) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Primitive.Merge(m, src)
+func (dst *Primitive) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Primitive.Merge(dst, src)
 }
 func (m *Primitive) XXX_Size() int {
 	return xxx_messageInfo_Primitive.Size(m)
@@ -99,9 +96,9 @@ func init() {
 	proto.RegisterType((*Primitive)(nil), "Primitive")
 }
 
-func init() { proto.RegisterFile("primitive.proto", fileDescriptor_c6fad380e09318f4) }
+func init() { proto.RegisterFile("primitive.proto", fileDescriptor_primitive_791c73a92f28dc9a) }
 
-var fileDescriptor_c6fad380e09318f4 = []byte{
+var fileDescriptor_primitive_791c73a92f28dc9a = []byte{
 	// 177 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x34, 0x8e, 0xc1, 0xca, 0x82, 0x40,
 	0x10, 0x80, 0xd1, 0xdf, 0xdf, 0x72, 0x82, 0x82, 0x3d, 0xc4, 0xd2, 0x25, 0xe9, 0xd4, 0x29, 0x0f,
