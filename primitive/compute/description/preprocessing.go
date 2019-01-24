@@ -40,6 +40,9 @@ func CreateUserDatasetPipeline(name string, description string, allFeatures []*m
 		return nil, nil
 	}
 
+	// ** TEMP - until TA2s are on 2019-01-22 D3M common primitives, skip
+	// filtering.
+	filters = []*model.Filter{}
 	filterData := createFilterData(filters, columnIndices)
 
 	// create pipeline nodes for step we need to execute
