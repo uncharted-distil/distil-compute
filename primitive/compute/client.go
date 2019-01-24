@@ -437,7 +437,7 @@ func buildSchemaFileURI(uri string) string {
 	if isDirectory(formattedURI) {
 		log.Debugf("adding %s to %s since it is a directory", D3MDataSchema, formattedURI)
 		formattedURI = path.Join(formattedURI, D3MDataSchema)
-	} else if strings.HasSuffix(formattedURI, D3MDataSchema) {
+	} else if !strings.HasSuffix(formattedURI, D3MDataSchema) {
 		log.Debugf("replacing file name in %s because it isnt the expected %s", formattedURI, D3MDataSchema)
 		formattedURI = path.Join(path.Dir(formattedURI), D3MDataSchema)
 	}
