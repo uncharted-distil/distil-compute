@@ -2,8 +2,6 @@ package compute
 
 import (
 	"context"
-	"fmt"
-	"path"
 	"sync"
 	"time"
 
@@ -42,7 +40,7 @@ func NewExecPipelineRequest(datasetURIs []string, pipelineDesc *pipeline.Pipelin
 
 	uris := []string{}
 	for _, uri := range datasetURIs {
-		uris = append(uris, fmt.Sprintf("file://%s", path.Join(uri, D3MDataSchema)))
+		uris = append(uris, buildSchemaFileURI(uri))
 	}
 
 	return &ExecPipelineRequest{
