@@ -142,7 +142,7 @@ func TestCreateDataCleaningPipeline(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
-	err = ioutil.WriteFile("/tmp/unicorn.pln", data, 0644)
+	err = ioutil.WriteFile("/tmp/datacleaning.pln", data, 0644)
 	assert.NoError(t, err)
 }
 

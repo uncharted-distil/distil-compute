@@ -251,8 +251,7 @@ func CreateSimonPipeline(name string, description string) (*pipeline.PipelineDes
 	return pipeline, nil
 }
 
-// CreateSimonPipeline creates a pipeline to run semantic type inference on a dataset's
-// columns.
+// CreateDataCleaningPipeline creates a pipeline to run data cleaning on a dataset.
 func CreateDataCleaningPipeline(name string, description string) (*pipeline.PipelineDescription, error) {
 	step0 := NewPipelineNode(NewDatasetToDataframeStep())
 	step1 := NewPipelineNode(NewDataCleaningStep())
