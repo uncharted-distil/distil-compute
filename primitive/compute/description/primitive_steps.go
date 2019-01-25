@@ -104,6 +104,20 @@ func NewDukeStep() *StepData {
 	)
 }
 
+// NewDataCleaningStep creates a wrapper for the Punk data cleaning primitive.
+func NewDataCleaningStep() *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "fc6bf33a-f3e0-3496-aa47-9a40289661bc",
+			Version:    "3.0.1",
+			Name:       "datacleaning",
+			PythonPath: "d3m.primitives.distil.datacleaning",
+			Digest:     "",
+		},
+		[]string{"produce"},
+	)
+}
+
 // NewCrocStep creates a wrapper for the Croc image classifier.
 func NewCrocStep(targetColumns []string, outputLabels []string) *StepData {
 	return NewStepDataWithHyperparameters(
