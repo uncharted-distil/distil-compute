@@ -3,6 +3,7 @@ package compute
 import (
 	"fmt"
 	"io"
+	"os"
 	"path"
 	"strings"
 	"sync"
@@ -419,7 +420,7 @@ func (c *Client) ExecutePipeline(ctx context.Context, datasetURIs []string, pipe
 func createInputValues(datasetURIs []string) []*pipeline.Value {
 	inputs := []*pipeline.Value{}
 	for _, uri := range datasetURIs {
-		datasetURI := fmt.Sprintf("file://%s", path.Join(uri, D3MDataSchema))
+		datasetURI := buildSchemaFileURI(uri)
 		value := &pipeline.Value{
 			Value: &pipeline.Value_DatasetUri{
 				DatasetUri: datasetURI,
@@ -428,4 +429,34 @@ func createInputValues(datasetURIs []string) []*pipeline.Value {
 		inputs = append(inputs, value)
 	}
 	return inputs
+}
+
+func buildSchemaFileURI(uri string) string {
+	formattedURI := uri
+	// make sure it ends with the standard schema doc name
+	if isDirectory(formattedURI) {
+		log.Debugf("adding %s to %s since it is a directory", D3MDataSchema, formattedURI)
+		formattedURI = path.Join(formattedURI, D3MDataSchema)
+	} else if !strings.HasSuffix(formattedURI, D3MDataSchema) {
+		log.Debugf("replacing file name in %s because it isnt the expected %s", formattedURI, D3MDataSchema)
+		formattedURI = path.Join(path.Dir(formattedURI), D3MDataSchema)
+	}
+
+	// check for protocol
+	if !strings.HasPrefix(formattedURI, "file://") {
+		log.Debugf("adding file protocol to %s because it does not have it", formattedURI)
+		formattedURI = fmt.Sprintf("file://%s", formattedURI)
+	}
+
+	log.Debugf("schema file uri: %s", formattedURI)
+
+	return formattedURI
+}
+
+func isDirectory(path string) bool {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return fileInfo.IsDir()
 }

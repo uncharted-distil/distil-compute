@@ -104,14 +104,14 @@ var TaskSubtype_name = map[int32]string{
 }
 var TaskSubtype_value = map[string]int32{
 	"TASK_SUBTYPE_UNDEFINED": 0,
-	"NONE":           1,
-	"BINARY":         2,
-	"MULTICLASS":     3,
-	"MULTILABEL":     4,
-	"UNIVARIATE":     5,
-	"MULTIVARIATE":   6,
-	"OVERLAPPING":    7,
-	"NONOVERLAPPING": 8,
+	"NONE":                   1,
+	"BINARY":                 2,
+	"MULTICLASS":             3,
+	"MULTILABEL":             4,
+	"UNIVARIATE":             5,
+	"MULTIVARIATE":           6,
+	"OVERLAPPING":            7,
+	"NONOVERLAPPING":         8,
 }
 
 func (x TaskSubtype) String() string {
@@ -196,7 +196,7 @@ var PerformanceMetric_value = map[string]int32{
 	"JACCARD_SIMILARITY_SCORE":           16,
 	"PRECISION_AT_TOP_K":                 17,
 	"OBJECT_DETECTION_AVERAGE_PRECISION": 18,
-	"LOSS": 100,
+	"LOSS":                               100,
 }
 
 func (x PerformanceMetric) String() string {
