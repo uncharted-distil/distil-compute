@@ -382,13 +382,14 @@ func CreateGoatReversePipeline(name string, description string, lonSource string
 }
 
 // CreateJoinPipeline creates a pipeline that joins two input datasets using a caller supplied column.
-func CreateJoinPipeline(name string, description string, leftJoinCol string, rightJoinCol string) (*pipeline.PipelineDescription, error) {
+// Accuracy is a normalized value that controls how exact the join has to be.
+func CreateJoinPipeline(name string, description string, leftJoinCol string, rightJoinCol string, accuracy float32) (*pipeline.PipelineDescription, error) {
 	// compute column indices
 
 	// instantiate the pipeline - this merges two intput streams via a single join call
 	step0_0 := NewPipelineNode(NewDenormalizeStep())
 	step1_0 := NewPipelineNode(NewDenormalizeStep())
-	step2 := NewPipelineNode(NewJoinStep(leftJoinCol, rightJoinCol))
+	step2 := NewPipelineNode(NewJoinStep(leftJoinCol, rightJoinCol, accuracy))
 	step3 := NewPipelineNode(NewDatasetToDataframeStep())
 	step0_0.Add(step2)
 	step1_0.Add(step2)

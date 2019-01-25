@@ -130,7 +130,7 @@ func NewDatasetToDataframeStep() *StepData {
 			Id:         "4b42ce1e-9b98-4a25-b68e-fad13311eb65",
 			Version:    "0.3.0",
 			Name:       "Dataset to DataFrame converter",
-			PythonPath: "d3m.primitives.datasets.DatasetToDataFrame",
+			PythonPath: "d3m.primitives.data_transformation.dataset_to_dataframe.Common",
 			Digest:     "85b946aa6123354fe51a288c3be56aaca82e76d4071c1edc13be6f9e0e100144",
 		},
 		[]string{"produce"},
@@ -174,7 +174,7 @@ func NewDenormalizeStep() *StepData {
 			Id:         "f31f8c1f-d1c5-43e5-a4b2-2ae4a761ef2e",
 			Version:    "0.2.0",
 			Name:       "Denormalize datasets",
-			PythonPath: "d3m.primitives.datasets.Denormalize",
+			PythonPath: "d3m.primitives.data_transformation.denormalize.Common",
 			Digest:     "c39e3436373aed1944edbbc9b1cf24af5c71919d73bf0bb545cba0b685812df1",
 		},
 		[]string{"produce"},
@@ -189,7 +189,7 @@ func NewColumnParserStep() *StepData {
 			Id:         "d510cb7a-1782-4f51-b44c-58f0236e47c7",
 			Version:    "0.4.0",
 			Name:       "Parses strings into their types",
-			PythonPath: "d3m.primitives.data.ColumnParser",
+			PythonPath: "data_transformation.column_parser.DataFrameCommon",
 			Digest:     "",
 		},
 		[]string{"produce"},
@@ -355,7 +355,7 @@ func NewGoatReverseStep(lonCol string, latCol string) *StepData {
 
 // NewJoinStep creates a step that will attempt to join two datasets a key column
 // from each.  This is currently a placeholder for testing/debugging only.
-func NewJoinStep(leftCol string, rightCol string) *StepData {
+func NewJoinStep(leftCol string, rightCol string, accuracy float32) *StepData {
 	return NewStepDataWithAll(
 		&pipeline.Primitive{
 			Id:         "6c3188bf-322d-4f9b-bb91-68151bf1f17f",
@@ -365,7 +365,7 @@ func NewJoinStep(leftCol string, rightCol string) *StepData {
 			Digest:     "",
 		},
 		[]string{"produce"},
-		map[string]interface{}{"left_col": leftCol, "right_col": rightCol},
+		map[string]interface{}{"left_col": leftCol, "right_col": rightCol, "accuracy": accuracy},
 		[]string{"left", "right"},
 	)
 }

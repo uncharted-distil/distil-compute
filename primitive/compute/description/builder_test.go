@@ -203,6 +203,38 @@ func TestDiamondPipeline(t *testing.T) {
 	assert.Equal(t, "steps.3.produce", desc.GetOutputs()[0].GetData())
 }
 
+func TestMergePipeline(t *testing.T) {
+
+	step0 := NewPipelineNode(createTestStep(0))
+	step1 := NewPipelineNode(createTestStep(1))
+	step2 := NewPipelineNode(createTestStepWithAll(2, []string{"produce"}, []string{"arg.0", "arg.1"}))
+
+	step0.Add(step2)
+	step1.Add(step2)
+
+	desc, err := NewPipelineBuilder("test", "test pipeline", step0, step1).Compile()
+	assert.NotNil(t, desc)
+	assert.NoError(t, err)
+
+	steps := desc.GetSteps()
+	assert.Equal(t, 3, len(steps))
+
+	// validate step inputs
+	assert.Equal(t, "inputs.0", steps[0].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
+	testStep(t, 0, step0.step, steps)
+
+	assert.Equal(t, "inputs.1", steps[1].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
+	testStep(t, 1, step1.step, steps)
+
+	assert.Equal(t, "steps.0.produce", steps[2].GetPrimitive().GetArguments()["arg.0"].GetContainer().GetData())
+	assert.Equal(t, "steps.1.produce", steps[2].GetPrimitive().GetArguments()["arg.1"].GetContainer().GetData())
+	testStep(t, 2, step2.step, steps)
+
+	// validate outputs
+	assert.Equal(t, 1, len(desc.GetOutputs()))
+	assert.Equal(t, "steps.2.produce", desc.GetOutputs()[0].GetData())
+}
+
 func TestBasicInferenceCompile(t *testing.T) {
 
 	step0 := NewPipelineNode(createTestStep(0))
