@@ -182,7 +182,7 @@ func (c *Client) Close() {
 
 // StartSearch starts a solution search session.
 func (c *Client) StartSearch(ctx context.Context, request *pipeline.SearchSolutionsRequest) (string, error) {
-
+	log.Debugf("starting search")
 	searchSolutionResponse, err := c.client.SearchSolutions(ctx, request)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to start search")
@@ -195,6 +195,7 @@ func (c *Client) StartSearch(ctx context.Context, request *pipeline.SearchSoluti
 // for each result. While handlers are executing asynchronously, this method
 // will not return until all handlers have finished.
 func (c *Client) SearchSolutions(ctx context.Context, searchID string, solutionHandler SearchSolutionHandler) error {
+	log.Debugf("searching solutions for searchID %s", searchID)
 
 	searchPiplinesResultsRequest := &pipeline.GetSearchSolutionsResultsRequest{
 		SearchId: searchID,
@@ -219,6 +220,7 @@ func (c *Client) SearchSolutions(ctx context.Context, searchID string, solutionH
 		}
 		// ignore empty responses
 		if solutionResultResponse.SolutionId != "" {
+			log.Debugf("got a solution result response for searchID %s (solutionID %s)", searchID, solutionResultResponse.SolutionId)
 			wg.Add(1)
 			go func() {
 				solutionHandler(solutionResultResponse)
@@ -238,6 +240,7 @@ func (c *Client) SearchSolutions(ctx context.Context, searchID string, solutionH
 
 // GenerateSolutionScores generates scrores for candidate solutions.
 func (c *Client) GenerateSolutionScores(ctx context.Context, solutionID string, datasetURI string, metrics []string) ([]*pipeline.GetScoreSolutionResultsResponse, error) {
+	log.Debugf("generating solution scores for solutionID %s on datasetURI %s", solutionID, datasetURI)
 
 	scoreSolutionRequest := &pipeline.ScoreSolutionRequest{
 		SolutionId: solutionID,
@@ -255,6 +258,7 @@ func (c *Client) GenerateSolutionScores(ctx context.Context, solutionID string, 
 		},
 	}
 
+	log.Debugf("scoring solution for solutionID %s", solutionID)
 	scoreSolutionResponse, err := c.client.ScoreSolution(ctx, scoreSolutionRequest)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to start solution scoring")
@@ -281,6 +285,7 @@ func (c *Client) GenerateSolutionScores(ctx context.Context, solutionID string, 
 			return errors.Wrap(err, "failed to receive solution scoring result")
 		}
 		solutionResultResponses = append(solutionResultResponses, solutionResultResponse)
+		log.Debugf("pulled solution result for solutionID %s", solutionID)
 		return nil
 	})
 	if err != nil {
@@ -292,6 +297,7 @@ func (c *Client) GenerateSolutionScores(ctx context.Context, solutionID string, 
 
 // GenerateSolutionFit generates fit for candidate solutions.
 func (c *Client) GenerateSolutionFit(ctx context.Context, solutionID string, datasetURIs []string) ([]*pipeline.GetFitSolutionResultsResponse, error) {
+	log.Debugf("generating solution fit for solutionID %s and datasetURIs %v", solutionID, datasetURIs)
 	fitSolutionRequest := &pipeline.FitSolutionRequest{
 		SolutionId: solutionID,
 		Inputs:     createInputValues(datasetURIs),
@@ -323,6 +329,7 @@ func (c *Client) GenerateSolutionFit(ctx context.Context, solutionID string, dat
 			return errors.Wrap(err, "failed to receving solution fitting result")
 		}
 		solutionResultResponses = append(solutionResultResponses, solutionResultResponse)
+		log.Debugf("pulled fit solution result for solutionID %s", solutionID)
 		return nil
 	})
 	if err != nil {
@@ -334,6 +341,7 @@ func (c *Client) GenerateSolutionFit(ctx context.Context, solutionID string, dat
 
 // GeneratePredictions generates predictions.
 func (c *Client) GeneratePredictions(ctx context.Context, request *pipeline.ProduceSolutionRequest) ([]*pipeline.GetProduceSolutionResultsResponse, error) {
+	log.Debugf("generation predictions for fitted solution id %s", request.FittedSolutionId)
 
 	produceSolutionResponse, err := c.client.ProduceSolution(ctx, request)
 	if err != nil {
@@ -361,6 +369,7 @@ func (c *Client) GeneratePredictions(ctx context.Context, request *pipeline.Prod
 			return errors.Wrap(err, "failed to receive solution produce result")
 		}
 		solutionResultResponses = append(solutionResultResponses, solutionResultResponse)
+		log.Debugf("pulled prediction result for fitted solution id %s", request.FittedSolutionId)
 		return nil
 	})
 	if err != nil {
@@ -372,6 +381,7 @@ func (c *Client) GeneratePredictions(ctx context.Context, request *pipeline.Prod
 
 // StopSearch stop the solution search session.
 func (c *Client) StopSearch(ctx context.Context, searchID string) error {
+	log.Debugf("stopping search for searchID %s", searchID)
 
 	stopSearchSolutions := &pipeline.StopSearchSolutionsRequest{
 		SearchId: searchID,
@@ -383,6 +393,7 @@ func (c *Client) StopSearch(ctx context.Context, searchID string) error {
 
 // EndSearch ends the solution search session.
 func (c *Client) EndSearch(ctx context.Context, searchID string) error {
+	log.Debugf("ending search for searchID %s", searchID)
 
 	endSearchSolutions := &pipeline.EndSearchSolutionsRequest{
 		SearchId: searchID,
@@ -394,6 +405,7 @@ func (c *Client) EndSearch(ctx context.Context, searchID string) error {
 
 // ExportSolution exports the solution.
 func (c *Client) ExportSolution(ctx context.Context, fittedSolutionID string) error {
+	log.Debugf("export fit solution for fittedSolutionID %s", fittedSolutionID)
 	exportSolution := &pipeline.SolutionExportRequest{
 		Rank:             1,
 		FittedSolutionId: fittedSolutionID,
@@ -404,6 +416,8 @@ func (c *Client) ExportSolution(ctx context.Context, fittedSolutionID string) er
 
 // ExecutePipeline executes a pre-specified pipeline.
 func (c *Client) ExecutePipeline(ctx context.Context, datasetURIs []string, pipelineDesc *pipeline.PipelineDescription) (*pipeline.PipelineExecuteResponse, error) {
+	log.Debugf("executing pipeline for datasetURIs %v", datasetURIs)
+
 	in := &pipeline.PipelineExecuteRequest{
 		PipelineDescription: pipelineDesc,
 		Inputs:              createInputValues(datasetURIs),
