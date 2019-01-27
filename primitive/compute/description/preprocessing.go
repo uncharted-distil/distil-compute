@@ -251,6 +251,19 @@ func CreateSimonPipeline(name string, description string) (*pipeline.PipelineDes
 	return pipeline, nil
 }
 
+// CreateDataCleaningPipeline creates a pipeline to run data cleaning on a dataset.
+func CreateDataCleaningPipeline(name string, description string) (*pipeline.PipelineDescription, error) {
+	step0 := NewPipelineNode(NewDatasetToDataframeStep())
+	step1 := NewPipelineNode(NewDataCleaningStep())
+	step0.Add(step1)
+
+	pipeline, err := NewPipelineBuilder(name, description, step0).Compile()
+	if err != nil {
+		return nil, err
+	}
+	return pipeline, nil
+}
+
 // CreateCrocPipeline creates a pipeline to run image featurization on a dataset.
 func CreateCrocPipeline(name string, description string, targetColumns []string, outputLabels []string) (*pipeline.PipelineDescription, error) {
 	step0 := NewPipelineNode(NewDenormalizeStep())
