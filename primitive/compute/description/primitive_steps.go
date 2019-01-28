@@ -15,7 +15,7 @@ func NewSimonStep() *StepData {
 			PythonPath: "d3m.primitives.distil.simon",
 			Digest:     "0617caecd2883aaad3cb52ec716e92063e107e3525f8ba8c482b31ea8831fdc5",
 		},
-		[]string{"produce"},
+		[]string{"produce_metafeatures"},
 	)
 }
 
