@@ -30,3 +30,21 @@ func TestCSVResultParser(t *testing.T) {
 	assert.Equal(t, []interface{}{"7", []interface{}{"int", "categorical"}, []interface{}{"0.9885959029197693", "1"}}, result[8])
 	assert.Equal(t, []interface{}{"10", "( ibid )", "hotel"}, result[11])
 }
+
+func TestCSVResultParserShallow(t *testing.T) {
+
+	start := time.Now()
+	result, err := ParseResultCSVShallow("./testdata/test.csv")
+	elapsed := time.Since(start)
+
+	t.Logf("Elapsed: %s", elapsed)
+
+	assert.NoError(t, err)
+	assert.NotEmpty(t, result)
+
+	t.Logf("%v", result)
+
+	assert.Equal(t, []interface{}{"idx", "col a", "col b"}, result[0])
+	assert.Equal(t, []interface{}{"0", "['alpha', 'bravo']", "foxtrot"}, result[1])
+	assert.Equal(t, []interface{}{"1", "('charlie', \"delta's oscar\")", "hotel"}, result[2])
+}
