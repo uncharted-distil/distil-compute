@@ -218,7 +218,7 @@ func NewRemoveColumnsStep(resourceID string, colIndices []int) (*StepData, error
 			Id:         "2eeff053-395a-497d-88db-7374c27812e6",
 			Version:    "0.2.0",
 			Name:       "Column remover",
-			PythonPath: "d3m.primitives.datasets.RemoveColumns",
+			PythonPath: "d3m.primitives.data_transformation.remove_columns.DatasetCommon",
 			Digest:     "85b946aa6123354fe51a288c3be56aaca82e76d4071c1edc13be6f9e0e100144",
 		},
 		[]string{"produce"},
