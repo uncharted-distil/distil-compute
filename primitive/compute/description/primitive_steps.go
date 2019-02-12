@@ -10,10 +10,10 @@ func NewSimonStep() *StepData {
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "d2fa8df2-6517-3c26-bafc-87b701c4043a",
-			Version:    "1.1.2",
+			Version:    "1.2.1",
 			Name:       "simon",
-			PythonPath: "d3m.primitives.distil.simon",
-			Digest:     "0617caecd2883aaad3cb52ec716e92063e107e3525f8ba8c482b31ea8831fdc5",
+			PythonPath: "d3m.primitives.data_cleaning.column_type_profiler.Simon",
+			Digest:     "44fe5bf57ddb776440d1e22ddd1cf3ffeef9a282a3899856db8741e07fd7325d",
 		},
 		[]string{"produce_metafeatures"},
 	)
@@ -24,10 +24,10 @@ func NewSlothStep() *StepData {
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
 			Id:         "77bf4b92-2faa-3e38-bb7e-804131243a7f",
-			Version:    "2.0.1",
+			Version:    "2.0.2",
 			Name:       "Sloth",
-			PythonPath: "d3m.primitives.distil.Sloth.cluster",
-			Digest:     "",
+			PythonPath: "d3m.primitives.time_series_segmentation.cluster.Sloth",
+			Digest:     "576297f6bb41056ede966722bb0ed0d73403752e0a80eacd85bd71e8ea930e8a",
 		},
 		[]string{"produce"},
 		map[string]interface{}{
@@ -43,8 +43,8 @@ func NewUnicornStep(targetColumns []string, outputLabels []string) *StepData {
 			Id:         "475c26dc-eb2e-43d3-acdb-159b80d9f099",
 			Version:    "1.1.0",
 			Name:       "unicorn",
-			PythonPath: "d3m.primitives.distil.unicorn",
-			Digest:     "",
+			PythonPath: "d3m.primitives.digital_image_processing.unicorn.Unicorn",
+			Digest:     "8c1280cb1355115d98de08e9981ea7cb95f6952885d5b190d9db789921664020",
 		},
 		[]string{"produce"},
 		map[string]interface{}{
@@ -62,8 +62,8 @@ func NewPCAFeaturesStep() *StepData {
 			Id:         "04573880-d64f-4791-8932-52b7c3877639",
 			Version:    "3.0.1",
 			Name:       "PCA Features",
-			PythonPath: "d3m.primitives.distil.pcafeatures",
-			Digest:     "95e34bc651056b37a8d33f4b39b17a93c9c1ab75fc72af80b7ac856d5826be26",
+			PythonPath: "d3m.primitives.feature_selection.pca_features.Pcafeatures",
+			Digest:     "51ae6de10bbc004ed2e0e81fa8dcf8b6972c62cec4549c1a5cd58305e70eec71",
 		},
 		[]string{"produce"},
 	)
@@ -95,10 +95,10 @@ func NewDukeStep() *StepData {
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "46612a42-6120-3559-9db9-3aa9a76eb94f",
-			Version:    "1.1.4",
+			Version:    "1.1.6",
 			Name:       "duke",
-			PythonPath: "d3m.primitives.distil.duke",
-			Digest:     "",
+			PythonPath: "d3m.primitives.data_cleaning.labler.Duke",
+			Digest:     "b40cbf3631a19ef0141fb852079330c622b00ef286e54a755e6a90fc85be5963",
 		},
 		[]string{"produce"},
 	)
@@ -111,8 +111,8 @@ func NewDataCleaningStep() *StepData {
 			Id:         "fc6bf33a-f3e0-3496-aa47-9a40289661bc",
 			Version:    "3.0.1",
 			Name:       "datacleaning",
-			PythonPath: "d3m.primitives.distil.datacleaning",
-			Digest:     "",
+			PythonPath: "d3m.primitives.data_cleaning.data_cleaning.Datacleaning",
+			Digest:     "e4fe3196b81200106c40669d72a561f7fe1d7f36a9ddb5c0d7ce87bfb59f76fd",
 		},
 		[]string{"produce"},
 	)
@@ -125,8 +125,8 @@ func NewCrocStep(targetColumns []string, outputLabels []string) *StepData {
 			Id:         "404fae2a-2f0a-4c9b-9ad2-fb1528990561",
 			Version:    "1.2.3",
 			Name:       "croc",
-			PythonPath: "d3m.primitives.distil.croc",
-			Digest:     "",
+			PythonPath: "d3m.primitives.digital_image_processing.croc.Croc",
+			Digest:     "a0cd922401d96b8ffbfe11f5db188b6a4d410119319392932e417b706ed5ae6",
 		},
 		[]string{"produce"},
 		map[string]interface{}{
@@ -335,10 +335,10 @@ func NewGoatForwardStep(placeCol string) *StepData {
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
 			Id:         "c7c61da3-cf57-354e-8841-664853370106",
-			Version:    "1.0.4",
+			Version:    "1.0.5",
 			Name:       "Goat.forward",
-			PythonPath: "d3m.primitives.distil.Goat.forward",
-			Digest:     "",
+			PythonPath: "d3m.primitives.data_cleaning.multitable_featurization.Goat_forward",
+			Digest:     "655c3b536ee2b87ec4607ba932650a0655400880de89bba2effee4a7f17df9f8",
 		},
 		[]string{"produce"},
 		args,
@@ -357,10 +357,10 @@ func NewGoatReverseStep(lonCol string, latCol string) *StepData {
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
 			Id:         "f6e4880b-98c7-32f0-b687-a4b1d74c8f99",
-			Version:    "1.0.2",
+			Version:    "1.0.5",
 			Name:       "Goat.reverse",
-			PythonPath: "d3m.primitives.distil.Goat.reverse",
-			Digest:     "",
+			PythonPath: "d3m.primitives.data_cleaning.multitable_featurization.Goat_reverse",
+			Digest:     "2111b6253ac8b3765ccdc1d42b76bf34258b90ef824113d227e1b89a090259b9",
 		},
 		[]string{"produce"},
 		args,

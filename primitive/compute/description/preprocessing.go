@@ -196,23 +196,26 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int) []*
 func CreateSlothPipeline(name string, description string, timeColumn string, valueColumn string,
 	timeSeriesFeatures []*model.Variable) (*pipeline.PipelineDescription, error) {
 
-	timeIdx, err := getIndex(timeSeriesFeatures, timeColumn)
-	if err != nil {
-		return nil, err
-	}
+	// timeIdx, err := getIndex(timeSeriesFeatures, timeColumn)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	valueIdx, err := getIndex(timeSeriesFeatures, valueColumn)
-	if err != nil {
-		return nil, err
-	}
+	// valueIdx, err := getIndex(timeSeriesFeatures, valueColumn)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	step0 := NewPipelineNode(NewDenormalizeStep())
 	step1 := NewPipelineNode(NewDatasetToDataframeStep())
-	step2 := NewPipelineNode(NewTimeSeriesLoaderStep(-1, timeIdx, valueIdx))
-	step3 := NewPipelineNode(NewSlothStep())
+	// Sloth now includes the the time series loader in the primitive itself.
+	// This is not a long term solution and will need updating.  The updated
+	// primitive doesn't accept the time and value indices as args, so they
+	// are currently unused.
+	// step2 := NewPipelineNode(NewTimeSeriesLoaderStep(-1, timeIdx, valueIdx))
+	step2 := NewPipelineNode(NewSlothStep())
 	step0.Add(step1)
 	step1.Add(step2)
-	step2.Add(step3)
 
 	pipeline, err := NewPipelineBuilder(name, description, step0).Compile()
 	if err != nil {
