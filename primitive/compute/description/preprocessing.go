@@ -415,8 +415,7 @@ func CreateJoinPipeline(name string, description string, leftJoinCol string, rig
 	return pipeline, nil
 }
 
-// CreateJoinPipeline creates a pipeline that joins two input datasets using a caller supplied column.
-// Accuracy is a normalized value that controls how exact the join has to be.
+// CreateTimeseriesFormatterPipeline creates a time series formatter pipeline.
 func CreateTimeseriesFormatterPipeline(name string, description string, mainResourceID string, fileColIndex int) (*pipeline.PipelineDescription, error) {
 	step0_0 := NewPipelineNode(NewTimeseriesFormatterStep(mainResourceID, fileColIndex))
 
