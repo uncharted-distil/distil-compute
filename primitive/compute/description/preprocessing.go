@@ -415,6 +415,17 @@ func CreateJoinPipeline(name string, description string, leftJoinCol string, rig
 	return pipeline, nil
 }
 
+// CreateTimeseriesFormatterPipeline creates a time series formatter pipeline.
+func CreateTimeseriesFormatterPipeline(name string, description string, mainResourceID string, fileColIndex int) (*pipeline.PipelineDescription, error) {
+	step0_0 := NewPipelineNode(NewTimeseriesFormatterStep(mainResourceID, fileColIndex))
+
+	pipeline, err := NewPipelineBuilder(name, description, step0_0).Compile()
+	if err != nil {
+		return nil, err
+	}
+	return pipeline, nil
+}
+
 func mapColumns(allFeatures []*model.Variable, selectedSet map[string]bool) map[string]int {
 	colIndices := make(map[string]int)
 	index := 0
