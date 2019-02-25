@@ -383,3 +383,24 @@ func NewJoinStep(leftCol string, rightCol string, accuracy float32) *StepData {
 		[]string{"left", "right"},
 	)
 }
+
+// NewTimeseriesFormatterStep creates a step that will format a time series
+// to the long form. The input dataset must be structured using resource
+// files for time series data.
+func NewTimeseriesFormatterStep(mainResID string, fileColIndex int) *StepData {
+	args := map[string]interface{}{
+		"file_col_index":      fileColIndex,
+		"main_resource_index": mainResID,
+	}
+	return NewStepDataWithHyperparameters(
+		&pipeline.Primitive{
+			Id:         "1c4aed23-f3d3-4e6b-9710-009a9bc9b694",
+			Version:    "0.1.0",
+			Name:       "Time series formatter",
+			PythonPath: "d3m.primitives.distil.TimeSeriesFormatter",
+			Digest:     "",
+		},
+		[]string{"produce"},
+		args,
+	)
+}
