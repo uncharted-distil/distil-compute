@@ -242,3 +242,15 @@ func TestCreateJoinPipeline(t *testing.T) {
 	err = ioutil.WriteFile("/tmp/join.pln", data, 0644)
 	assert.NoError(t, err)
 }
+
+func TestCreateTimeseriesFormatterPipeline(t *testing.T) {
+	pipeline, err := CreateTimeseriesFormatterPipeline("formatter_test", "test formatter pipeline", "learningData", 1)
+	assert.NoError(t, err)
+
+	data, err := proto.Marshal(pipeline)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+
+	err = ioutil.WriteFile("/tmp/formatter.pln", data, 0644)
+	assert.NoError(t, err)
+}
