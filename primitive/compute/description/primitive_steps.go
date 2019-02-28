@@ -335,9 +335,9 @@ func NewGoatForwardStep(placeCol string) *StepData {
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
 			Id:         "c7c61da3-cf57-354e-8841-664853370106",
-			Version:    "1.0.5",
-			Name:       "Goat.forward",
-			PythonPath: "d3m.primitives.data_cleaning.multitable_featurization.Goat_forward",
+			Version:    "1.0.7",
+			Name:       "Goat_forward",
+			PythonPath: "d3m.primitives.data_cleaning.geocoding.Goat_forward",
 			Digest:     "655c3b536ee2b87ec4607ba932650a0655400880de89bba2effee4a7f17df9f8",
 		},
 		[]string{"produce"},
@@ -357,9 +357,9 @@ func NewGoatReverseStep(lonCol string, latCol string) *StepData {
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
 			Id:         "f6e4880b-98c7-32f0-b687-a4b1d74c8f99",
-			Version:    "1.0.5",
-			Name:       "Goat.reverse",
-			PythonPath: "d3m.primitives.data_cleaning.multitable_featurization.Goat_reverse",
+			Version:    "1.0.7",
+			Name:       "Goat_reverse",
+			PythonPath: "d3m.primitives.data_cleaning.geocoding.Goat_reverse",
 			Digest:     "2111b6253ac8b3765ccdc1d42b76bf34258b90ef824113d227e1b89a090259b9",
 		},
 		[]string{"produce"},
