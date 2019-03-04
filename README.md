@@ -11,9 +11,9 @@
 #### Clone the repository
 
 ```bash
-mkdir -p $GOPATH/src/github.com/unchartedsoftware
-cd $GOPATH/src/github.com/unchartedsoftware
-git clone git@github.com:unchartedsoftware/distil-compute.git
+mkdir -p $GOPATH/src/github.com/uncharted-distil/
+cd $GOPATH/src/github.com/uncharted-distil/
+git clone git@github.com:uncharted-distil/distil-compute.git
 cd distil-compute
 ```
 
