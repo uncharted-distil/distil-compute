@@ -3,11 +3,13 @@
 
 package pipeline
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
-import _ "github.com/golang/protobuf/protoc-gen-go/descriptor"
-import timestamp "github.com/golang/protobuf/ptypes/timestamp"
+import (
+	fmt "fmt"
+	proto "github.com/golang/protobuf/proto"
+	_ "github.com/golang/protobuf/protoc-gen-go/descriptor"
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	math "math"
+)
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -42,6 +44,7 @@ var PipelineContext_name = map[int32]string{
 	3: "EVALUATION",
 	4: "PRODUCTION",
 }
+
 var PipelineContext_value = map[string]int32{
 	"PIPELINE_CONTEXT_UNKNOWN": 0,
 	"PRETRAINING":              1,
@@ -53,8 +56,9 @@ var PipelineContext_value = map[string]int32{
 func (x PipelineContext) String() string {
 	return proto.EnumName(PipelineContext_name, int32(x))
 }
+
 func (PipelineContext) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{0}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{0}
 }
 
 type ContainerArgument struct {
@@ -69,16 +73,17 @@ func (m *ContainerArgument) Reset()         { *m = ContainerArgument{} }
 func (m *ContainerArgument) String() string { return proto.CompactTextString(m) }
 func (*ContainerArgument) ProtoMessage()    {}
 func (*ContainerArgument) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{0}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{0}
 }
+
 func (m *ContainerArgument) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ContainerArgument.Unmarshal(m, b)
 }
 func (m *ContainerArgument) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ContainerArgument.Marshal(b, m, deterministic)
 }
-func (dst *ContainerArgument) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ContainerArgument.Merge(dst, src)
+func (m *ContainerArgument) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ContainerArgument.Merge(m, src)
 }
 func (m *ContainerArgument) XXX_Size() int {
 	return xxx_messageInfo_ContainerArgument.Size(m)
@@ -107,16 +112,17 @@ func (m *ContainerArguments) Reset()         { *m = ContainerArguments{} }
 func (m *ContainerArguments) String() string { return proto.CompactTextString(m) }
 func (*ContainerArguments) ProtoMessage()    {}
 func (*ContainerArguments) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{1}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{1}
 }
+
 func (m *ContainerArguments) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ContainerArguments.Unmarshal(m, b)
 }
 func (m *ContainerArguments) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ContainerArguments.Marshal(b, m, deterministic)
 }
-func (dst *ContainerArguments) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ContainerArguments.Merge(dst, src)
+func (m *ContainerArguments) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ContainerArguments.Merge(m, src)
 }
 func (m *ContainerArguments) XXX_Size() int {
 	return xxx_messageInfo_ContainerArguments.Size(m)
@@ -146,16 +152,17 @@ func (m *DataArgument) Reset()         { *m = DataArgument{} }
 func (m *DataArgument) String() string { return proto.CompactTextString(m) }
 func (*DataArgument) ProtoMessage()    {}
 func (*DataArgument) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{2}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{2}
 }
+
 func (m *DataArgument) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_DataArgument.Unmarshal(m, b)
 }
 func (m *DataArgument) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_DataArgument.Marshal(b, m, deterministic)
 }
-func (dst *DataArgument) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DataArgument.Merge(dst, src)
+func (m *DataArgument) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DataArgument.Merge(m, src)
 }
 func (m *DataArgument) XXX_Size() int {
 	return xxx_messageInfo_DataArgument.Size(m)
@@ -184,16 +191,17 @@ func (m *DataArguments) Reset()         { *m = DataArguments{} }
 func (m *DataArguments) String() string { return proto.CompactTextString(m) }
 func (*DataArguments) ProtoMessage()    {}
 func (*DataArguments) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{3}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{3}
 }
+
 func (m *DataArguments) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_DataArguments.Unmarshal(m, b)
 }
 func (m *DataArguments) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_DataArguments.Marshal(b, m, deterministic)
 }
-func (dst *DataArguments) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DataArguments.Merge(dst, src)
+func (m *DataArguments) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DataArguments.Merge(m, src)
 }
 func (m *DataArguments) XXX_Size() int {
 	return xxx_messageInfo_DataArguments.Size(m)
@@ -223,16 +231,17 @@ func (m *PrimitiveArgument) Reset()         { *m = PrimitiveArgument{} }
 func (m *PrimitiveArgument) String() string { return proto.CompactTextString(m) }
 func (*PrimitiveArgument) ProtoMessage()    {}
 func (*PrimitiveArgument) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{4}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{4}
 }
+
 func (m *PrimitiveArgument) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PrimitiveArgument.Unmarshal(m, b)
 }
 func (m *PrimitiveArgument) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PrimitiveArgument.Marshal(b, m, deterministic)
 }
-func (dst *PrimitiveArgument) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PrimitiveArgument.Merge(dst, src)
+func (m *PrimitiveArgument) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PrimitiveArgument.Merge(m, src)
 }
 func (m *PrimitiveArgument) XXX_Size() int {
 	return xxx_messageInfo_PrimitiveArgument.Size(m)
@@ -262,16 +271,17 @@ func (m *PrimitiveArguments) Reset()         { *m = PrimitiveArguments{} }
 func (m *PrimitiveArguments) String() string { return proto.CompactTextString(m) }
 func (*PrimitiveArguments) ProtoMessage()    {}
 func (*PrimitiveArguments) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{5}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{5}
 }
+
 func (m *PrimitiveArguments) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PrimitiveArguments.Unmarshal(m, b)
 }
 func (m *PrimitiveArguments) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PrimitiveArguments.Marshal(b, m, deterministic)
 }
-func (dst *PrimitiveArguments) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PrimitiveArguments.Merge(dst, src)
+func (m *PrimitiveArguments) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PrimitiveArguments.Merge(m, src)
 }
 func (m *PrimitiveArguments) XXX_Size() int {
 	return xxx_messageInfo_PrimitiveArguments.Size(m)
@@ -300,16 +310,17 @@ func (m *ValueArgument) Reset()         { *m = ValueArgument{} }
 func (m *ValueArgument) String() string { return proto.CompactTextString(m) }
 func (*ValueArgument) ProtoMessage()    {}
 func (*ValueArgument) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{6}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{6}
 }
+
 func (m *ValueArgument) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ValueArgument.Unmarshal(m, b)
 }
 func (m *ValueArgument) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ValueArgument.Marshal(b, m, deterministic)
 }
-func (dst *ValueArgument) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ValueArgument.Merge(dst, src)
+func (m *ValueArgument) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ValueArgument.Merge(m, src)
 }
 func (m *ValueArgument) XXX_Size() int {
 	return xxx_messageInfo_ValueArgument.Size(m)
@@ -342,16 +353,17 @@ func (m *PrimitiveStepArgument) Reset()         { *m = PrimitiveStepArgument{} }
 func (m *PrimitiveStepArgument) String() string { return proto.CompactTextString(m) }
 func (*PrimitiveStepArgument) ProtoMessage()    {}
 func (*PrimitiveStepArgument) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{7}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{7}
 }
+
 func (m *PrimitiveStepArgument) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PrimitiveStepArgument.Unmarshal(m, b)
 }
 func (m *PrimitiveStepArgument) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PrimitiveStepArgument.Marshal(b, m, deterministic)
 }
-func (dst *PrimitiveStepArgument) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PrimitiveStepArgument.Merge(dst, src)
+func (m *PrimitiveStepArgument) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PrimitiveStepArgument.Merge(m, src)
 }
 func (m *PrimitiveStepArgument) XXX_Size() int {
 	return xxx_messageInfo_PrimitiveStepArgument.Size(m)
@@ -369,15 +381,19 @@ type isPrimitiveStepArgument_Argument interface {
 type PrimitiveStepArgument_Container struct {
 	Container *ContainerArgument `protobuf:"bytes,1,opt,name=container,proto3,oneof"`
 }
+
 type PrimitiveStepArgument_Data struct {
 	Data *DataArgument `protobuf:"bytes,2,opt,name=data,proto3,oneof"`
 }
+
 type PrimitiveStepArgument_ContainerList struct {
 	ContainerList *ContainerArguments `protobuf:"bytes,3,opt,name=container_list,json=containerList,proto3,oneof"`
 }
 
-func (*PrimitiveStepArgument_Container) isPrimitiveStepArgument_Argument()     {}
-func (*PrimitiveStepArgument_Data) isPrimitiveStepArgument_Argument()          {}
+func (*PrimitiveStepArgument_Container) isPrimitiveStepArgument_Argument() {}
+
+func (*PrimitiveStepArgument_Data) isPrimitiveStepArgument_Argument() {}
+
 func (*PrimitiveStepArgument_ContainerList) isPrimitiveStepArgument_Argument() {}
 
 func (m *PrimitiveStepArgument) GetArgument() isPrimitiveStepArgument_Argument {
@@ -519,16 +535,17 @@ func (m *PrimitiveStepHyperparameter) Reset()         { *m = PrimitiveStepHyperp
 func (m *PrimitiveStepHyperparameter) String() string { return proto.CompactTextString(m) }
 func (*PrimitiveStepHyperparameter) ProtoMessage()    {}
 func (*PrimitiveStepHyperparameter) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{8}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{8}
 }
+
 func (m *PrimitiveStepHyperparameter) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PrimitiveStepHyperparameter.Unmarshal(m, b)
 }
 func (m *PrimitiveStepHyperparameter) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PrimitiveStepHyperparameter.Marshal(b, m, deterministic)
 }
-func (dst *PrimitiveStepHyperparameter) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PrimitiveStepHyperparameter.Merge(dst, src)
+func (m *PrimitiveStepHyperparameter) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PrimitiveStepHyperparameter.Merge(m, src)
 }
 func (m *PrimitiveStepHyperparameter) XXX_Size() int {
 	return xxx_messageInfo_PrimitiveStepHyperparameter.Size(m)
@@ -546,27 +563,37 @@ type isPrimitiveStepHyperparameter_Argument interface {
 type PrimitiveStepHyperparameter_Container struct {
 	Container *ContainerArgument `protobuf:"bytes,1,opt,name=container,proto3,oneof"`
 }
+
 type PrimitiveStepHyperparameter_Data struct {
 	Data *DataArgument `protobuf:"bytes,2,opt,name=data,proto3,oneof"`
 }
+
 type PrimitiveStepHyperparameter_Primitive struct {
 	Primitive *PrimitiveArgument `protobuf:"bytes,3,opt,name=primitive,proto3,oneof"`
 }
+
 type PrimitiveStepHyperparameter_Value struct {
 	Value *ValueArgument `protobuf:"bytes,4,opt,name=value,proto3,oneof"`
 }
+
 type PrimitiveStepHyperparameter_DataSet struct {
 	DataSet *DataArguments `protobuf:"bytes,5,opt,name=data_set,json=dataSet,proto3,oneof"`
 }
+
 type PrimitiveStepHyperparameter_PrimitivesSet struct {
 	PrimitivesSet *PrimitiveArguments `protobuf:"bytes,6,opt,name=primitives_set,json=primitivesSet,proto3,oneof"`
 }
 
-func (*PrimitiveStepHyperparameter_Container) isPrimitiveStepHyperparameter_Argument()     {}
-func (*PrimitiveStepHyperparameter_Data) isPrimitiveStepHyperparameter_Argument()          {}
-func (*PrimitiveStepHyperparameter_Primitive) isPrimitiveStepHyperparameter_Argument()     {}
-func (*PrimitiveStepHyperparameter_Value) isPrimitiveStepHyperparameter_Argument()         {}
-func (*PrimitiveStepHyperparameter_DataSet) isPrimitiveStepHyperparameter_Argument()       {}
+func (*PrimitiveStepHyperparameter_Container) isPrimitiveStepHyperparameter_Argument() {}
+
+func (*PrimitiveStepHyperparameter_Data) isPrimitiveStepHyperparameter_Argument() {}
+
+func (*PrimitiveStepHyperparameter_Primitive) isPrimitiveStepHyperparameter_Argument() {}
+
+func (*PrimitiveStepHyperparameter_Value) isPrimitiveStepHyperparameter_Argument() {}
+
+func (*PrimitiveStepHyperparameter_DataSet) isPrimitiveStepHyperparameter_Argument() {}
+
 func (*PrimitiveStepHyperparameter_PrimitivesSet) isPrimitiveStepHyperparameter_Argument() {}
 
 func (m *PrimitiveStepHyperparameter) GetArgument() isPrimitiveStepHyperparameter_Argument {
@@ -780,16 +807,17 @@ func (m *StepInput) Reset()         { *m = StepInput{} }
 func (m *StepInput) String() string { return proto.CompactTextString(m) }
 func (*StepInput) ProtoMessage()    {}
 func (*StepInput) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{9}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{9}
 }
+
 func (m *StepInput) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_StepInput.Unmarshal(m, b)
 }
 func (m *StepInput) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_StepInput.Marshal(b, m, deterministic)
 }
-func (dst *StepInput) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_StepInput.Merge(dst, src)
+func (m *StepInput) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StepInput.Merge(m, src)
 }
 func (m *StepInput) XXX_Size() int {
 	return xxx_messageInfo_StepInput.Size(m)
@@ -819,16 +847,17 @@ func (m *StepOutput) Reset()         { *m = StepOutput{} }
 func (m *StepOutput) String() string { return proto.CompactTextString(m) }
 func (*StepOutput) ProtoMessage()    {}
 func (*StepOutput) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{10}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{10}
 }
+
 func (m *StepOutput) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_StepOutput.Unmarshal(m, b)
 }
 func (m *StepOutput) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_StepOutput.Marshal(b, m, deterministic)
 }
-func (dst *StepOutput) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_StepOutput.Merge(dst, src)
+func (m *StepOutput) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StepOutput.Merge(m, src)
 }
 func (m *StepOutput) XXX_Size() int {
 	return xxx_messageInfo_StepOutput.Size(m)
@@ -862,16 +891,17 @@ func (m *PipelineSource) Reset()         { *m = PipelineSource{} }
 func (m *PipelineSource) String() string { return proto.CompactTextString(m) }
 func (*PipelineSource) ProtoMessage()    {}
 func (*PipelineSource) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{11}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{11}
 }
+
 func (m *PipelineSource) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PipelineSource.Unmarshal(m, b)
 }
 func (m *PipelineSource) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PipelineSource.Marshal(b, m, deterministic)
 }
-func (dst *PipelineSource) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PipelineSource.Merge(dst, src)
+func (m *PipelineSource) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PipelineSource.Merge(m, src)
 }
 func (m *PipelineSource) XXX_Size() int {
 	return xxx_messageInfo_PipelineSource.Size(m)
@@ -926,16 +956,17 @@ func (m *PipelineDescriptionUser) Reset()         { *m = PipelineDescriptionUser
 func (m *PipelineDescriptionUser) String() string { return proto.CompactTextString(m) }
 func (*PipelineDescriptionUser) ProtoMessage()    {}
 func (*PipelineDescriptionUser) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{12}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{12}
 }
+
 func (m *PipelineDescriptionUser) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PipelineDescriptionUser.Unmarshal(m, b)
 }
 func (m *PipelineDescriptionUser) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PipelineDescriptionUser.Marshal(b, m, deterministic)
 }
-func (dst *PipelineDescriptionUser) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PipelineDescriptionUser.Merge(dst, src)
+func (m *PipelineDescriptionUser) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PipelineDescriptionUser.Merge(m, src)
 }
 func (m *PipelineDescriptionUser) XXX_Size() int {
 	return xxx_messageInfo_PipelineDescriptionUser.Size(m)
@@ -980,16 +1011,17 @@ func (m *PipelineDescriptionInput) Reset()         { *m = PipelineDescriptionInp
 func (m *PipelineDescriptionInput) String() string { return proto.CompactTextString(m) }
 func (*PipelineDescriptionInput) ProtoMessage()    {}
 func (*PipelineDescriptionInput) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{13}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{13}
 }
+
 func (m *PipelineDescriptionInput) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PipelineDescriptionInput.Unmarshal(m, b)
 }
 func (m *PipelineDescriptionInput) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PipelineDescriptionInput.Marshal(b, m, deterministic)
 }
-func (dst *PipelineDescriptionInput) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PipelineDescriptionInput.Merge(dst, src)
+func (m *PipelineDescriptionInput) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PipelineDescriptionInput.Merge(m, src)
 }
 func (m *PipelineDescriptionInput) XXX_Size() int {
 	return xxx_messageInfo_PipelineDescriptionInput.Size(m)
@@ -1022,16 +1054,17 @@ func (m *PipelineDescriptionOutput) Reset()         { *m = PipelineDescriptionOu
 func (m *PipelineDescriptionOutput) String() string { return proto.CompactTextString(m) }
 func (*PipelineDescriptionOutput) ProtoMessage()    {}
 func (*PipelineDescriptionOutput) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{14}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{14}
 }
+
 func (m *PipelineDescriptionOutput) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PipelineDescriptionOutput.Unmarshal(m, b)
 }
 func (m *PipelineDescriptionOutput) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PipelineDescriptionOutput.Marshal(b, m, deterministic)
 }
-func (dst *PipelineDescriptionOutput) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PipelineDescriptionOutput.Merge(dst, src)
+func (m *PipelineDescriptionOutput) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PipelineDescriptionOutput.Merge(m, src)
 }
 func (m *PipelineDescriptionOutput) XXX_Size() int {
 	return xxx_messageInfo_PipelineDescriptionOutput.Size(m)
@@ -1082,16 +1115,17 @@ func (m *PrimitivePipelineDescriptionStep) Reset()         { *m = PrimitivePipel
 func (m *PrimitivePipelineDescriptionStep) String() string { return proto.CompactTextString(m) }
 func (*PrimitivePipelineDescriptionStep) ProtoMessage()    {}
 func (*PrimitivePipelineDescriptionStep) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{15}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{15}
 }
+
 func (m *PrimitivePipelineDescriptionStep) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PrimitivePipelineDescriptionStep.Unmarshal(m, b)
 }
 func (m *PrimitivePipelineDescriptionStep) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PrimitivePipelineDescriptionStep.Marshal(b, m, deterministic)
 }
-func (dst *PrimitivePipelineDescriptionStep) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PrimitivePipelineDescriptionStep.Merge(dst, src)
+func (m *PrimitivePipelineDescriptionStep) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PrimitivePipelineDescriptionStep.Merge(m, src)
 }
 func (m *PrimitivePipelineDescriptionStep) XXX_Size() int {
 	return xxx_messageInfo_PrimitivePipelineDescriptionStep.Size(m)
@@ -1154,16 +1188,17 @@ func (m *SubpipelinePipelineDescriptionStep) Reset()         { *m = SubpipelineP
 func (m *SubpipelinePipelineDescriptionStep) String() string { return proto.CompactTextString(m) }
 func (*SubpipelinePipelineDescriptionStep) ProtoMessage()    {}
 func (*SubpipelinePipelineDescriptionStep) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{16}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{16}
 }
+
 func (m *SubpipelinePipelineDescriptionStep) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SubpipelinePipelineDescriptionStep.Unmarshal(m, b)
 }
 func (m *SubpipelinePipelineDescriptionStep) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_SubpipelinePipelineDescriptionStep.Marshal(b, m, deterministic)
 }
-func (dst *SubpipelinePipelineDescriptionStep) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SubpipelinePipelineDescriptionStep.Merge(dst, src)
+func (m *SubpipelinePipelineDescriptionStep) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SubpipelinePipelineDescriptionStep.Merge(m, src)
 }
 func (m *SubpipelinePipelineDescriptionStep) XXX_Size() int {
 	return xxx_messageInfo_SubpipelinePipelineDescriptionStep.Size(m)
@@ -1214,16 +1249,17 @@ func (m *PlaceholderPipelineDescriptionStep) Reset()         { *m = PlaceholderP
 func (m *PlaceholderPipelineDescriptionStep) String() string { return proto.CompactTextString(m) }
 func (*PlaceholderPipelineDescriptionStep) ProtoMessage()    {}
 func (*PlaceholderPipelineDescriptionStep) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{17}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{17}
 }
+
 func (m *PlaceholderPipelineDescriptionStep) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PlaceholderPipelineDescriptionStep.Unmarshal(m, b)
 }
 func (m *PlaceholderPipelineDescriptionStep) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PlaceholderPipelineDescriptionStep.Marshal(b, m, deterministic)
 }
-func (dst *PlaceholderPipelineDescriptionStep) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PlaceholderPipelineDescriptionStep.Merge(dst, src)
+func (m *PlaceholderPipelineDescriptionStep) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PlaceholderPipelineDescriptionStep.Merge(m, src)
 }
 func (m *PlaceholderPipelineDescriptionStep) XXX_Size() int {
 	return xxx_messageInfo_PlaceholderPipelineDescriptionStep.Size(m)
@@ -1263,16 +1299,17 @@ func (m *PipelineDescriptionStep) Reset()         { *m = PipelineDescriptionStep
 func (m *PipelineDescriptionStep) String() string { return proto.CompactTextString(m) }
 func (*PipelineDescriptionStep) ProtoMessage()    {}
 func (*PipelineDescriptionStep) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{18}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{18}
 }
+
 func (m *PipelineDescriptionStep) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PipelineDescriptionStep.Unmarshal(m, b)
 }
 func (m *PipelineDescriptionStep) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PipelineDescriptionStep.Marshal(b, m, deterministic)
 }
-func (dst *PipelineDescriptionStep) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PipelineDescriptionStep.Merge(dst, src)
+func (m *PipelineDescriptionStep) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PipelineDescriptionStep.Merge(m, src)
 }
 func (m *PipelineDescriptionStep) XXX_Size() int {
 	return xxx_messageInfo_PipelineDescriptionStep.Size(m)
@@ -1290,15 +1327,19 @@ type isPipelineDescriptionStep_Step interface {
 type PipelineDescriptionStep_Primitive struct {
 	Primitive *PrimitivePipelineDescriptionStep `protobuf:"bytes,1,opt,name=primitive,proto3,oneof"`
 }
+
 type PipelineDescriptionStep_Pipeline struct {
 	Pipeline *SubpipelinePipelineDescriptionStep `protobuf:"bytes,2,opt,name=pipeline,proto3,oneof"`
 }
+
 type PipelineDescriptionStep_Placeholder struct {
 	Placeholder *PlaceholderPipelineDescriptionStep `protobuf:"bytes,3,opt,name=placeholder,proto3,oneof"`
 }
 
-func (*PipelineDescriptionStep_Primitive) isPipelineDescriptionStep_Step()   {}
-func (*PipelineDescriptionStep_Pipeline) isPipelineDescriptionStep_Step()    {}
+func (*PipelineDescriptionStep_Primitive) isPipelineDescriptionStep_Step() {}
+
+func (*PipelineDescriptionStep_Pipeline) isPipelineDescriptionStep_Step() {}
+
 func (*PipelineDescriptionStep_Placeholder) isPipelineDescriptionStep_Step() {}
 
 func (m *PipelineDescriptionStep) GetStep() isPipelineDescriptionStep_Step {
@@ -1472,16 +1513,17 @@ func (m *PipelineDescription) Reset()         { *m = PipelineDescription{} }
 func (m *PipelineDescription) String() string { return proto.CompactTextString(m) }
 func (*PipelineDescription) ProtoMessage()    {}
 func (*PipelineDescription) Descriptor() ([]byte, []int) {
-	return fileDescriptor_pipeline_c3fd4dd717c79f8c, []int{19}
+	return fileDescriptor_7ac67a7adf3df9c7, []int{19}
 }
+
 func (m *PipelineDescription) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PipelineDescription.Unmarshal(m, b)
 }
 func (m *PipelineDescription) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PipelineDescription.Marshal(b, m, deterministic)
 }
-func (dst *PipelineDescription) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PipelineDescription.Merge(dst, src)
+func (m *PipelineDescription) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PipelineDescription.Merge(m, src)
 }
 func (m *PipelineDescription) XXX_Size() int {
 	return xxx_messageInfo_PipelineDescription.Size(m)
@@ -1570,6 +1612,7 @@ func (m *PipelineDescription) GetDigest() string {
 }
 
 func init() {
+	proto.RegisterEnum("PipelineContext", PipelineContext_name, PipelineContext_value)
 	proto.RegisterType((*ContainerArgument)(nil), "ContainerArgument")
 	proto.RegisterType((*ContainerArguments)(nil), "ContainerArguments")
 	proto.RegisterType((*DataArgument)(nil), "DataArgument")
@@ -1592,12 +1635,11 @@ func init() {
 	proto.RegisterType((*PlaceholderPipelineDescriptionStep)(nil), "PlaceholderPipelineDescriptionStep")
 	proto.RegisterType((*PipelineDescriptionStep)(nil), "PipelineDescriptionStep")
 	proto.RegisterType((*PipelineDescription)(nil), "PipelineDescription")
-	proto.RegisterEnum("PipelineContext", PipelineContext_name, PipelineContext_value)
 }
 
-func init() { proto.RegisterFile("pipeline.proto", fileDescriptor_pipeline_c3fd4dd717c79f8c) }
+func init() { proto.RegisterFile("pipeline.proto", fileDescriptor_7ac67a7adf3df9c7) }
 
-var fileDescriptor_pipeline_c3fd4dd717c79f8c = []byte{
+var fileDescriptor_7ac67a7adf3df9c7 = []byte{
 	// 1016 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0xdd, 0x6e, 0xdb, 0x36,
 	0x14, 0xf6, 0x4f, 0x6c, 0x47, 0x47, 0x8b, 0xe3, 0xb2, 0x5b, 0xa7, 0x7a, 0x01, 0xea, 0x29, 0xd8,
