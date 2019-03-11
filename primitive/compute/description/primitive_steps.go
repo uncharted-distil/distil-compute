@@ -399,6 +399,26 @@ func NewJoinStep(leftCol string, rightCol string, accuracy float32) *StepData {
 	)
 }
 
+// NewDSBoxJoinStep creates a step that will attempt to join two datasets using
+// key columns from each dataset.
+func NewDSBoxJoinStep(leftCols []string, rightCols []string, accuracy float32) *StepData {
+	joinType := "exact"
+	if accuracy < 0.5 {
+		joinType = "approximate"
+	}
+	return NewStepDataWithHyperparameters(
+		&pipeline.Primitive{
+			Id:         "datamart-join",
+			Version:    "1.4.4",
+			Name:       "Datamart Augmentation",
+			PythonPath: "d3m.primitives.data_augmentation.Join.DSBOX",
+			Digest:     "",
+		},
+		[]string{"produce"},
+		map[string]interface{}{"left_col": leftCols, "right_col": rightCols, "join_type": joinType},
+	)
+}
+
 // NewTimeseriesFormatterStep creates a step that will format a time series
 // to the long form. The input dataset must be structured using resource
 // files for time series data.
