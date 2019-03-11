@@ -259,7 +259,7 @@ func TestCreateJoinPipeline(t *testing.T) {
 }
 
 func TestCreateDSBoxJoinPipeline(t *testing.T) {
-	pipeline, err := CreateJoinPipeline("ds_join_test", "test ds box join pipeline", "Doubles", "horsepower", 0.8)
+	pipeline, err := CreateDSBoxJoinPipeline("ds_join_test", "test ds box join pipeline", []string{"Doubles"}, []string{"horsepower"}, 0.8)
 	assert.NoError(t, err)
 
 	data, err := proto.Marshal(pipeline)
