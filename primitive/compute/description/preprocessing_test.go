@@ -258,6 +258,18 @@ func TestCreateJoinPipeline(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestCreateDSBoxJoinPipeline(t *testing.T) {
+	pipeline, err := CreateJoinPipeline("ds_join_test", "test ds box join pipeline", "Doubles", "horsepower", 0.8)
+	assert.NoError(t, err)
+
+	data, err := proto.Marshal(pipeline)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+
+	err = ioutil.WriteFile("/tmp/ds_join.pln", data, 0644)
+	assert.NoError(t, err)
+}
+
 func TestCreateTimeseriesFormatterPipeline(t *testing.T) {
 	pipeline, err := CreateTimeseriesFormatterPipeline("formatter_test", "test formatter pipeline", "learningData", 1)
 	assert.NoError(t, err)
