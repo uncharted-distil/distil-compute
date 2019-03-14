@@ -24,7 +24,7 @@ import (
 	"github.com/uncharted-distil/distil-compute/pipeline"
 )
 
-const defaultResource = "0"
+const defaultResource = "learningData"
 
 // CreateUserDatasetPipeline creates a pipeline description to capture user feature selection and
 // semantic type information.
