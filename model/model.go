@@ -123,6 +123,22 @@ var (
 	nameRegex = regexp.MustCompile("[^a-zA-Z0-9]")
 )
 
+// GroupingProperties represents a grouping properties.
+type GroupingProperties struct {
+	XCol       string  `json:"xCol"`
+	YCol       string  `json:"yCol"`
+	ClusterCol string  `json:"clusterCol"`
+}
+
+// Grouping represents a variable grouping.
+type Grouping struct {
+	Dataset    string             `json:"dataset"`
+	Type       string             `json:"type"`
+	IDCol      string             `json:"idCol"`
+	Hidden     []string           `json:"hidden"`
+	Properties GroupingProperties `json:"properties"`
+}
+
 // Variable represents a single variable description.
 type Variable struct {
 	Name             string                 `json:"colName"`
@@ -138,6 +154,7 @@ type Variable struct {
 	SuggestedTypes   []*SuggestedType       `json:"suggestedTypes,omitempty"`
 	RefersTo         map[string]interface{} `json:"refersTo,omitempty"`
 	Deleted          bool                   `json:"deleted"`
+	Grouping         *Grouping              `json:"grouping"`
 }
 
 // DataResource represents a set of variables found in a data asset.
