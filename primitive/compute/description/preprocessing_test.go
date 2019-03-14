@@ -73,7 +73,7 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 
 	// assert 3rd step is column remove and index two was remove
 	hyperParams = pipeline.GetSteps()[2].GetPrimitive().GetHyperparams()
-	assert.Equal(t, "0", hyperParams["resource_id"].GetValue().GetData().GetRaw().GetString_(), "0")
+	assert.Equal(t, "learningData", hyperParams["resource_id"].GetValue().GetData().GetRaw().GetString_(), "learningData")
 	assert.Equal(t, []int64{2}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
 
 	assert.NoError(t, err)

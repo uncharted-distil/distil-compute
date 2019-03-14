@@ -44,7 +44,7 @@ func TestClient(t *testing.T) {
 					Targets: []*ProblemTarget{
 						&ProblemTarget{
 							TargetIndex: 0,
-							ResourceId:  "0",
+							ResourceId:  "learningData",
 							ColumnIndex: 8,
 							ColumnName:  "class",
 						},
