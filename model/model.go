@@ -98,6 +98,8 @@ const (
 	VarDistilRole = "distilRole"
 	// VarDeleted flags whether the variable is deleted.
 	VarDeleted = "deleted"
+	// VarGroupingField is the field name for the variable grouping.
+	VarGroupingField = "grouping"
 
 	// TypeTypeField is the type field of a suggested type
 	TypeTypeField = "type"
