@@ -430,6 +430,27 @@ func CreateJoinPipeline(name string, description string, leftJoinCol string, rig
 	return pipeline, nil
 }
 
+// CreateDSBoxJoinPipeline creates a pipeline that joins two input datasets
+// using caller supplied columns.
+func CreateDSBoxJoinPipeline(name string, description string, leftJoinCols []string, rightJoinCols []string, accuracy float32) (*pipeline.PipelineDescription, error) {
+	// compute column indices
+
+	// instantiate the pipeline - this merges two intput streams via a single join call
+	step0_0 := NewPipelineNode(NewDenormalizeStep())
+	step1_0 := NewPipelineNode(NewDenormalizeStep())
+	step2 := NewPipelineNode(NewDSBoxJoinStep(leftJoinCols, rightJoinCols, accuracy))
+	step3 := NewPipelineNode(NewDatasetToDataframeStep())
+	step0_0.Add(step2)
+	step1_0.Add(step2)
+	step2.Add(step3)
+
+	pipeline, err := NewPipelineBuilder(name, description, step0_0, step1_0).Compile()
+	if err != nil {
+		return nil, err
+	}
+	return pipeline, nil
+}
+
 // CreateTimeseriesFormatterPipeline creates a time series formatter pipeline.
 func CreateTimeseriesFormatterPipeline(name string, description string, mainResourceID string, fileColIndex int) (*pipeline.PipelineDescription, error) {
 	step0 := NewPipelineNode(NewTimeseriesFormatterStep(mainResourceID, fileColIndex))

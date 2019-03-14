@@ -3,10 +3,12 @@
 
 package pipeline
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
-import _ "github.com/golang/protobuf/protoc-gen-go/descriptor"
+import (
+	fmt "fmt"
+	proto "github.com/golang/protobuf/proto"
+	_ "github.com/golang/protobuf/protoc-gen-go/descriptor"
+	math "math"
+)
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -61,6 +63,7 @@ var ValueType_name = map[int32]string{
 	7: "LARGE_RAW",
 	8: "LARGE_PICKLE_BLOB",
 }
+
 var ValueType_value = map[string]int32{
 	"VALUE_TYPE_UNDEFINED": 0,
 	"RAW":                  1,
@@ -76,8 +79,9 @@ var ValueType_value = map[string]int32{
 func (x ValueType) String() string {
 	return proto.EnumName(ValueType_name, int32(x))
 }
+
 func (ValueType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_value_7b3d66162bc9bd89, []int{0}
+	return fileDescriptor_6d8b663a521ecf69, []int{0}
 }
 
 type NullValue int32
@@ -89,6 +93,7 @@ const (
 var NullValue_name = map[int32]string{
 	0: "NULL_VALUE",
 }
+
 var NullValue_value = map[string]int32{
 	"NULL_VALUE": 0,
 }
@@ -96,8 +101,9 @@ var NullValue_value = map[string]int32{
 func (x NullValue) String() string {
 	return proto.EnumName(NullValue_name, int32(x))
 }
+
 func (NullValue) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_value_7b3d66162bc9bd89, []int{1}
+	return fileDescriptor_6d8b663a521ecf69, []int{1}
 }
 
 type ValueError struct {
@@ -117,16 +123,17 @@ func (m *ValueError) Reset()         { *m = ValueError{} }
 func (m *ValueError) String() string { return proto.CompactTextString(m) }
 func (*ValueError) ProtoMessage()    {}
 func (*ValueError) Descriptor() ([]byte, []int) {
-	return fileDescriptor_value_7b3d66162bc9bd89, []int{0}
+	return fileDescriptor_6d8b663a521ecf69, []int{0}
 }
+
 func (m *ValueError) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ValueError.Unmarshal(m, b)
 }
 func (m *ValueError) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ValueError.Marshal(b, m, deterministic)
 }
-func (dst *ValueError) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ValueError.Merge(dst, src)
+func (m *ValueError) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ValueError.Merge(m, src)
 }
 func (m *ValueError) XXX_Size() int {
 	return xxx_messageInfo_ValueError.Size(m)
@@ -155,16 +162,17 @@ func (m *ValueList) Reset()         { *m = ValueList{} }
 func (m *ValueList) String() string { return proto.CompactTextString(m) }
 func (*ValueList) ProtoMessage()    {}
 func (*ValueList) Descriptor() ([]byte, []int) {
-	return fileDescriptor_value_7b3d66162bc9bd89, []int{1}
+	return fileDescriptor_6d8b663a521ecf69, []int{1}
 }
+
 func (m *ValueList) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ValueList.Unmarshal(m, b)
 }
 func (m *ValueList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ValueList.Marshal(b, m, deterministic)
 }
-func (dst *ValueList) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ValueList.Merge(dst, src)
+func (m *ValueList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ValueList.Merge(m, src)
 }
 func (m *ValueList) XXX_Size() int {
 	return xxx_messageInfo_ValueList.Size(m)
@@ -193,16 +201,17 @@ func (m *ValueDict) Reset()         { *m = ValueDict{} }
 func (m *ValueDict) String() string { return proto.CompactTextString(m) }
 func (*ValueDict) ProtoMessage()    {}
 func (*ValueDict) Descriptor() ([]byte, []int) {
-	return fileDescriptor_value_7b3d66162bc9bd89, []int{2}
+	return fileDescriptor_6d8b663a521ecf69, []int{2}
 }
+
 func (m *ValueDict) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ValueDict.Unmarshal(m, b)
 }
 func (m *ValueDict) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ValueDict.Marshal(b, m, deterministic)
 }
-func (dst *ValueDict) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ValueDict.Merge(dst, src)
+func (m *ValueDict) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ValueDict.Merge(m, src)
 }
 func (m *ValueDict) XXX_Size() int {
 	return xxx_messageInfo_ValueDict.Size(m)
@@ -240,16 +249,17 @@ func (m *ValueRaw) Reset()         { *m = ValueRaw{} }
 func (m *ValueRaw) String() string { return proto.CompactTextString(m) }
 func (*ValueRaw) ProtoMessage()    {}
 func (*ValueRaw) Descriptor() ([]byte, []int) {
-	return fileDescriptor_value_7b3d66162bc9bd89, []int{3}
+	return fileDescriptor_6d8b663a521ecf69, []int{3}
 }
+
 func (m *ValueRaw) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ValueRaw.Unmarshal(m, b)
 }
 func (m *ValueRaw) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ValueRaw.Marshal(b, m, deterministic)
 }
-func (dst *ValueRaw) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ValueRaw.Merge(dst, src)
+func (m *ValueRaw) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ValueRaw.Merge(m, src)
 }
 func (m *ValueRaw) XXX_Size() int {
 	return xxx_messageInfo_ValueRaw.Size(m)
@@ -267,36 +277,50 @@ type isValueRaw_Raw interface {
 type ValueRaw_Null struct {
 	Null NullValue `protobuf:"varint,1,opt,name=null,proto3,enum=NullValue,oneof"`
 }
+
 type ValueRaw_Double struct {
 	Double float64 `protobuf:"fixed64,2,opt,name=double,proto3,oneof"`
 }
+
 type ValueRaw_Int64 struct {
 	Int64 int64 `protobuf:"varint,3,opt,name=int64,proto3,oneof"`
 }
+
 type ValueRaw_Bool struct {
 	Bool bool `protobuf:"varint,4,opt,name=bool,proto3,oneof"`
 }
+
 type ValueRaw_String_ struct {
 	String_ string `protobuf:"bytes,5,opt,name=string,proto3,oneof"`
 }
+
 type ValueRaw_Bytes struct {
 	Bytes []byte `protobuf:"bytes,6,opt,name=bytes,proto3,oneof"`
 }
+
 type ValueRaw_List struct {
 	List *ValueList `protobuf:"bytes,7,opt,name=list,proto3,oneof"`
 }
+
 type ValueRaw_Dict struct {
 	Dict *ValueDict `protobuf:"bytes,8,opt,name=dict,proto3,oneof"`
 }
 
-func (*ValueRaw_Null) isValueRaw_Raw()    {}
-func (*ValueRaw_Double) isValueRaw_Raw()  {}
-func (*ValueRaw_Int64) isValueRaw_Raw()   {}
-func (*ValueRaw_Bool) isValueRaw_Raw()    {}
+func (*ValueRaw_Null) isValueRaw_Raw() {}
+
+func (*ValueRaw_Double) isValueRaw_Raw() {}
+
+func (*ValueRaw_Int64) isValueRaw_Raw() {}
+
+func (*ValueRaw_Bool) isValueRaw_Raw() {}
+
 func (*ValueRaw_String_) isValueRaw_Raw() {}
-func (*ValueRaw_Bytes) isValueRaw_Raw()   {}
-func (*ValueRaw_List) isValueRaw_Raw()    {}
-func (*ValueRaw_Dict) isValueRaw_Raw()    {}
+
+func (*ValueRaw_Bytes) isValueRaw_Raw() {}
+
+func (*ValueRaw_List) isValueRaw_Raw() {}
+
+func (*ValueRaw_Dict) isValueRaw_Raw() {}
 
 func (m *ValueRaw) GetRaw() isValueRaw_Raw {
 	if m != nil {
@@ -544,16 +568,17 @@ func (m *Value) Reset()         { *m = Value{} }
 func (m *Value) String() string { return proto.CompactTextString(m) }
 func (*Value) ProtoMessage()    {}
 func (*Value) Descriptor() ([]byte, []int) {
-	return fileDescriptor_value_7b3d66162bc9bd89, []int{4}
+	return fileDescriptor_6d8b663a521ecf69, []int{4}
 }
+
 func (m *Value) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Value.Unmarshal(m, b)
 }
 func (m *Value) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Value.Marshal(b, m, deterministic)
 }
-func (dst *Value) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Value.Merge(dst, src)
+func (m *Value) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Value.Merge(m, src)
 }
 func (m *Value) XXX_Size() int {
 	return xxx_messageInfo_Value.Size(m)
@@ -571,32 +596,44 @@ type isValue_Value interface {
 type Value_Error struct {
 	Error *ValueError `protobuf:"bytes,1,opt,name=error,proto3,oneof"`
 }
+
 type Value_Raw struct {
 	Raw *ValueRaw `protobuf:"bytes,2,opt,name=raw,proto3,oneof"`
 }
+
 type Value_DatasetUri struct {
 	DatasetUri string `protobuf:"bytes,3,opt,name=dataset_uri,json=datasetUri,proto3,oneof"`
 }
+
 type Value_CsvUri struct {
 	CsvUri string `protobuf:"bytes,4,opt,name=csv_uri,json=csvUri,proto3,oneof"`
 }
+
 type Value_PickleUri struct {
 	PickleUri string `protobuf:"bytes,5,opt,name=pickle_uri,json=pickleUri,proto3,oneof"`
 }
+
 type Value_PickleBlob struct {
 	PickleBlob []byte `protobuf:"bytes,6,opt,name=pickle_blob,json=pickleBlob,proto3,oneof"`
 }
+
 type Value_PlasmaId struct {
 	PlasmaId []byte `protobuf:"bytes,7,opt,name=plasma_id,json=plasmaId,proto3,oneof"`
 }
 
-func (*Value_Error) isValue_Value()      {}
-func (*Value_Raw) isValue_Value()        {}
+func (*Value_Error) isValue_Value() {}
+
+func (*Value_Raw) isValue_Value() {}
+
 func (*Value_DatasetUri) isValue_Value() {}
-func (*Value_CsvUri) isValue_Value()     {}
-func (*Value_PickleUri) isValue_Value()  {}
+
+func (*Value_CsvUri) isValue_Value() {}
+
+func (*Value_PickleUri) isValue_Value() {}
+
 func (*Value_PickleBlob) isValue_Value() {}
-func (*Value_PlasmaId) isValue_Value()   {}
+
+func (*Value_PlasmaId) isValue_Value() {}
 
 func (m *Value) GetValue() isValue_Value {
 	if m != nil {
@@ -804,19 +841,19 @@ func _Value_OneofSizer(msg proto.Message) (n int) {
 }
 
 func init() {
+	proto.RegisterEnum("ValueType", ValueType_name, ValueType_value)
+	proto.RegisterEnum("NullValue", NullValue_name, NullValue_value)
 	proto.RegisterType((*ValueError)(nil), "ValueError")
 	proto.RegisterType((*ValueList)(nil), "ValueList")
 	proto.RegisterType((*ValueDict)(nil), "ValueDict")
 	proto.RegisterMapType((map[string]*ValueRaw)(nil), "ValueDict.ItemsEntry")
 	proto.RegisterType((*ValueRaw)(nil), "ValueRaw")
 	proto.RegisterType((*Value)(nil), "Value")
-	proto.RegisterEnum("ValueType", ValueType_name, ValueType_value)
-	proto.RegisterEnum("NullValue", NullValue_name, NullValue_value)
 }
 
-func init() { proto.RegisterFile("value.proto", fileDescriptor_value_7b3d66162bc9bd89) }
+func init() { proto.RegisterFile("value.proto", fileDescriptor_6d8b663a521ecf69) }
 
-var fileDescriptor_value_7b3d66162bc9bd89 = []byte{
+var fileDescriptor_6d8b663a521ecf69 = []byte{
 	// 594 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x53, 0x4d, 0x6f, 0xd3, 0x4c,
 	0x10, 0xce, 0xd6, 0x71, 0x1c, 0x8f, 0xdf, 0xb7, 0x98, 0x55, 0x8b, 0x4c, 0x51, 0x55, 0x37, 0x48,
