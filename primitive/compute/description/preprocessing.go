@@ -96,7 +96,7 @@ func createRemoveFeatures(allFeatures []*model.Variable, selectedSet map[string]
 	}
 
 	// instantiate the feature remove primitive
-	featureSelect, err := NewRemoveColumnsStep(defaultResource, removeFeatures)
+	featureSelect, err := NewRemoveColumnsStep("", removeFeatures)
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +173,7 @@ func createUpdateSemanticTypes(allFeatures []*model.Variable, selectedSet map[st
 			SemanticTypes: []string{removeKey},
 			Indices:       v.removeIndices,
 		}
-		semanticTypeUpdate, err := NewUpdateSemanticTypeStep(defaultResource, add, remove)
+		semanticTypeUpdate, err := NewUpdateSemanticTypeStep("", add, remove)
 		if err != nil {
 			return nil, err
 		}
@@ -193,13 +193,13 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int) []*
 
 		switch f.Type {
 		case model.NumericalFilter:
-			filter = NewNumericRangeFilterStep(defaultResource, colIndex, inclusive, *f.Min, *f.Max, false)
+			filter = NewNumericRangeFilterStep("", colIndex, inclusive, *f.Min, *f.Max, false)
 		case model.CategoricalFilter:
-			filter = NewTermFilterStep(defaultResource, colIndex, inclusive, f.Categories, true)
+			filter = NewTermFilterStep("", colIndex, inclusive, f.Categories, true)
 		case model.RowFilter:
-			filter = NewTermFilterStep(defaultResource, colIndex, inclusive, f.D3mIndices, true)
+			filter = NewTermFilterStep("", colIndex, inclusive, f.D3mIndices, true)
 		case model.FeatureFilter, model.TextFilter:
-			filter = NewTermFilterStep(defaultResource, colIndex, inclusive, f.Categories, false)
+			filter = NewTermFilterStep("", colIndex, inclusive, f.Categories, false)
 		}
 
 		filterSteps = append(filterSteps, filter)

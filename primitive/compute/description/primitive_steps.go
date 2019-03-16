@@ -175,8 +175,20 @@ type ColumnUpdate struct {
 
 // NewUpdateSemanticTypeStep adds and removes semantic data values from an input
 // dataset.  An add of (1, 2), ("type a", "type b") would result in "type a" and "type b"
-// being added to index 1 and 2.
+// being added to index 1 and 2.  Leaving the resource ID
+// as the empty value allows the primitive to infer the main resource from the
+// the dataset.
 func NewUpdateSemanticTypeStep(resourceID string, add *ColumnUpdate, remove *ColumnUpdate) (*StepData, error) {
+	hyperparams := map[string]interface{}{
+		"add_columns":    add.Indices,
+		"add_types":      add.SemanticTypes,
+		"remove_columns": remove.Indices,
+		"remove_types":   remove.SemanticTypes,
+	}
+	if resourceID != "" {
+		hyperparams["resource_id"] = resourceID
+	}
+
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
 			Id:         "98c79128-555a-4a6b-85fb-d4f4064c94ab",
@@ -186,13 +198,7 @@ func NewUpdateSemanticTypeStep(resourceID string, add *ColumnUpdate, remove *Col
 			Digest:     "85b946aa6123354fe51a288c3be56aaca82e76d4071c1edc13be6f9e0e100144",
 		},
 		[]string{"produce"},
-		map[string]interface{}{
-			"resource_id":    resourceID,
-			"add_columns":    add.Indices,
-			"add_types":      add.SemanticTypes,
-			"remove_columns": remove.Indices,
-			"remove_types":   remove.SemanticTypes,
-		},
+		hyperparams,
 	), nil
 }
 
@@ -226,8 +232,17 @@ func NewColumnParserStep() *StepData {
 }
 
 // NewRemoveColumnsStep removes columns from an input dataframe.  Columns
-// are specified by name and the match is case insensitive.
+// are specified by name and the match is case insensitive.  Leaving the resource ID
+// as the empty value allows the primitive to infer the main resource from the
+// the dataset.
 func NewRemoveColumnsStep(resourceID string, colIndices []int) (*StepData, error) {
+	hyperparams := map[string]interface{}{
+		"columns": colIndices,
+	}
+	if resourceID != "" {
+		hyperparams["resource_id"] = resourceID
+	}
+
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
 			Id:         "2eeff053-395a-497d-88db-7374c27812e6",
@@ -237,16 +252,25 @@ func NewRemoveColumnsStep(resourceID string, colIndices []int) (*StepData, error
 			Digest:     "85b946aa6123354fe51a288c3be56aaca82e76d4071c1edc13be6f9e0e100144",
 		},
 		[]string{"produce"},
-		map[string]interface{}{
-			"resource_id": resourceID,
-			"columns":     colIndices,
-		},
+		hyperparams,
 	), nil
 }
 
 // NewTermFilterStep creates a primitive step that filters dataset rows based on a match against a
-// term list.  The term match can be partial, or apply to whole terms only.
+// term list.  The term match can be partial, or apply to whole terms only.  Leaving the resource ID
+// as the empty value allows the primitive to infer the main resource from the
+// the dataset.
 func NewTermFilterStep(resourceID string, colindex int, inclusive bool, terms []string, matchWhole bool) *StepData {
+	hyperparams := map[string]interface{}{
+		"column":      colindex,
+		"inclusive":   inclusive,
+		"terms":       terms,
+		"match_whole": matchWhole,
+	}
+	if resourceID != "" {
+		hyperparams["resource_id"] = resourceID
+	}
+
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
 			Id:         "622893c7-42fc-4561-a6f6-071fb85d610a",
@@ -256,18 +280,23 @@ func NewTermFilterStep(resourceID string, colindex int, inclusive bool, terms []
 			Digest:     "",
 		},
 		[]string{"produce"},
-		map[string]interface{}{
-			"resource_id": resourceID,
-			"column":      colindex,
-			"inclusive":   inclusive,
-			"terms":       terms,
-			"match_whole": matchWhole,
-		},
+		hyperparams,
 	)
 }
 
 // NewRegexFilterStep creates a primitive step that filter dataset rows based on a regex match.
+// Leaving the resource ID as the empty value allows the primitive to infer the main resource from the
+// the dataset.
 func NewRegexFilterStep(resourceID string, colindex int, inclusive bool, regex string) *StepData {
+	hyperparams := map[string]interface{}{
+		"column":    colindex,
+		"inclusive": inclusive,
+		"regex":     regex,
+	}
+	if resourceID != "" {
+		hyperparams["resource_id"] = resourceID
+	}
+
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
 			Id:         "d1b4c4b7-63ba-4ee6-ab30-035157cccf22",
@@ -277,18 +306,26 @@ func NewRegexFilterStep(resourceID string, colindex int, inclusive bool, regex s
 			Digest:     "",
 		},
 		[]string{"produce"},
-		map[string]interface{}{
-			"resource_id": resourceID,
-			"column":      colindex,
-			"inclusive":   inclusive,
-			"regex":       regex,
-		},
+		hyperparams,
 	)
 }
 
 // NewNumericRangeFilterStep creates a primitive step that filters dataset rows based on an
 // included/excluded numeric range.  Inclusion of boundaries is controlled by the strict flag.
+// Leaving the resource ID as the empty value allows the primitive to infer the main resource from the
+// the dataset.
 func NewNumericRangeFilterStep(resourceID string, colindex int, inclusive bool, min float64, max float64, strict bool) *StepData {
+	hyperparams := map[string]interface{}{
+		"column":    colindex,
+		"inclusive": inclusive,
+		"min":       min,
+		"max":       max,
+		"strict":    strict,
+	}
+	if resourceID != "" {
+		hyperparams["resource_id"] = resourceID
+	}
+
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
 			Id:         "8b1c1140-8c21-4f41-aeca-662b7d35aa29",
@@ -298,14 +335,7 @@ func NewNumericRangeFilterStep(resourceID string, colindex int, inclusive bool, 
 			Digest:     "",
 		},
 		[]string{"produce"},
-		map[string]interface{}{
-			"resource_id": resourceID,
-			"column":      colindex,
-			"inclusive":   inclusive,
-			"min":         min,
-			"max":         max,
-			"strict":      strict,
-		},
+		hyperparams,
 	)
 }
 
