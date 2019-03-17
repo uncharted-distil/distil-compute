@@ -68,6 +68,9 @@ func CreateUserDatasetPipeline(name string, description string, allFeatures []*m
 	for _, f := range filterData {
 		nodes = append(nodes, NewPipelineNode(f))
 	}
+	// mark this is a preprocessing template
+	nodes = append(nodes, NewPipelineNode(NewInferenceStepData()))
+
 	sourceNode := nodesToGraph(nodes)
 
 	pip, err := NewPipelineBuilder(name, description, sourceNode).Compile()
