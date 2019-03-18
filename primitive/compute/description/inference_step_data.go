@@ -47,8 +47,12 @@ func (s *InferenceStepData) GetPrimitive() *pipeline.Primitive {
 // step argument type.
 func (s *InferenceStepData) GetArguments() []*Argument {
 	args := []*Argument{}
-	for i, input := range s.Inputs {
-		args = append(args, &Argument{fmt.Sprintf("%s.%d", stepInputsKey, i), input})
+	if len(s.Inputs) == 0 {
+		args = append(args, &Argument{stepInputsKey, ""})
+	} else {
+		for i, input := range s.Inputs {
+			args = append(args, &Argument{fmt.Sprintf("%s.%d", stepInputsKey, i), input})
+		}
 	}
 	return args
 }

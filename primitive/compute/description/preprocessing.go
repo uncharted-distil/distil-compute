@@ -50,12 +50,13 @@ func CreateUserDatasetPipeline(name string, description string, allFeatures []*m
 		return nil, err
 	}
 
+	// add filter primitives
+	filterData := createFilterData(filters, columnIndices)
+
 	// If neither have any content, we'll skip the template altogether.
-	if len(updateSemanticTypes) == 0 && removeFeatures == nil {
+	if len(updateSemanticTypes) == 0 && removeFeatures == nil && len(filterData) == 0 {
 		return nil, nil
 	}
-
-	filterData := createFilterData(filters, columnIndices)
 
 	// create pipeline nodes for step we need to execute
 	nodes := []*PipelineNode{}
