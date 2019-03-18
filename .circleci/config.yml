@@ -25,3 +25,7 @@ jobs:
       - run: make install
       - run: dep ensure -v
       - run: make test
+      - run: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              curl -v -X POST https://circleci.com/api/v1.1/project/github/uncharted-distil/distil-ingest/tree/$CIRCLE_BRANCH?circle-token=$D3MBUILD_TOKEN
+            fi
