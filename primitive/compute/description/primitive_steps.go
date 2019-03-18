@@ -454,8 +454,10 @@ func NewDSBoxJoinStep(leftCols []string, rightCols []string, accuracy float32) *
 // files for time series data.
 func NewTimeseriesFormatterStep(mainResID string, fileColIndex int) *StepData {
 	args := map[string]interface{}{
-		"file_col_index":      fileColIndex,
 		"main_resource_index": mainResID,
+	}
+	if fileColIndex >= 0 {
+		args["file_col_index"] = fileColIndex
 	}
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{

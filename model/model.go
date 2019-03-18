@@ -127,9 +127,9 @@ var (
 
 // GroupingProperties represents a grouping properties.
 type GroupingProperties struct {
-	XCol       string  `json:"xCol"`
-	YCol       string  `json:"yCol"`
-	ClusterCol string  `json:"clusterCol"`
+	XCol       string `json:"xCol"`
+	YCol       string `json:"yCol"`
+	ClusterCol string `json:"clusterCol"`
 }
 
 // Grouping represents a variable grouping.

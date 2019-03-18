@@ -29,7 +29,7 @@ const defaultResource = "learningData"
 // CreateUserDatasetPipeline creates a pipeline description to capture user feature selection and
 // semantic type information.
 func CreateUserDatasetPipeline(name string, description string, allFeatures []*model.Variable,
-	targetFeature string, selectedFeatures []string, filters []*model.Filter) (*pipeline.PipelineDescription, error) {
+	targetFeature string, selectedFeatures []string, filters []*model.Filter, isTimeseries bool) (*pipeline.PipelineDescription, error) {
 
 	// save the selected features in a set for quick lookup
 	selectedSet := map[string]bool{}
@@ -59,7 +59,13 @@ func CreateUserDatasetPipeline(name string, description string, allFeatures []*m
 	}
 
 	// create pipeline nodes for step we need to execute
-	nodes := []*PipelineNode{}
+	nodes := []*PipelineNode{} // add the denorm primitive
+	if isTimeseries {
+		nodes = append(nodes, NewPipelineNode(NewTimeseriesFormatterStep(defaultResource, -1)))
+	} else {
+		nodes = append(nodes, NewPipelineNode(NewDenormalizeStep()))
+	}
+
 	for _, v := range updateSemanticTypes {
 		nodes = append(nodes, NewPipelineNode(v))
 	}
