@@ -29,7 +29,7 @@ const defaultResource = "learningData"
 // CreateUserDatasetPipeline creates a pipeline description to capture user feature selection and
 // semantic type information.
 func CreateUserDatasetPipeline(name string, description string, allFeatures []*model.Variable,
-	targetFeature string, selectedFeatures []string, filters []*model.Filter, isTimeseries bool) (*pipeline.PipelineDescription, error) {
+	targetFeature string, selectedFeatures []string, filters []*model.Filter) (*pipeline.PipelineDescription, error) {
 
 	// save the selected features in a set for quick lookup
 	selectedSet := map[string]bool{}
@@ -37,6 +37,15 @@ func CreateUserDatasetPipeline(name string, description string, allFeatures []*m
 		selectedSet[strings.ToLower(v)] = true
 	}
 	columnIndices := mapColumns(allFeatures, selectedSet)
+
+	// determine if this is a timeseries dataset
+	isTimeseries := false
+	for _, v := range allFeatures {
+		if v.Grouping != nil && model.IsTimeSeries(v.Grouping.Type) {
+			isTimeseries = true
+			break
+		}
+	}
 
 	// create the semantic type update primitive
 	updateSemanticTypes, err := createUpdateSemanticTypes(allFeatures, selectedSet)
