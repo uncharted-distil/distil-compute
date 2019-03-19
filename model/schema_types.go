@@ -340,6 +340,7 @@ func MapSimonType(typ string) string {
 	return mapped
 }
 
+// IsBasicSimonType check whether or not a type is a basic simon type.
 func IsBasicSimonType(typ string) bool {
 	return simonBasicTypes[typ]
 }
