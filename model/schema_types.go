@@ -238,6 +238,18 @@ var (
 		SimonStringType: TextType,
 		SimonFloatType:  RealType,
 	}
+
+	simonBasicTypes = map[string]bool{
+		IndexType:      true,
+		IntegerType:    true,
+		FloatType:      true,
+		RealType:       true,
+		RealVectorType: true,
+		BoolType:       true,
+		DateTimeType:   true,
+		NumericalType:  true,
+		TextType:       true,
+	}
 )
 
 // IsNumerical indicates whether or not a schema type is numeric for the purposes
@@ -326,4 +338,9 @@ func MapSimonType(typ string) string {
 	}
 
 	return mapped
+}
+
+// IsBasicSimonType check whether or not a type is a basic simon type.
+func IsBasicSimonType(typ string) bool {
+	return simonBasicTypes[typ]
 }
