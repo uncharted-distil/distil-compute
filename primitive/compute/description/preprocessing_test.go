@@ -270,6 +270,18 @@ func TestCreateDSBoxJoinPipeline(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestCreateDenormalizePipeline(t *testing.T) {
+	pipeline, err := CreateDenormalizePipeline("denorm_test", "test denorm pipeline")
+	assert.NoError(t, err)
+
+	data, err := proto.Marshal(pipeline)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+
+	err = ioutil.WriteFile("/tmp/denorm.pln", data, 0644)
+	assert.NoError(t, err)
+}
+
 func TestCreateTimeseriesFormatterPipeline(t *testing.T) {
 	pipeline, err := CreateTimeseriesFormatterPipeline("formatter_test", "test formatter pipeline", "learningData", 1)
 	assert.NoError(t, err)
