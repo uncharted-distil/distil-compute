@@ -78,6 +78,8 @@ const (
 	SimonStringType = "string"
 	// SimonFloatType is the Simon type representing a float
 	SimonFloatType = "float"
+	// SimonIntegerType is the Simon type representing an integer
+	SimonIntegerType = "int"
 
 	// TA2 Semantic Type Keys - defined in
 	// https://gitlab.com/datadrivendiscovery/d3m/blob/devel/d3m/metadata/schemas/v0/definitions.json
@@ -235,8 +237,9 @@ var (
 
 	// Maps from Simon type to Distil internal type
 	simonTypeMap = map[string]string{
-		SimonStringType: TextType,
-		SimonFloatType:  RealType,
+		SimonStringType:  TextType,
+		SimonFloatType:   RealType,
+		SimonIntegerType: IntegerType,
 	}
 
 	simonBasicTypes = map[string]bool{
