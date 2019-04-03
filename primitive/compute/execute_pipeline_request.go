@@ -17,6 +17,8 @@ package compute
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -132,6 +134,15 @@ func (e *ExecPipelineRequest) dispatchRequest(client *Client, requestID string) 
 			e.notifyStatus(e.statusChannel, requestID, RequestRunningStatus)
 			if solution.GetSolutionId() != "" && !fitCalled {
 				fitCalled = true
+
+				// get the feature weight outputs available in the solution pipeline
+				solutionDesc, err := client.GetSolutionDescription(context.Background(), solution.GetSolutionId())
+				if err != nil {
+					e.notifyError(e.statusChannel, requestID, err)
+					e.wg.Done()
+				}
+				featureOutputs := e.getProduceFeatureWeightOutputs(solutionDesc)
+
 				fittedSolutionID := e.dispatchFit(e.statusChannel, client, requestID, solution.GetSolutionId())
 				if fittedSolutionID == "" {
 					e.wg.Done()
@@ -140,7 +151,7 @@ func (e *ExecPipelineRequest) dispatchRequest(client *Client, requestID string) 
 
 				// fit complete, safe to produce results
 				e.notifyStatus(e.statusChannel, requestID, RequestRunningStatus)
-				e.dispatchProduce(e.statusChannel, client, requestID, fittedSolutionID)
+				e.dispatchProduce(e.statusChannel, client, requestID, fittedSolutionID, featureOutputs)
 				e.wg.Done()
 			}
 
@@ -156,6 +167,36 @@ func (e *ExecPipelineRequest) dispatchRequest(client *Client, requestID string) 
 
 	// end search
 	e.finished <- client.EndSearch(context.Background(), requestID)
+}
+
+func (e *ExecPipelineRequest) getProduceFeatureWeightOutputs(solutionDesc *pipeline.DescribeSolutionResponse) []string {
+	// cycle through the outputs to determine if they are feature weight
+	pipelineDesc := solutionDesc.Pipeline
+	featureWeightOutputs := make([]string, 0)
+	for si, ps := range pipelineDesc.Steps {
+		// get the step outputs
+		var outputs []*pipeline.StepOutput
+		if ps.GetPrimitive() != nil {
+			outputs = ps.GetPrimitive().Outputs
+		} else if ps.GetPipeline() != nil {
+			outputs = ps.GetPipeline().Outputs
+		} else {
+			outputs = make([]*pipeline.StepOutput, 0)
+		}
+
+		// format the output labels
+		for oi, so := range outputs {
+			if e.isFeatureWeightOutput(so.Id) {
+				featureWeightOutputs = append(featureWeightOutputs, fmt.Sprintf("steps.%d.outputs.%d", si, oi))
+			}
+		}
+	}
+
+	return featureWeightOutputs
+}
+
+func (e *ExecPipelineRequest) isFeatureWeightOutput(outputId string) bool {
+	return strings.Contains(outputId, "feature")
 }
 
 func (e *ExecPipelineRequest) dispatchFit(statusChan chan ExecPipelineStatus, client *Client, requestID string, solutionID string) string {
@@ -182,20 +223,23 @@ func (e *ExecPipelineRequest) dispatchFit(statusChan chan ExecPipelineStatus, cl
 	return completed.GetFittedSolutionId()
 }
 
-func (e *ExecPipelineRequest) createProduceSolutionRequest(datasetURIs []string, solutionID string) *pipeline.ProduceSolutionRequest {
+func (e *ExecPipelineRequest) createProduceSolutionRequest(datasetURIs []string, solutionID string, featureOutputs []string) *pipeline.ProduceSolutionRequest {
+	exposedOutputs := []string{defaultExposedOutputKey}
+	exposedOutputs = append(exposedOutputs, featureOutputs...)
+
 	return &pipeline.ProduceSolutionRequest{
 		FittedSolutionId: solutionID,
 		Inputs:           createInputValues(datasetURIs),
-		ExposeOutputs:    []string{defaultExposedOutputKey},
+		ExposeOutputs:    exposedOutputs,
 		ExposeValueTypes: []pipeline.ValueType{
 			pipeline.ValueType_CSV_URI,
 		},
 	}
 }
 
-func (e *ExecPipelineRequest) dispatchProduce(statusChan chan ExecPipelineStatus, client *Client, requestID string, fittedSolutionID string) {
+func (e *ExecPipelineRequest) dispatchProduce(statusChan chan ExecPipelineStatus, client *Client, requestID string, fittedSolutionID string, featureOutputs []string) {
 	// generate predictions
-	produceRequest := e.createProduceSolutionRequest(e.datasetURIs, fittedSolutionID)
+	produceRequest := e.createProduceSolutionRequest(e.datasetURIs, fittedSolutionID, featureOutputs)
 
 	// run produce - this blocks until all responses are returned
 	responses, err := client.GeneratePredictions(context.Background(), produceRequest)

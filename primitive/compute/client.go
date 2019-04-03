@@ -347,6 +347,19 @@ func (c *Client) GenerateSolutionFit(ctx context.Context, solutionID string, dat
 	return solutionResultResponses, nil
 }
 
+// GetSolutionDescription gets the solution description via API call.
+func (c *Client) GetSolutionDescription(ctx context.Context, solutionID string) (*pipeline.DescribeSolutionResponse, error) {
+	req := &pipeline.DescribeSolutionRequest{
+		SolutionId: solutionID,
+	}
+	desc, err := c.client.DescribeSolution(ctx, req)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to open solution produce result stream")
+	}
+
+	return desc, nil
+}
+
 // GeneratePredictions generates predictions.
 func (c *Client) GeneratePredictions(ctx context.Context, request *pipeline.ProduceSolutionRequest) ([]*pipeline.GetProduceSolutionResultsResponse, error) {
 
