@@ -157,6 +157,8 @@ type Variable struct {
 	RefersTo         map[string]interface{} `json:"refersTo,omitempty"`
 	Deleted          bool                   `json:"deleted"`
 	Grouping         *Grouping              `json:"grouping"`
+	Min              float64                `json:"min"`
+	Max              float64                `json:"max"`
 }
 
 // DataResource represents a set of variables found in a data asset.
