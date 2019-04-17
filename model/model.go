@@ -100,6 +100,10 @@ const (
 	VarDeleted = "deleted"
 	// VarGroupingField is the field name for the variable grouping.
 	VarGroupingField = "grouping"
+	// VarMinField is the field name for the min value.
+	VarMinField = "min"
+	// VarMaxField is the field name for the max value.
+	VarMaxField = "max"
 
 	// TypeTypeField is the type field of a suggested type
 	TypeTypeField = "type"
