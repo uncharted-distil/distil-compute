@@ -22,7 +22,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	protobuf "github.com/golang/protobuf/protoc-gen-go/descriptor"
-	"github.com/unchartedsoftware/plog"
+	log "github.com/unchartedsoftware/plog"
 
 	"github.com/uncharted-distil/distil-compute/pipeline"
 )
@@ -76,6 +76,31 @@ var (
 		"multivariate":   "MULTIVARIATE",
 		"overlapping":    "OVERLAPPING",
 		"nonOverlapping": "NONOVERLAPPING",
+	}
+	defaultProblemSubTaskMap = map[string]string{
+		"classification":         "multiClass",
+		"regression":             "univariate",
+		"clustering":             "none",
+		"vertexNomination":       "none",
+		"communityDetection":     "none",
+		"graphClustering":        "none",
+		"graphMatching":          "none",
+		"timeSeriesForecasting":  "none",
+		"collaborativeFiltering": "none",
+		"objectDetection":        "overlapping",
+	}
+	defaultTaskMetricMap = map[string]string{
+		"classification":         "f1Macro",
+		"regression":             "rSquared",
+		"clustering":             "normalizedMutualInformation",
+		"linkPrediction":         "accuracy",
+		"vertexNomination":       "accuracy",
+		"communityDetection":     "accuracy",
+		"graphClustering":        "normalizedMutualInformation",
+		"graphMatching":          "accuracy",
+		"timeSeriesForecasting":  "rSquared",
+		"collaborativeFiltering": "rSquared",
+		"objectDetection":        "objectDetectionAP",
 	}
 	metricScoreMultiplier = map[string]float64{
 		"ACCURACY":                           1,
@@ -143,6 +168,18 @@ func GetMetricScoreMultiplier(metric string) float64 {
 // GetMetricLabel returns a label string for a metric.
 func GetMetricLabel(metric string) string {
 	return metricLabel[metric]
+}
+
+// GetDefaultTaskSubTypeTA3 returns the default TA3 subtask type for a supplied
+// TA3 task type.
+func GetDefaultTaskSubTypeTA3(task string) string {
+	return defaultProblemSubTaskMap[task]
+}
+
+// GetDefaultTaskMetricTA3 returns the default TA3 metric type for a supplied
+// TA3 task type.
+func GetDefaultTaskMetricTA3(task string) string {
+	return defaultTaskMetricMap[task]
 }
 
 // ConvertMetricsFromTA3ToTA2 converts metrics from TA3 to TA2 values.
