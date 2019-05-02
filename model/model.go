@@ -41,6 +41,7 @@ const (
 	VarRoleMetadata = "metadata"
 
 	variableNameSizeLimit = 50
+	datasetIDSizeLimit    = 50
 
 	// DefaultVarType is the variable type used by default
 	DefaultVarType = "unknown"
@@ -231,7 +232,11 @@ func NormalizeDatasetID(id string) string {
 
 	// add a prefix to handle cases where numbers are the first character.
 	normalized = fmt.Sprintf("%s%s", DatasetPrefix, normalized)
-
+	// truncate so that name is not longer than allowed table name limit - need to leave space
+	// for name suffixes as well
+	if len(normalized) > datasetIDSizeLimit {
+		normalized = normalized[:datasetIDSizeLimit]
+	}
 	return normalized
 }
 
