@@ -65,7 +65,7 @@ const (
 	// D3MResourceFormat is the resource format of persisted dataset
 	D3MResourceFormat = "text/csv"
 
-	defaultTrainTestRatio = 3
+	defaultTrainTestRatio = 0.8
 )
 
 // Client provides facilities for managing GPRC solution requests. Requests are
