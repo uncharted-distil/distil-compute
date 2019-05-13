@@ -213,15 +213,33 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int) []*
 		switch f.Type {
 		case model.NumericalFilter:
 			filter = NewNumericRangeFilterStep("", colIndex, inclusive, *f.Min, *f.Max, false)
+			filterSteps = append(filterSteps, filter)
+
 		case model.CategoricalFilter:
 			filter = NewTermFilterStep("", colIndex, inclusive, f.Categories, true)
+			filterSteps = append(filterSteps, filter)
+
+		case model.BivariateFilter:
+			split := strings.Split(f.Key, ":")
+			xCol := split[0]
+			yCol := split[1]
+			xColIndex := columnIndices[xCol]
+			yColIndex := columnIndices[yCol]
+
+			filter = NewNumericRangeFilterStep("", xColIndex, inclusive, f.Bounds.MinX, f.Bounds.MaxX, false)
+			filterSteps = append(filterSteps, filter)
+			filter = NewNumericRangeFilterStep("", yColIndex, inclusive, f.Bounds.MinY, f.Bounds.MaxY, false)
+			filterSteps = append(filterSteps, filter)
+
 		case model.RowFilter:
 			filter = NewTermFilterStep("", colIndex, inclusive, f.D3mIndices, true)
+			filterSteps = append(filterSteps, filter)
+
 		case model.FeatureFilter, model.TextFilter:
 			filter = NewTermFilterStep("", colIndex, inclusive, f.Categories, false)
+			filterSteps = append(filterSteps, filter)
 		}
 
-		filterSteps = append(filterSteps, filter)
 	}
 	return filterSteps
 }
