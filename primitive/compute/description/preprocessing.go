@@ -259,15 +259,14 @@ func CreateSlothPipeline(name string, description string, timeColumn string, val
 	// }
 
 	step0 := NewPipelineNode(NewDenormalizeStep())
-	step1 := NewPipelineNode(NewDatasetToDataframeStep())
 	// Sloth now includes the the time series loader in the primitive itself.
 	// This is not a long term solution and will need updating.  The updated
 	// primitive doesn't accept the time and value indices as args, so they
 	// are currently unused.
 	// step2 := NewPipelineNode(NewTimeSeriesLoaderStep(-1, timeIdx, valueIdx))
-	step2 := NewPipelineNode(NewSlothStep())
+	step1 := NewPipelineNode(NewSlothStep())
 	step0.Add(step1)
-	step1.Add(step2)
+	step0.Add(step1)
 
 	pipeline, err := NewPipelineBuilder(name, description, step0).Compile()
 	if err != nil {
