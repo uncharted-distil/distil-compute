@@ -93,9 +93,9 @@ func NewTargetRankingStep(targetCol int) *StepData {
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
 			Id:         "a31b0c26-cca8-4d54-95b9-886e23df8886",
-			Version:    "0.1.0",
+			Version:    "0.2.0",
 			Name:       "Mutual Information Feature Ranking",
-			PythonPath: "d3m.primitives.distil.MIRanking",
+			PythonPath: "d3m.primitives.feature_selection.mi_ranking.DistilMIRanking",
 			Digest:     "5302eebf2fb8a80e9f00e7b74888aba9eb448a9c0463d9d26786dab717a62c61",
 		},
 		[]string{"produce"},
@@ -418,9 +418,9 @@ func NewJoinStep(leftCol string, rightCol string, accuracy float32) *StepData {
 	return NewStepDataWithAll(
 		&pipeline.Primitive{
 			Id:         "6c3188bf-322d-4f9b-bb91-68151bf1f17f",
-			Version:    "0.1.0",
+			Version:    "0.2.0",
 			Name:       "Fuzzy Join Placeholder",
-			PythonPath: "d3m.primitives.distil.FuzzyJoin",
+			PythonPath: "d3m.primitives.data_transformation.fuzzy_join.DistilFuzzyJoin",
 			Digest:     "",
 		},
 		[]string{"produce"},
@@ -462,9 +462,9 @@ func NewTimeseriesFormatterStep(mainResID string, fileColIndex int) *StepData {
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
 			Id:         "1c4aed23-f3d3-4e6b-9710-009a9bc9b694",
-			Version:    "0.1.0",
+			Version:    "0.2.0",
 			Name:       "Time series formatter",
-			PythonPath: "d3m.primitives.distil.TimeSeriesFormatter",
+			PythonPath: "d3m.primitives.data_preprocessing.timeseries_formatter.DistilTimeSeriesFormatter",
 			Digest:     "",
 		},
 		[]string{"produce"},
