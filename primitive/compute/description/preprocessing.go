@@ -266,7 +266,6 @@ func CreateSlothPipeline(name string, description string, timeColumn string, val
 	// step2 := NewPipelineNode(NewTimeSeriesLoaderStep(-1, timeIdx, valueIdx))
 	step1 := NewPipelineNode(NewSlothStep())
 	step0.Add(step1)
-	step0.Add(step1)
 
 	pipeline, err := NewPipelineBuilder(name, description, step0).Compile()
 	if err != nil {

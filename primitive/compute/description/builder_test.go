@@ -255,7 +255,6 @@ func TestExtraOutputCompile(t *testing.T) {
 	step1 := NewPipelineNode(createTestStepWithAll(1, []string{"produce"}, []string{"arg.0", "arg.1"}))
 
 	step0.Add(step1)
-	step0.Add(step1)
 
 	desc, err := NewPipelineBuilder("test", "test pipeline", step0, step1).Compile()
 	assert.NotNil(t, desc)
