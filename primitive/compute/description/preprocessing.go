@@ -334,10 +334,8 @@ func CreateCrocPipeline(name string, description string, targetColumns []string,
 // CreateUnicornPipeline creates a pipeline to run image clustering on a dataset.
 func CreateUnicornPipeline(name string, description string, targetColumns []string, outputLabels []string) (*pipeline.PipelineDescription, error) {
 	step0 := NewPipelineNode(NewDenormalizeStep())
-	step1 := NewPipelineNode(NewDatasetToDataframeStep())
-	step2 := NewPipelineNode(NewUnicornStep(targetColumns, outputLabels))
+	step1 := NewPipelineNode(NewUnicornStep(targetColumns, outputLabels))
 	step0.Add(step1)
-	step1.Add(step2)
 
 	pipeline, err := NewPipelineBuilder(name, description, step0).Compile()
 	if err != nil {
