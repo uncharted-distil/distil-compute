@@ -110,6 +110,13 @@ func NewPipelineBuilder(name string, description string, sources ...*PipelineNod
 // Compile creates the protobuf pipeline description from the step graph.  It can only be
 // called once.
 func (p *PipelineBuilder) Compile() (*pipeline.PipelineDescription, error) {
+	return p.CompileWithOptions(true)
+}
+
+// CompileWithOptions creates the protobuf pipeline description from the step graph.  It can only be
+// called once.  If clampMissingInputs is set, if an input can't be mapped to an unused parent output,
+// it will map to the last parent output.
+func (p *PipelineBuilder) CompileWithOptions(clampMissingInputs bool) (*pipeline.PipelineDescription, error) {
 	if p.compiled {
 		return nil, errors.New("compile failed: pipeline already compiled")
 	}
@@ -153,7 +160,7 @@ func (p *PipelineBuilder) Compile() (*pipeline.PipelineDescription, error) {
 		node := traversalQueue[0]
 		traversalQueue = traversalQueue[1:]
 		var err error
-		pipelineNodes, err = p.processNode(node, pipelineNodes, idToIndexMap)
+		pipelineNodes, err = p.processNode(node, pipelineNodes, idToIndexMap, clampMissingInputs)
 		if err != nil {
 			return nil, err
 		}
@@ -234,7 +241,7 @@ func validate(node *PipelineNode) error {
 	return nil
 }
 
-func (p *PipelineBuilder) processNode(node *PipelineNode, pipelineNodes []*PipelineNode, idToIndexMap map[uint64]int) ([]*PipelineNode, error) {
+func (p *PipelineBuilder) processNode(node *PipelineNode, pipelineNodes []*PipelineNode, idToIndexMap map[uint64]int, clampMissingInputs bool) ([]*PipelineNode, error) {
 	// don't re-process
 	if node.visited {
 		return pipelineNodes, nil
@@ -271,10 +278,20 @@ func (p *PipelineBuilder) processNode(node *PipelineNode, pipelineNodes []*Pipel
 		}
 
 		if !foundFreeOutput && !node.isSource() {
-			return nil, errors.Errorf(
-				"compile failed: can't find output for step \"%s\" arg \"%s\"",
-				node.step.GetPrimitive().GetName(),
-				arg.Name)
+			if clampMissingInputs {
+				// This node has an input but the parent has had all its outputs mapped.  We'll just
+				// just use the last parent's last output as the input.
+				lastParent := node.parents[len(node.parents)-1]
+				numParentOutputs := len(lastParent.step.GetOutputMethods())
+				lastParentOutput := lastParent.step.GetOutputMethods()[numParentOutputs-1]
+				inputsRef := fmt.Sprintf("%s.%d.%s", stepKey, idToIndexMap[lastParent.nodeID], lastParentOutput)
+				node.step.UpdateArguments(arg.Name, inputsRef)
+			} else {
+				return nil, errors.Errorf(
+					"compile failed: can't find output for step \"%s\" arg \"%s\"",
+					node.step.GetPrimitive().GetName(),
+					arg.Name)
+			}
 		}
 	}
 
