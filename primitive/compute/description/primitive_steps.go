@@ -79,7 +79,7 @@ func NewPCAFeaturesStep() *StepData {
 			PythonPath: "d3m.primitives.feature_selection.pca_features.Pcafeatures",
 			Digest:     "51ae6de10bbc004ed2e0e81fa8dcf8b6972c62cec4549c1a5cd58305e70eec71",
 		},
-		[]string{"produce"},
+		[]string{"produce_metafeatures"},
 	)
 }
 
