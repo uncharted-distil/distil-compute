@@ -185,21 +185,22 @@ type SuggestedType struct {
 
 // Metadata represents a collection of dataset descriptions.
 type Metadata struct {
-	ID             string
-	Name           string
-	StorageName    string
-	Description    string
-	Summary        string
-	SummaryMachine string
-	Raw            bool
-	DataResources  []*DataResource
-	Schema         *gabs.Container
-	Classification *gabs.Container
-	NumRows        int64
-	NumBytes       int64
-	SchemaSource   string
-	Redacted       bool
-	DatasetFolder  string
+	ID               string
+	ParentDatasetIDs []string
+	Name             string
+	StorageName      string
+	Description      string
+	Summary          string
+	SummaryMachine   string
+	Raw              bool
+	DataResources    []*DataResource
+	Schema           *gabs.Container
+	Classification   *gabs.Container
+	NumRows          int64
+	NumBytes         int64
+	SchemaSource     string
+	Redacted         bool
+	DatasetFolder    string
 }
 
 // NewMetadata creates a new metadata instance.
