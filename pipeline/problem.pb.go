@@ -158,11 +158,13 @@ const (
 	PerformanceMetric_PRECISION_AT_TOP_K                 PerformanceMetric = 17
 	PerformanceMetric_OBJECT_DETECTION_AVERAGE_PRECISION PerformanceMetric = 18
 	PerformanceMetric_HAMMING_LOSS                       PerformanceMetric = 19
-	// This metric can be used to ask TA2 to rank all found solutions
-	// using a floating-point rank. Lower numbers represent better solutions.
-	// Presently evaluation requirements are that ranks should be non-negative and that
-	// each ranked pipeline have a different rank.
-	// Only possible with "RANKING" evaluation method.
+	// This metric can be used to ask TA2 to rank a solution as part of
+	// all found solutions of a given "SearchSolutions" call. Rank is a
+	// floating-point number. Lower numbers represent better solutions.
+	// Presently evaluation requirements are that ranks should be non-negative
+	// and that each ranked pipeline have a different rank (for all
+	// solutions of a given SearchSolutions call). Only possible with
+	// "RANKING" evaluation method.
 	PerformanceMetric_RANK PerformanceMetric = 99
 	// The rest are defined to allow expressing internal evaluation
 	// scores used by TA2 during pipeline search. If any you are using
