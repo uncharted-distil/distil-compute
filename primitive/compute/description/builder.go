@@ -197,7 +197,7 @@ func (p *PipelineBuilder) CompileWithOptions(clampMissingInputs bool) (*pipeline
 	compiledSteps := []*pipeline.PipelineDescriptionStep{}
 	for _, node := range pipelineNodes {
 		compiledStep, err := node.step.BuildDescriptionStep()
-		compiledSteps = append(compiledSteps, compiledStep)
+		compiledSteps = append(compiledSteps, compiledStep.Step)
 		if err != nil {
 			return nil, err
 		}
