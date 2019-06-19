@@ -28,7 +28,8 @@ import (
 )
 
 const (
-	unknownAPIVersion = "unknown"
+	unknownAPIVersion  = "unknown"
+	TaskTypeTimeseries = "timeSeriesForecasting"
 )
 
 var (
