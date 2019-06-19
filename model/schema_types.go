@@ -67,8 +67,10 @@ const (
 	URIType = "uri"
 	// ImageType is the schema type for Image values
 	ImageType = "image"
-	// TimeSeriesType is the schema type for Image values
+	// TimeSeriesType is the schema type for timeseries values
 	TimeSeriesType = "timeseries"
+	// TimestampType is the schema type for timestamp values
+	TimestampType = "timestamp";
 	// UnknownType is the schema type for unknown values
 	UnknownType = "unknown"
 
@@ -130,6 +132,8 @@ const (
 	ImageSchemaType = "image"
 	// TimeSeriesSchemaType is the schema doc type for image data
 	TimeSeriesSchemaType = "timeseries"
+	// TimestampSchemaType is the schema doc type for image data
+	TimestampSchemaType = "timestamp"
 
 	// TA2 Role keys
 
@@ -190,6 +194,7 @@ var (
 		StateType:       TA2CategoricalType,
 		URIType:         TA2StringType,
 		ImageType:       TA2StringType,
+		TimestampType:   TA2TimeType,
 		TimeSeriesType:  TA2TimeSeriesType,
 		UnknownType:     TA2StringType,
 	}
@@ -218,6 +223,7 @@ var (
 		URIType:         StringSchemaType,
 		ImageType:       ImageSchemaType,
 		TimeSeriesType:  TimeSeriesSchemaType,
+		TimestampType:   TimestampSchemaType,
 	}
 
 	// Maps from LL schema types to Distal internal type
@@ -233,6 +239,7 @@ var (
 		GeoJSONSchemaType:     TextType,
 		ImageSchemaType:       ImageType,
 		TimeSeriesSchemaType:  TimeSeriesType,
+		TimestampSchemaType:   TimestampType,
 	}
 
 	// Maps from Simon type to Distil internal type
@@ -291,10 +298,16 @@ func IsImage(typ string) bool {
 	return typ == ImageType
 }
 
-// IsTimeSeries indicates whether or not a schema type is an timeseries for the purposes
+// IsTimeSeries indicates whether or not a schema type is a timeseries for the purposes
 // of analysis.
 func IsTimeSeries(typ string) bool {
 	return typ == TimeSeriesType
+}
+
+// IsTimestamp indicates whether or not a schema type is a timestamp for the purposes
+// of analysis.
+func IsTimestamp(typ string) bool {
+	return typ == TimestampType
 }
 
 // IsDateTime indicates whether or not a schema type is a date time for the purposes
