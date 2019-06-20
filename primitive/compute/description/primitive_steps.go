@@ -215,6 +215,42 @@ func NewDenormalizeStep() *StepData {
 	)
 }
 
+// NewCSVReaderStep reads data from csv files into a nested dataframe structure.
+func NewCSVReaderStep() *StepData {
+	hyperparams := map[string]interface{}{
+		"return_result": "append",
+	}
+	return NewStepDataWithHyperparameters(
+		&pipeline.Primitive{
+			Id:         "989562ac-b50f-4462-99cb-abef80d765b2",
+			Version:    "0.1.0",
+			Name:       "Columns CSV reader",
+			PythonPath: "d3m.primitives.data_preprocessing.csv_reader.DataFrameCommon",
+			Digest:     "8ee694114ee4a856cf1ea3b72da42e4e6c24064366a4042b6198aadb68146c25",
+		},
+		[]string{"produce"},
+		hyperparams,
+	)
+}
+
+// NewDataFrameFlattenStep searches for nested dataframes and pulls them out.
+func NewDataFrameFlattenStep() *StepData {
+	hyperparams := map[string]interface{}{
+		"return_result": "replace",
+	}
+	return NewStepDataWithHyperparameters(
+		&pipeline.Primitive{
+			Id:         "1c4aed23-f3d3-4e6b-9710-009a9bc9b694",
+			Version:    "0.1.0",
+			Name:       "DataFrame Flatten",
+			PythonPath: "d3m.primitives.data_preprocessing.flatten.DataFrameCommon",
+			Digest:     "7277f8dc8e4934d8e7342b1bee4656b444e7addc14cc42a301e7093f39a2a0d0",
+		},
+		[]string{"produce"},
+		hyperparams,
+	)
+}
+
 // NewColumnParserStep takes obj/string columns in a dataframe and parses them into their
 // associated raw python types based on the attached d3m metadata.
 func NewColumnParserStep() *StepData {

@@ -70,6 +70,9 @@ func CreateUserDatasetPipeline(name string, description string, allFeatures []*m
 	// create pipeline nodes for step we need to execute
 	nodes := []*PipelineNode{} // add the denorm primitive
 	if isTimeseries {
+		// need to read csv data, flatten then concat back to the original pipeline
+		nodes = append(nodes, NewPipelineNode(NewCSVReaderStep()))
+		nodes = append(nodes, NewPipelineNode(NewDataFrameFlattenStep()))
 		nodes = append(nodes, NewPipelineNode(NewTimeseriesFormatterStep(defaultResource, -1)))
 	} else {
 		nodes = append(nodes, NewPipelineNode(NewDenormalizeStep()))
@@ -487,10 +490,12 @@ func CreateDSBoxJoinPipeline(name string, description string, leftJoinCols []str
 }
 
 // CreateTimeseriesFormatterPipeline creates a time series formatter pipeline.
-func CreateTimeseriesFormatterPipeline(name string, description string, mainResourceID string, fileColIndex int) (*pipeline.PipelineDescription, error) {
-	step0 := NewPipelineNode(NewTimeseriesFormatterStep(mainResourceID, fileColIndex))
-	step1 := NewPipelineNode(NewDatasetToDataframeStep())
+func CreateTimeseriesFormatterPipeline(name string, description string) (*pipeline.PipelineDescription, error) {
+	step0 := NewPipelineNode(NewDatasetToDataframeStep())
+	step1 := NewPipelineNode(NewCSVReaderStep())
+	step2 := NewPipelineNode(NewDataFrameFlattenStep())
 	step0.Add(step1)
+	step1.Add(step2)
 
 	pipeline, err := NewPipelineBuilder(name, description, step0).Compile()
 	if err != nil {

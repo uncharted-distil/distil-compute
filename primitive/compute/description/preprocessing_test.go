@@ -283,7 +283,7 @@ func TestCreateDenormalizePipeline(t *testing.T) {
 }
 
 func TestCreateTimeseriesFormatterPipeline(t *testing.T) {
-	pipeline, err := CreateTimeseriesFormatterPipeline("formatter_test", "test formatter pipeline", "learningData", 1)
+	pipeline, err := CreateTimeseriesFormatterPipeline("formatter_test", "test formatter pipeline")
 	assert.NoError(t, err)
 
 	data, err := proto.Marshal(pipeline)

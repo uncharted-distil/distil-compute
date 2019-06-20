@@ -70,7 +70,7 @@ const (
 	// TimeSeriesType is the schema type for timeseries values
 	TimeSeriesType = "timeseries"
 	// TimestampType is the schema type for timestamp values
-	TimestampType = "timestamp";
+	TimestampType = "timestamp"
 	// UnknownType is the schema type for unknown values
 	UnknownType = "unknown"
 
