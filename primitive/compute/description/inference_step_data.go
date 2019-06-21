@@ -79,7 +79,7 @@ func (s *InferenceStepData) GetOutputMethods() []string {
 
 // BuildDescriptionStep creates protobuf structures from a pipeline step
 // definition.
-func (s *InferenceStepData) BuildDescriptionStep() (*pipeline.PipelineDescriptionStep, error) {
+func (s *InferenceStepData) BuildDescriptionStep() (*PipelineDescriptionSteps, error) {
 	// generate arguments entries
 	inputs := []*pipeline.StepInput{}
 	for _, v := range s.Inputs {
@@ -100,12 +100,17 @@ func (s *InferenceStepData) BuildDescriptionStep() (*pipeline.PipelineDescriptio
 	}
 
 	// create the pipeline description structure
-	return &pipeline.PipelineDescriptionStep{
+	step := &pipeline.PipelineDescriptionStep{
 		Step: &pipeline.PipelineDescriptionStep_Placeholder{
 			Placeholder: &pipeline.PlaceholderPipelineDescriptionStep{
 				Inputs:  inputs,
 				Outputs: outputs,
 			},
 		},
+	}
+
+	return &PipelineDescriptionSteps{
+		Step:        step,
+		NestedSteps: map[string]*PipelineDescriptionSteps{},
 	}, nil
 }

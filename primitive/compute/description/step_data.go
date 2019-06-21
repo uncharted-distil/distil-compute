@@ -27,10 +27,19 @@ const (
 	pipelineInputsKey = "inputs"
 )
 
+// PipelineDescriptionSteps contains the result of the BuildDescriptionStep function.
+// This consists of the top level PipelineDescriptionStep built from the supplied
+// StepData, and list of PipelineDescriptionStep structs that were produced from
+// hyperparam args that were themselves primitives.
+type PipelineDescriptionSteps struct {
+	Step        *pipeline.PipelineDescriptionStep
+	NestedSteps map[string]*PipelineDescriptionSteps
+}
+
 // Step provides data for a pipeline description step and an operation
 // to create a protobuf PipelineDescriptionStep from that data.
 type Step interface {
-	BuildDescriptionStep() (*pipeline.PipelineDescriptionStep, error)
+	BuildDescriptionStep() (*PipelineDescriptionSteps, error)
 	GetPrimitive() *pipeline.Primitive
 	GetArguments() []*Argument
 	UpdateArguments(string, string)
@@ -50,7 +59,7 @@ type Argument struct {
 type StepData struct {
 	Primitive       *pipeline.Primitive
 	Arguments       []*Argument
-	Hyperparameters map[string]interface{}
+	Hyperparameters map[string]interface{} // can contain StepData
 	OutputMethods   []string
 }
 
@@ -133,11 +142,18 @@ func (s *StepData) GetOutputMethods() []string {
 
 // BuildDescriptionStep creates protobuf structures from a pipeline step
 // definition.
-func (s *StepData) BuildDescriptionStep() (*pipeline.PipelineDescriptionStep, error) {
+func (s *StepData) BuildDescriptionStep() (*PipelineDescriptionSteps, error) {
+	result, err := doBuildDescriptionStep(s)
+	if err != nil {
+		return nil, err
+	}
+	return result, err
+}
 
+func doBuildDescriptionStep(stepData *StepData) (*PipelineDescriptionSteps, error) {
 	// generate arguments entries
 	arguments := map[string]*pipeline.PrimitiveStepArgument{}
-	for _, arg := range s.Arguments {
+	for _, arg := range stepData.Arguments {
 		arguments[arg.Name] = &pipeline.PrimitiveStepArgument{
 			// only handle container args rights now - extend to others if required
 			Argument: &pipeline.PrimitiveStepArgument_Container{
@@ -148,33 +164,52 @@ func (s *StepData) BuildDescriptionStep() (*pipeline.PipelineDescriptionStep, er
 		}
 	}
 
-	// generate arguments entries - accepted types are currently intXX, string, bool, as well as list, map[string]
-	// of those types.  The underlying protobuf structure allows for others that can be handled here as needed.
+	// Generate hyper parameter entries - accepted go-natives types are currently intXX, string, bool, as well as list, map[string]
+	// of those types.  Primitives are also accepted.
 	hyperparameters := map[string]*pipeline.PrimitiveStepHyperparameter{}
-	for k, v := range s.Hyperparameters {
-		rawValue, err := parseValue(v)
-		if err != nil {
-			return nil, errors.Errorf("compile failed: hyperparameter `%s` - %s", k, err.Error())
-		}
-
-		hyperparameters[k] = &pipeline.PrimitiveStepHyperparameter{
-			// only handle value args rights now - extend to others if required
-			Argument: &pipeline.PrimitiveStepHyperparameter_Value{
-				Value: &pipeline.ValueArgument{
-					Data: &pipeline.Value{
-						Value: &pipeline.Value_Raw{
-							Raw: rawValue,
+	nestedStepDescriptions := map[string]*PipelineDescriptionSteps{}
+	for k, v := range stepData.Hyperparameters {
+		// We can handle hyperparameter args that are values, or primitive references
+		nestedStepData, ok := v.(*StepData)
+		if ok {
+			// Primitive reference.  This is an int value that is the index of the primitive in protobuf / d3m pipeline structure.
+			// The actual value will get filled in as a post process since we add all the primitive args in at the end.
+			hyperparameters[k] = &pipeline.PrimitiveStepHyperparameter{
+				Argument: &pipeline.PrimitiveStepHyperparameter_Primitive{
+					Primitive: &pipeline.PrimitiveArgument{
+						Data: -1,
+					},
+				},
+			}
+			stepDescriptions, err := doBuildDescriptionStep(nestedStepData)
+			if err != nil {
+				return nil, errors.Errorf("compile failed: hyperparameter `%s` not built - %s", k, err.Error())
+			}
+			nestedStepDescriptions[k] = stepDescriptions
+		} else {
+			// Values
+			rawValue, err := parseValue(v)
+			if err != nil {
+				return nil, errors.Errorf("compile failed: hyperparameter `%s` unsupported - %s", k, err.Error())
+			}
+			hyperparameters[k] = &pipeline.PrimitiveStepHyperparameter{
+				Argument: &pipeline.PrimitiveStepHyperparameter_Value{
+					Value: &pipeline.ValueArgument{
+						Data: &pipeline.Value{
+							Value: &pipeline.Value_Raw{
+								Raw: rawValue,
+							},
 						},
 					},
 				},
-			},
+			}
 		}
 	}
 
 	// list of methods that will generate output - order matters because the steps are
 	// numbered
 	outputMethods := []*pipeline.StepOutput{}
-	for _, outputMethod := range s.OutputMethods {
+	for _, outputMethod := range stepData.OutputMethods {
 		outputMethods = append(outputMethods,
 			&pipeline.StepOutput{
 				Id: outputMethod,
@@ -182,15 +217,20 @@ func (s *StepData) BuildDescriptionStep() (*pipeline.PipelineDescriptionStep, er
 	}
 
 	// create the pipeline description structure
-	return &pipeline.PipelineDescriptionStep{
+	descriptionStep := &pipeline.PipelineDescriptionStep{
 		Step: &pipeline.PipelineDescriptionStep_Primitive{
 			Primitive: &pipeline.PrimitivePipelineDescriptionStep{
-				Primitive:   s.Primitive,
+				Primitive:   stepData.Primitive,
 				Arguments:   arguments,
 				Hyperparams: hyperparameters,
 				Outputs:     outputMethods,
 			},
 		},
+	}
+
+	return &PipelineDescriptionSteps{
+		Step:        descriptionStep,
+		NestedSteps: nestedStepDescriptions,
 	}, nil
 }
 
