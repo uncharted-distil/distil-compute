@@ -18,7 +18,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 // Top level classification of the problem.
 type TaskType int32
@@ -114,14 +114,14 @@ var TaskSubtype_name = map[int32]string{
 
 var TaskSubtype_value = map[string]int32{
 	"TASK_SUBTYPE_UNDEFINED": 0,
-	"NONE":                   1,
-	"BINARY":                 2,
-	"MULTICLASS":             3,
-	"MULTILABEL":             4,
-	"UNIVARIATE":             5,
-	"MULTIVARIATE":           6,
-	"OVERLAPPING":            7,
-	"NONOVERLAPPING":         8,
+	"NONE":           1,
+	"BINARY":         2,
+	"MULTICLASS":     3,
+	"MULTILABEL":     4,
+	"UNIVARIATE":     5,
+	"MULTIVARIATE":   6,
+	"OVERLAPPING":    7,
+	"NONOVERLAPPING": 8,
 }
 
 func (x TaskSubtype) String() string {

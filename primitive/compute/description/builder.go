@@ -22,6 +22,7 @@ package description
 
 import (
 	"fmt"
+	"sort"
 	"sync/atomic"
 
 	"github.com/pkg/errors"
@@ -193,20 +194,21 @@ func (p *PipelineBuilder) CompileWithOptions(clampMissingInputs bool) (*pipeline
 		})
 	}
 
-	// Build the step descriptions now that all of the inputs/outputs defined
-	compiledSteps := []*pipeline.PipelineDescriptionStep{}
+	// Compile the build steps
+	compileResults := []*PipelineDescriptionSteps{}
 	for _, node := range pipelineNodes {
-		compiledStep, err := node.step.BuildDescriptionStep()
-		compiledSteps = append(compiledSteps, compiledStep)
+		compileResult, err := node.step.BuildDescriptionStep()
 		if err != nil {
 			return nil, err
 		}
+		compileResults = append(compileResults, compileResult)
 	}
+	pipelineDescriptionSteps := extractCompiledPrimitives(compileResults)
 
 	pipelineDesc := &pipeline.PipelineDescription{
 		Name:        p.name,
 		Description: p.description,
-		Steps:       compiledSteps,
+		Steps:       pipelineDescriptionSteps,
 		Inputs:      pipelineInputs,
 		Outputs:     pipelineOutputs,
 		Context:     pipeline.PipelineContext_TESTING,
@@ -331,4 +333,52 @@ func checkNode(node *PipelineNode, ids map[uint64]bool) bool {
 	}
 	delete(ids, node.nodeID)
 	return false
+}
+
+// Ugh.  Gross but necessary.
+func sortedKeys(m map[string]*PipelineDescriptionSteps) []string {
+	keys := make([]string, len(m))
+	i := 0
+	for k := range m {
+		keys[i] = k
+		i++
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// Extracts the result of the compile step into a continguous array of protobuf pipeline steps, flattening those
+// that were nested while it goes.  The index values of any hyperparams that are primitive references are updated
+// on the fly as well.
+func extractCompiledPrimitives(compileResults []*PipelineDescriptionSteps) []*pipeline.PipelineDescriptionStep {
+	pipelineDescriptionSteps := []*pipeline.PipelineDescriptionStep{}
+	nestedPipelineDescriptionSteps := []*pipeline.PipelineDescriptionStep{}
+	index := 0
+
+	// Recursively traverses a primitive's hyperparams that are themselves
+	var traverseAndUpdate func(step *PipelineDescriptionSteps, index int) int
+	traverseAndUpdate = func(step *PipelineDescriptionSteps, index int) int {
+		nextIndex := index
+		// need to use sorted keys so args are consistently ordered for debug/testing - go intentionally randomizes
+		// key order of a map
+		for _, hyperparamName := range sortedKeys(step.NestedSteps) {
+			nestedStep := step.NestedSteps[hyperparamName]
+			// Append the list pipeline steps that set for the final pipeline protobuf
+			nestedPipelineDescriptionSteps = append(nestedPipelineDescriptionSteps, nestedStep.Step)
+
+			// Process child primitives
+			nextIndex = traverseAndUpdate(nestedStep, nextIndex)
+
+			// Update the primitive hyperparam value to point to the child primitive
+			step.Step.GetPrimitive().GetHyperparams()[hyperparamName].GetPrimitive().Data = int32(nextIndex + len(compileResults))
+
+			nextIndex = index + 1
+		}
+		return nextIndex
+	}
+	for _, step := range compileResults {
+		pipelineDescriptionSteps = append(pipelineDescriptionSteps, step.Step)
+		index = traverseAndUpdate(step, index)
+	}
+	return append(pipelineDescriptionSteps, nestedPipelineDescriptionSteps...)
 }

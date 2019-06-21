@@ -19,7 +19,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 // TODO: Deprecated. Remove.
 type PipelineContext int32
@@ -419,97 +419,13 @@ func (m *PrimitiveStepArgument) GetContainerList() *ContainerArguments {
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*PrimitiveStepArgument) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _PrimitiveStepArgument_OneofMarshaler, _PrimitiveStepArgument_OneofUnmarshaler, _PrimitiveStepArgument_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*PrimitiveStepArgument) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*PrimitiveStepArgument_Container)(nil),
 		(*PrimitiveStepArgument_Data)(nil),
 		(*PrimitiveStepArgument_ContainerList)(nil),
 	}
-}
-
-func _PrimitiveStepArgument_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*PrimitiveStepArgument)
-	// argument
-	switch x := m.Argument.(type) {
-	case *PrimitiveStepArgument_Container:
-		b.EncodeVarint(1<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Container); err != nil {
-			return err
-		}
-	case *PrimitiveStepArgument_Data:
-		b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Data); err != nil {
-			return err
-		}
-	case *PrimitiveStepArgument_ContainerList:
-		b.EncodeVarint(3<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.ContainerList); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("PrimitiveStepArgument.Argument has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _PrimitiveStepArgument_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*PrimitiveStepArgument)
-	switch tag {
-	case 1: // argument.container
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(ContainerArgument)
-		err := b.DecodeMessage(msg)
-		m.Argument = &PrimitiveStepArgument_Container{msg}
-		return true, err
-	case 2: // argument.data
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(DataArgument)
-		err := b.DecodeMessage(msg)
-		m.Argument = &PrimitiveStepArgument_Data{msg}
-		return true, err
-	case 3: // argument.container_list
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(ContainerArguments)
-		err := b.DecodeMessage(msg)
-		m.Argument = &PrimitiveStepArgument_ContainerList{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _PrimitiveStepArgument_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*PrimitiveStepArgument)
-	// argument
-	switch x := m.Argument.(type) {
-	case *PrimitiveStepArgument_Container:
-		s := proto.Size(x.Container)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *PrimitiveStepArgument_Data:
-		s := proto.Size(x.Data)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *PrimitiveStepArgument_ContainerList:
-		s := proto.Size(x.ContainerList)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 type PrimitiveStepHyperparameter struct {
@@ -640,9 +556,9 @@ func (m *PrimitiveStepHyperparameter) GetPrimitivesSet() *PrimitiveArguments {
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*PrimitiveStepHyperparameter) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _PrimitiveStepHyperparameter_OneofMarshaler, _PrimitiveStepHyperparameter_OneofUnmarshaler, _PrimitiveStepHyperparameter_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*PrimitiveStepHyperparameter) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*PrimitiveStepHyperparameter_Container)(nil),
 		(*PrimitiveStepHyperparameter_Data)(nil),
 		(*PrimitiveStepHyperparameter_Primitive)(nil),
@@ -650,144 +566,6 @@ func (*PrimitiveStepHyperparameter) XXX_OneofFuncs() (func(msg proto.Message, b 
 		(*PrimitiveStepHyperparameter_DataSet)(nil),
 		(*PrimitiveStepHyperparameter_PrimitivesSet)(nil),
 	}
-}
-
-func _PrimitiveStepHyperparameter_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*PrimitiveStepHyperparameter)
-	// argument
-	switch x := m.Argument.(type) {
-	case *PrimitiveStepHyperparameter_Container:
-		b.EncodeVarint(1<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Container); err != nil {
-			return err
-		}
-	case *PrimitiveStepHyperparameter_Data:
-		b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Data); err != nil {
-			return err
-		}
-	case *PrimitiveStepHyperparameter_Primitive:
-		b.EncodeVarint(3<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Primitive); err != nil {
-			return err
-		}
-	case *PrimitiveStepHyperparameter_Value:
-		b.EncodeVarint(4<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Value); err != nil {
-			return err
-		}
-	case *PrimitiveStepHyperparameter_DataSet:
-		b.EncodeVarint(5<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.DataSet); err != nil {
-			return err
-		}
-	case *PrimitiveStepHyperparameter_PrimitivesSet:
-		b.EncodeVarint(6<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.PrimitivesSet); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("PrimitiveStepHyperparameter.Argument has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _PrimitiveStepHyperparameter_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*PrimitiveStepHyperparameter)
-	switch tag {
-	case 1: // argument.container
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(ContainerArgument)
-		err := b.DecodeMessage(msg)
-		m.Argument = &PrimitiveStepHyperparameter_Container{msg}
-		return true, err
-	case 2: // argument.data
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(DataArgument)
-		err := b.DecodeMessage(msg)
-		m.Argument = &PrimitiveStepHyperparameter_Data{msg}
-		return true, err
-	case 3: // argument.primitive
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(PrimitiveArgument)
-		err := b.DecodeMessage(msg)
-		m.Argument = &PrimitiveStepHyperparameter_Primitive{msg}
-		return true, err
-	case 4: // argument.value
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(ValueArgument)
-		err := b.DecodeMessage(msg)
-		m.Argument = &PrimitiveStepHyperparameter_Value{msg}
-		return true, err
-	case 5: // argument.data_set
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(DataArguments)
-		err := b.DecodeMessage(msg)
-		m.Argument = &PrimitiveStepHyperparameter_DataSet{msg}
-		return true, err
-	case 6: // argument.primitives_set
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(PrimitiveArguments)
-		err := b.DecodeMessage(msg)
-		m.Argument = &PrimitiveStepHyperparameter_PrimitivesSet{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _PrimitiveStepHyperparameter_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*PrimitiveStepHyperparameter)
-	// argument
-	switch x := m.Argument.(type) {
-	case *PrimitiveStepHyperparameter_Container:
-		s := proto.Size(x.Container)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *PrimitiveStepHyperparameter_Data:
-		s := proto.Size(x.Data)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *PrimitiveStepHyperparameter_Primitive:
-		s := proto.Size(x.Primitive)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *PrimitiveStepHyperparameter_Value:
-		s := proto.Size(x.Value)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *PrimitiveStepHyperparameter_DataSet:
-		s := proto.Size(x.DataSet)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *PrimitiveStepHyperparameter_PrimitivesSet:
-		s := proto.Size(x.PrimitivesSet)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 type StepInput struct {
@@ -1365,97 +1143,13 @@ func (m *PipelineDescriptionStep) GetPlaceholder() *PlaceholderPipelineDescripti
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*PipelineDescriptionStep) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _PipelineDescriptionStep_OneofMarshaler, _PipelineDescriptionStep_OneofUnmarshaler, _PipelineDescriptionStep_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*PipelineDescriptionStep) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*PipelineDescriptionStep_Primitive)(nil),
 		(*PipelineDescriptionStep_Pipeline)(nil),
 		(*PipelineDescriptionStep_Placeholder)(nil),
 	}
-}
-
-func _PipelineDescriptionStep_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*PipelineDescriptionStep)
-	// step
-	switch x := m.Step.(type) {
-	case *PipelineDescriptionStep_Primitive:
-		b.EncodeVarint(1<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Primitive); err != nil {
-			return err
-		}
-	case *PipelineDescriptionStep_Pipeline:
-		b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Pipeline); err != nil {
-			return err
-		}
-	case *PipelineDescriptionStep_Placeholder:
-		b.EncodeVarint(3<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Placeholder); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("PipelineDescriptionStep.Step has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _PipelineDescriptionStep_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*PipelineDescriptionStep)
-	switch tag {
-	case 1: // step.primitive
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(PrimitivePipelineDescriptionStep)
-		err := b.DecodeMessage(msg)
-		m.Step = &PipelineDescriptionStep_Primitive{msg}
-		return true, err
-	case 2: // step.pipeline
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(SubpipelinePipelineDescriptionStep)
-		err := b.DecodeMessage(msg)
-		m.Step = &PipelineDescriptionStep_Pipeline{msg}
-		return true, err
-	case 3: // step.placeholder
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(PlaceholderPipelineDescriptionStep)
-		err := b.DecodeMessage(msg)
-		m.Step = &PipelineDescriptionStep_Placeholder{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _PipelineDescriptionStep_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*PipelineDescriptionStep)
-	// step
-	switch x := m.Step.(type) {
-	case *PipelineDescriptionStep_Primitive:
-		s := proto.Size(x.Primitive)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *PipelineDescriptionStep_Pipeline:
-		s := proto.Size(x.Pipeline)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *PipelineDescriptionStep_Placeholder:
-		s := proto.Size(x.Placeholder)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 // Pipeline description matches the D3M pipeline description.
