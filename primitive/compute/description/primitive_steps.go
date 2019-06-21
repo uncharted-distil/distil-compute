@@ -496,7 +496,7 @@ func NewTimeseriesFormatterStep(mainResID string, fileColIndex int) *StepData {
 	}
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
-			Id:         "1c4aed23-f3d3-4e6b-9710-009a9bc9b694",
+			Id:         "24b09066-836f-4b8f-9773-8c86a5eee26c",
 			Version:    "0.2.0",
 			Name:       "Time series formatter",
 			PythonPath: "d3m.primitives.data_preprocessing.timeseries_formatter.DistilTimeSeriesFormatter",
