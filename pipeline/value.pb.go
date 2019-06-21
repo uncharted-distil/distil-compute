@@ -18,7 +18,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type ValueType int32
 
@@ -65,14 +65,14 @@ var ValueType_name = map[int32]string{
 
 var ValueType_value = map[string]int32{
 	"VALUE_TYPE_UNDEFINED": 0,
-	"RAW":                  1,
-	"DATASET_URI":          2,
-	"CSV_URI":              3,
-	"PICKLE_URI":           4,
-	"PICKLE_BLOB":          5,
-	"PLASMA_ID":            6,
-	"LARGE_RAW":            7,
-	"LARGE_PICKLE_BLOB":    8,
+	"RAW":               1,
+	"DATASET_URI":       2,
+	"CSV_URI":           3,
+	"PICKLE_URI":        4,
+	"PICKLE_BLOB":       5,
+	"PLASMA_ID":         6,
+	"LARGE_RAW":         7,
+	"LARGE_PICKLE_BLOB": 8,
 }
 
 func (x ValueType) String() string {
@@ -384,9 +384,9 @@ func (m *ValueRaw) GetDict() *ValueDict {
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*ValueRaw) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _ValueRaw_OneofMarshaler, _ValueRaw_OneofUnmarshaler, _ValueRaw_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*ValueRaw) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*ValueRaw_Null)(nil),
 		(*ValueRaw_Double)(nil),
 		(*ValueRaw_Int64)(nil),
@@ -396,156 +396,6 @@ func (*ValueRaw) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) erro
 		(*ValueRaw_List)(nil),
 		(*ValueRaw_Dict)(nil),
 	}
-}
-
-func _ValueRaw_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*ValueRaw)
-	// raw
-	switch x := m.Raw.(type) {
-	case *ValueRaw_Null:
-		b.EncodeVarint(1<<3 | proto.WireVarint)
-		b.EncodeVarint(uint64(x.Null))
-	case *ValueRaw_Double:
-		b.EncodeVarint(2<<3 | proto.WireFixed64)
-		b.EncodeFixed64(math.Float64bits(x.Double))
-	case *ValueRaw_Int64:
-		b.EncodeVarint(3<<3 | proto.WireVarint)
-		b.EncodeVarint(uint64(x.Int64))
-	case *ValueRaw_Bool:
-		t := uint64(0)
-		if x.Bool {
-			t = 1
-		}
-		b.EncodeVarint(4<<3 | proto.WireVarint)
-		b.EncodeVarint(t)
-	case *ValueRaw_String_:
-		b.EncodeVarint(5<<3 | proto.WireBytes)
-		b.EncodeStringBytes(x.String_)
-	case *ValueRaw_Bytes:
-		b.EncodeVarint(6<<3 | proto.WireBytes)
-		b.EncodeRawBytes(x.Bytes)
-	case *ValueRaw_List:
-		b.EncodeVarint(7<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.List); err != nil {
-			return err
-		}
-	case *ValueRaw_Dict:
-		b.EncodeVarint(8<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Dict); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("ValueRaw.Raw has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _ValueRaw_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*ValueRaw)
-	switch tag {
-	case 1: // raw.null
-		if wire != proto.WireVarint {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeVarint()
-		m.Raw = &ValueRaw_Null{NullValue(x)}
-		return true, err
-	case 2: // raw.double
-		if wire != proto.WireFixed64 {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeFixed64()
-		m.Raw = &ValueRaw_Double{math.Float64frombits(x)}
-		return true, err
-	case 3: // raw.int64
-		if wire != proto.WireVarint {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeVarint()
-		m.Raw = &ValueRaw_Int64{int64(x)}
-		return true, err
-	case 4: // raw.bool
-		if wire != proto.WireVarint {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeVarint()
-		m.Raw = &ValueRaw_Bool{x != 0}
-		return true, err
-	case 5: // raw.string
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.Raw = &ValueRaw_String_{x}
-		return true, err
-	case 6: // raw.bytes
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeRawBytes(true)
-		m.Raw = &ValueRaw_Bytes{x}
-		return true, err
-	case 7: // raw.list
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(ValueList)
-		err := b.DecodeMessage(msg)
-		m.Raw = &ValueRaw_List{msg}
-		return true, err
-	case 8: // raw.dict
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(ValueDict)
-		err := b.DecodeMessage(msg)
-		m.Raw = &ValueRaw_Dict{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _ValueRaw_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*ValueRaw)
-	// raw
-	switch x := m.Raw.(type) {
-	case *ValueRaw_Null:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(x.Null))
-	case *ValueRaw_Double:
-		n += 1 // tag and wire
-		n += 8
-	case *ValueRaw_Int64:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(x.Int64))
-	case *ValueRaw_Bool:
-		n += 1 // tag and wire
-		n += 1
-	case *ValueRaw_String_:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.String_)))
-		n += len(x.String_)
-	case *ValueRaw_Bytes:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.Bytes)))
-		n += len(x.Bytes)
-	case *ValueRaw_List:
-		s := proto.Size(x.List)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *ValueRaw_Dict:
-		s := proto.Size(x.Dict)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 type Value struct {
@@ -690,9 +540,9 @@ func (m *Value) GetPlasmaId() []byte {
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*Value) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _Value_OneofMarshaler, _Value_OneofUnmarshaler, _Value_OneofSizer, []interface{}{
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*Value) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
 		(*Value_Error)(nil),
 		(*Value_Raw)(nil),
 		(*Value_DatasetUri)(nil),
@@ -701,142 +551,6 @@ func (*Value) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, 
 		(*Value_PickleBlob)(nil),
 		(*Value_PlasmaId)(nil),
 	}
-}
-
-func _Value_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*Value)
-	// value
-	switch x := m.Value.(type) {
-	case *Value_Error:
-		b.EncodeVarint(1<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Error); err != nil {
-			return err
-		}
-	case *Value_Raw:
-		b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Raw); err != nil {
-			return err
-		}
-	case *Value_DatasetUri:
-		b.EncodeVarint(3<<3 | proto.WireBytes)
-		b.EncodeStringBytes(x.DatasetUri)
-	case *Value_CsvUri:
-		b.EncodeVarint(4<<3 | proto.WireBytes)
-		b.EncodeStringBytes(x.CsvUri)
-	case *Value_PickleUri:
-		b.EncodeVarint(5<<3 | proto.WireBytes)
-		b.EncodeStringBytes(x.PickleUri)
-	case *Value_PickleBlob:
-		b.EncodeVarint(6<<3 | proto.WireBytes)
-		b.EncodeRawBytes(x.PickleBlob)
-	case *Value_PlasmaId:
-		b.EncodeVarint(7<<3 | proto.WireBytes)
-		b.EncodeRawBytes(x.PlasmaId)
-	case nil:
-	default:
-		return fmt.Errorf("Value.Value has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _Value_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*Value)
-	switch tag {
-	case 1: // value.error
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(ValueError)
-		err := b.DecodeMessage(msg)
-		m.Value = &Value_Error{msg}
-		return true, err
-	case 2: // value.raw
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(ValueRaw)
-		err := b.DecodeMessage(msg)
-		m.Value = &Value_Raw{msg}
-		return true, err
-	case 3: // value.dataset_uri
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.Value = &Value_DatasetUri{x}
-		return true, err
-	case 4: // value.csv_uri
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.Value = &Value_CsvUri{x}
-		return true, err
-	case 5: // value.pickle_uri
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.Value = &Value_PickleUri{x}
-		return true, err
-	case 6: // value.pickle_blob
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeRawBytes(true)
-		m.Value = &Value_PickleBlob{x}
-		return true, err
-	case 7: // value.plasma_id
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeRawBytes(true)
-		m.Value = &Value_PlasmaId{x}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _Value_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*Value)
-	// value
-	switch x := m.Value.(type) {
-	case *Value_Error:
-		s := proto.Size(x.Error)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *Value_Raw:
-		s := proto.Size(x.Raw)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case *Value_DatasetUri:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.DatasetUri)))
-		n += len(x.DatasetUri)
-	case *Value_CsvUri:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.CsvUri)))
-		n += len(x.CsvUri)
-	case *Value_PickleUri:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.PickleUri)))
-		n += len(x.PickleUri)
-	case *Value_PickleBlob:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.PickleBlob)))
-		n += len(x.PickleBlob)
-	case *Value_PlasmaId:
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(len(x.PlasmaId)))
-		n += len(x.PlasmaId)
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
 }
 
 func init() {
