@@ -111,6 +111,6 @@ func (s *InferenceStepData) BuildDescriptionStep() (*PipelineDescriptionSteps, e
 
 	return &PipelineDescriptionSteps{
 		Step:        step,
-		NestedSteps: []*PipelineDescriptionSteps{},
+		NestedSteps: map[string]*PipelineDescriptionSteps{},
 	}, nil
 }

@@ -33,7 +33,7 @@ const (
 // hyperparam args that were themselves primitives.
 type PipelineDescriptionSteps struct {
 	Step        *pipeline.PipelineDescriptionStep
-	NestedSteps []*PipelineDescriptionSteps
+	NestedSteps map[string]*PipelineDescriptionSteps
 }
 
 // Step provides data for a pipeline description step and an operation
@@ -167,7 +167,7 @@ func doBuildDescriptionStep(stepData *StepData) (*PipelineDescriptionSteps, erro
 	// Generate hyper parameter entries - accepted go-natives types are currently intXX, string, bool, as well as list, map[string]
 	// of those types.  Primitives are also accepted.
 	hyperparameters := map[string]*pipeline.PrimitiveStepHyperparameter{}
-	nestedStepDescriptions := []*PipelineDescriptionSteps{}
+	nestedStepDescriptions := map[string]*PipelineDescriptionSteps{}
 	for k, v := range stepData.Hyperparameters {
 		// We can handle hyperparameter args that are values, or primitive references
 		nestedStepData, ok := v.(*StepData)
@@ -185,7 +185,7 @@ func doBuildDescriptionStep(stepData *StepData) (*PipelineDescriptionSteps, erro
 			if err != nil {
 				return nil, errors.Errorf("compile failed: hyperparameter `%s` not built - %s", k, err.Error())
 			}
-			nestedStepDescriptions = append(nestedStepDescriptions, stepDescriptions)
+			nestedStepDescriptions[k] = stepDescriptions
 		} else {
 			// Values
 			rawValue, err := parseValue(v)

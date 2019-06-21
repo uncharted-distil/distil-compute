@@ -252,7 +252,7 @@ func TestMergePipeline(t *testing.T) {
 
 func TestCompoundPipeline(t *testing.T) {
 	step0 := NewPipelineNode(createTestStep(0))
-	step1 := NewPipelineNode(createTestStepWithNestedPrimitive(1))
+	step1 := NewPipelineNode(createTestStepWithNestedPrimitives(1, 2))
 
 	step0.Add(step1)
 
@@ -261,11 +261,13 @@ func TestCompoundPipeline(t *testing.T) {
 	assert.NoError(t, err)
 
 	steps := desc.GetSteps()
-	assert.Equal(t, 2, len(steps))
+	assert.Equal(t, 4, len(steps))
 
 	topStep := steps[1]
-	primitiveIdx := topStep.GetPrimitive().GetHyperparams()["testPrimitive"].GetPrimitive().GetData()
-	assert.Equal(t, 2, primitiveIdx)
+	primitiveIdx := topStep.GetPrimitive().GetHyperparams()["primitiveArg-0"].GetPrimitive().GetData()
+	assert.Equal(t, int32(2), primitiveIdx)
+	primitiveIdx = topStep.GetPrimitive().GetHyperparams()["primitiveArg-1"].GetPrimitive().GetData()
+	assert.Equal(t, int32(3), primitiveIdx)
 }
 
 func TestExtraOutputCompile(t *testing.T) {
@@ -422,7 +424,13 @@ func createTestStepWithAll(step int64, outputMethods []string, arguments []strin
 	)
 }
 
-func createTestStepWithNestedPrimitive(step int64) *StepData {
+func createTestStepWithNestedPrimitives(step int64, numPrimitives int) *StepData {
+	hyperparams := map[string]interface{}{}
+	for i := 0; i < numPrimitives; i++ {
+		argName := fmt.Sprintf("primitiveArg-%d", i)
+		hyperparams[argName] = createTestStep(10 + int64(i))
+	}
+
 	return NewStepDataWithAll(
 		&pipeline.Primitive{
 			Id:         fmt.Sprintf("0000-primtive-%d", step),
@@ -431,9 +439,7 @@ func createTestStepWithNestedPrimitive(step int64) *StepData {
 			PythonPath: fmt.Sprintf("d3m.primitives.distil.primitive.%d", step),
 		},
 		[]string{"produce"},
-		map[string]interface{}{
-			"testPrimitive": createTestStep(1000 - step),
-		},
+		hyperparams,
 		nil,
 	)
 }
