@@ -372,7 +372,7 @@ func extractCompiledPrimitives(compileResults []*PipelineDescriptionSteps) []*pi
 			// Update the primitive hyperparam value to point to the child primitive
 			step.Step.GetPrimitive().GetHyperparams()[hyperparamName].GetPrimitive().Data = int32(nextIndex + len(compileResults))
 
-			nextIndex = index + 1
+			nextIndex = nextIndex + 1
 		}
 		return nextIndex
 	}
