@@ -263,7 +263,10 @@ func TestCompoundPipeline(t *testing.T) {
 	assert.NoError(t, err)
 
 	steps := desc.GetSteps()
-	assert.Equal(t, 4, len(steps))
+	for i, step := range steps {
+		t.Logf("Step %d: %s", i, step.GetPrimitive().GetPrimitive().GetName())
+	}
+	assert.Equal(t, 7, len(steps))
 
 	primitiveIdx := steps[1].GetPrimitive().GetHyperparams()["primitiveArg-0"].GetPrimitive().GetData()
 	assert.Equal(t, int32(3), primitiveIdx)
