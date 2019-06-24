@@ -264,18 +264,18 @@ func TestCompoundPipeline(t *testing.T) {
 
 	steps := desc.GetSteps()
 	for i, step := range steps {
-		t.Logf("Step %d: %s", i, step.GetPrimitive().GetPrimitive().GetName())
+		t.Logf("Step %d: %s Inputs: %+v", i, step.GetPrimitive().GetPrimitive().GetName(), step.GetPrimitive().GetArguments()["inputs"])
 	}
 	assert.Equal(t, 7, len(steps))
 
-	primitiveIdx := steps[1].GetPrimitive().GetHyperparams()["primitiveArg-0"].GetPrimitive().GetData()
+	primitiveIdx := steps[5].GetPrimitive().GetHyperparams()["primitiveArg-0"].GetPrimitive().GetData()
+	assert.Equal(t, int32(0), primitiveIdx)
+	primitiveIdx = steps[5].GetPrimitive().GetHyperparams()["primitiveArg-1"].GetPrimitive().GetData()
+	assert.Equal(t, int32(1), primitiveIdx)
+	primitiveIdx = steps[6].GetPrimitive().GetHyperparams()["primitiveArg-0"].GetPrimitive().GetData()
+	assert.Equal(t, int32(2), primitiveIdx)
+	primitiveIdx = steps[6].GetPrimitive().GetHyperparams()["primitiveArg-1"].GetPrimitive().GetData()
 	assert.Equal(t, int32(3), primitiveIdx)
-	primitiveIdx = steps[1].GetPrimitive().GetHyperparams()["primitiveArg-1"].GetPrimitive().GetData()
-	assert.Equal(t, int32(4), primitiveIdx)
-	primitiveIdx = steps[2].GetPrimitive().GetHyperparams()["primitiveArg-0"].GetPrimitive().GetData()
-	assert.Equal(t, int32(5), primitiveIdx)
-	primitiveIdx = steps[2].GetPrimitive().GetHyperparams()["primitiveArg-1"].GetPrimitive().GetData()
-	assert.Equal(t, int32(6), primitiveIdx)
 }
 
 func TestExtraOutputCompile(t *testing.T) {
