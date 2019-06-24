@@ -387,7 +387,7 @@ func MapD3MTypeToPostgresType(typ string) string {
 		return dataTypeInteger
 	case IntegerType, FloatType, LongitudeType, LatitudeType, RealType, TimestampType:
 		return dataTypeFloat
-	case OrdinalType, CategoricalType, TextType:
+	case OrdinalType, CategoricalType, StringType:
 		return dataTypeText
 	case DateTimeType:
 		return dataTypeDate

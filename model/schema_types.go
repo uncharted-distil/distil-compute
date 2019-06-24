@@ -45,8 +45,8 @@ const (
 	CategoricalType = "categorical"
 	// NumericalType is the schema type for numerical values
 	NumericalType = "numerical"
-	// TextType is the schema type for text values
-	TextType = "text"
+	// StringType is the schema type for string/text values
+	StringType = "string"
 	// CityType is the schema type for city values
 	CityType = "city"
 	// CountryType is the schema type for country values
@@ -183,7 +183,7 @@ var (
 		OrdinalType:     TA2CategoricalType,
 		CategoricalType: TA2CategoricalType,
 		NumericalType:   TA2RealType,
-		TextType:        TA2StringType,
+		StringType:      TA2StringType,
 		CityType:        TA2CategoricalType,
 		CountryType:     TA2CategoricalType,
 		EmailType:       TA2StringType,
@@ -211,7 +211,7 @@ var (
 		OrdinalType:     CategoricalSchemaType,
 		CategoricalType: CategoricalSchemaType,
 		NumericalType:   RealSchemaType,
-		TextType:        StringSchemaType,
+		StringType:      StringSchemaType,
 		CityType:        StringSchemaType,
 		CountryType:     StringSchemaType,
 		EmailType:       StringSchemaType,
@@ -231,12 +231,11 @@ var (
 		BooleanSchemaType:     BoolType,
 		IntegerSchemaType:     IntegerType,
 		RealSchemaType:        RealType,
-		StringSchemaType:      TextType,
 		CategoricalSchemaType: CategoricalType,
 		DatetimeSchemaType:    DateTimeType,
 		RealVectorSchemaType:  RealVectorType,
-		JSONSchemaType:        TextType,
-		GeoJSONSchemaType:     TextType,
+		JSONSchemaType:        StringType,
+		GeoJSONSchemaType:     StringType,
 		ImageSchemaType:       ImageType,
 		TimeSeriesSchemaType:  TimeSeriesType,
 		TimestampSchemaType:   TimestampType,
@@ -244,7 +243,7 @@ var (
 
 	// Maps from Simon type to Distil internal type
 	simonTypeMap = map[string]string{
-		SimonStringType:  TextType,
+		SimonStringType:  StringType,
 		SimonFloatType:   RealType,
 		SimonIntegerType: IntegerType,
 	}
@@ -258,7 +257,7 @@ var (
 		BoolType:       true,
 		DateTimeType:   true,
 		NumericalType:  true,
-		TextType:       true,
+		StringType:     true,
 	}
 )
 
@@ -283,7 +282,7 @@ func IsCategorical(typ string) bool {
 // IsText indicates whether or not a schema type is text for the purposes
 // of analysis.
 func IsText(typ string) bool {
-	return typ == TextType
+	return typ == StringType
 }
 
 // IsVector indicates whether or not a schema type is a vector for the purposes
