@@ -126,14 +126,18 @@ func (p *PipelineBuilder) CompileWithOptions(clampMissingInputs bool) (*pipeline
 		return nil, errors.New("compile failed: pipeline requires at least 1 step")
 	}
 
-	pipelineNodes := []*PipelineNode{}
-	idToIndexMap := map[uint64]int{}
-	traversalQueue := []*PipelineNode{}
-
-	// ensure that there aren't any cycles in the graph
 	if checkCycles(p.sources) {
 		return nil, errors.Errorf("compile error: detected cycle in graph")
 	}
+
+	// First step - compute the number of primitives that are used as hyperparameter arguments.
+	// These need to come *before* the member primitives to keep the D3M runtime happy, so we'll leave
+	// space for them at the start of the final primitive array.
+	indexOffset := countHyperparameterPrimitives(p.sources, 0)
+
+	pipelineNodes := []*PipelineNode{}
+	idToIndexMap := map[uint64]int{}
+	traversalQueue := []*PipelineNode{}
 
 	// start processing from the roots
 	refCount := 0
@@ -161,7 +165,7 @@ func (p *PipelineBuilder) CompileWithOptions(clampMissingInputs bool) (*pipeline
 		node := traversalQueue[0]
 		traversalQueue = traversalQueue[1:]
 		var err error
-		pipelineNodes, err = p.processNode(node, pipelineNodes, idToIndexMap, clampMissingInputs)
+		pipelineNodes, err = p.processNode(node, pipelineNodes, idToIndexMap, indexOffset, clampMissingInputs)
 		if err != nil {
 			return nil, err
 		}
@@ -243,7 +247,9 @@ func validate(node *PipelineNode) error {
 	return nil
 }
 
-func (p *PipelineBuilder) processNode(node *PipelineNode, pipelineNodes []*PipelineNode, idToIndexMap map[uint64]int, clampMissingInputs bool) ([]*PipelineNode, error) {
+func (p *PipelineBuilder) processNode(node *PipelineNode, pipelineNodes []*PipelineNode,
+	idToIndexMap map[uint64]int, indexOffset int, clampMissingInputs bool) ([]*PipelineNode, error) {
+
 	// don't re-process
 	if node.visited {
 		return pipelineNodes, nil
@@ -299,7 +305,7 @@ func (p *PipelineBuilder) processNode(node *PipelineNode, pipelineNodes []*Pipel
 
 	// add to the node list
 	pipelineNodes = append(pipelineNodes, node)
-	idToIndexMap[node.nodeID] = len(pipelineNodes) - 1
+	idToIndexMap[node.nodeID] = (len(pipelineNodes) - 1) + indexOffset
 
 	// Mark as visited so we don't reprocess
 	node.visited = true
@@ -356,7 +362,7 @@ func extractCompiledPrimitives(compileResults []*PipelineDescriptionSteps) []*pi
 	index := 0
 
 	// Recursively traverses a primitive's hyperparams that are themselves
-	var traverseAndUpdate func(step *PipelineDescriptionSteps, index int) int
+	var traverseAndUpdate func(*PipelineDescriptionSteps, int) int
 	traverseAndUpdate = func(step *PipelineDescriptionSteps, index int) int {
 		nextIndex := index
 		// need to use sorted keys so args are consistently ordered for debug/testing - go intentionally randomizes
@@ -370,9 +376,9 @@ func extractCompiledPrimitives(compileResults []*PipelineDescriptionSteps) []*pi
 			nextIndex = traverseAndUpdate(nestedStep, nextIndex)
 
 			// Update the primitive hyperparam value to point to the child primitive
-			step.Step.GetPrimitive().GetHyperparams()[hyperparamName].GetPrimitive().Data = int32(nextIndex + len(compileResults))
+			step.Step.GetPrimitive().GetHyperparams()[hyperparamName].GetPrimitive().Data = int32(nextIndex)
 
-			nextIndex = index + 1
+			nextIndex = nextIndex + 1
 		}
 		return nextIndex
 	}
@@ -380,5 +386,26 @@ func extractCompiledPrimitives(compileResults []*PipelineDescriptionSteps) []*pi
 		pipelineDescriptionSteps = append(pipelineDescriptionSteps, step.Step)
 		index = traverseAndUpdate(step, index)
 	}
-	return append(pipelineDescriptionSteps, nestedPipelineDescriptionSteps...)
+	return append(nestedPipelineDescriptionSteps, pipelineDescriptionSteps...)
+}
+
+// Counts the number of hyperparameters in the pipeline that are themselves primitives.
+func countHyperparameterPrimitives(nodes []*PipelineNode, count int) int {
+	for _, node := range nodes {
+		// count the number of hyperparam primitives for this node and add to our total
+		count = count + countChildPrimitives(node.step, 0)
+		// process this nodes children
+		count = countHyperparameterPrimitives(node.children, count)
+	}
+	return count
+}
+
+func countChildPrimitives(step Step, currCount int) int {
+	for _, value := range step.GetHyperparameters() {
+		childStepData, ok := value.(Step)
+		if ok {
+			currCount = countChildPrimitives(childStepData, currCount+1)
+		}
+	}
+	return currCount
 }
