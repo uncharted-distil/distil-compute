@@ -211,11 +211,19 @@ func traverseNodes(node *PipelineNode, processed []*PipelineNode) []*PipelineNod
 
 func sortTraversal(rootNodes []*PipelineNode) []*PipelineNode {
 	processed := make([]*PipelineNode, 0)
+	refCount := 0
 	for _, s := range rootNodes {
+		// setup the root inputs in a 1:1 way
+		args := s.step.GetArguments()
+		for _, arg := range args {
+			key := fmt.Sprintf("%s.%d", pipelineInputsKey, refCount)
+			s.step.UpdateArguments(arg.Name, key)
+			refCount++
+		}
+
+		// process the steps
 		processed = append(processed, traverseNodes(s, processed)...)
 	}
-	fmt.Printf("PROCESSED: %v", processed)
-	fmt.Println()
 
 	// reverse and reset nodes
 	count := len(processed)

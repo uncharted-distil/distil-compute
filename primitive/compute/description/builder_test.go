@@ -69,6 +69,12 @@ func TestMultiInputPipelineCompile(t *testing.T) {
 
 	steps := desc.GetSteps()
 	assert.Equal(t, 3, len(steps))
+	fmt.Printf("FIRST: %v", steps[0].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
+	fmt.Println()
+	fmt.Printf("SECOND: %v", steps[1].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
+	fmt.Println()
+	fmt.Printf("THIRD: %v", steps[2].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
+	fmt.Println()
 
 	// validate step inputs
 	assert.Equal(t, "inputs.0", steps[0].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
