@@ -494,14 +494,14 @@ func CreateTimeseriesFormatterPipeline(name string, description string, resource
 	step0 := NewPipelineNode(NewDatasetToDataframeStep())
 	step1 := NewPipelineNode(NewDatasetToDataframeStepWithResource(resourceId))
 	step2 := NewPipelineNode(NewCSVReaderStep())
-	step3 := NewPipelineNode(NewHorizontalConcatStep())
+	step3 := NewPipelineNode(NewHorizontalConcatStep(false, false))
 	step4 := NewPipelineNode(NewDataFrameFlattenStep())
 	step0.Add(step3)
 	step1.Add(step2)
 	step2.Add(step3)
 	step3.Add(step4)
 
-	pipeline, err := NewPipelineBuilder(name, description, step0).Compile()
+	pipeline, err := NewPipelineBuilder(name, description, step0, step1).Compile()
 	if err != nil {
 		return nil, err
 	}

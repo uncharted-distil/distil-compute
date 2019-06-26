@@ -167,9 +167,9 @@ func NewDatasetToDataframeStep() *StepData {
 }
 
 // NewHorizontalConcatStep creates a primitive call that concats two data frames.
-func NewHorizontalConcatStep() *StepData {
+func NewHorizontalConcatStep(useIndex bool, removeSecondIndex bool) *StepData {
 
-	return NewStepData(
+	return NewStepDataWithAll(
 		&pipeline.Primitive{
 			Id:         "aff6a77a-faa0-41c5-9595-de2e7f7c4760",
 			Version:    "0.2.0",
@@ -178,6 +178,11 @@ func NewHorizontalConcatStep() *StepData {
 			Digest:     "dea9e41d4dc0204d963ee01617416a6c5165c008ac717c09e59703dcee5d6cfd",
 		},
 		[]string{"produce"},
+		map[string]interface{}{
+			"use_index":           useIndex,
+			"remove_second_index": removeSecondIndex,
+		},
+		[]string{"left", "right"},
 	)
 }
 

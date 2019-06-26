@@ -128,7 +128,6 @@ func (p *PipelineBuilder) CompileWithOptions(clampMissingInputs bool) (*pipeline
 
 	pipelineNodes := []*PipelineNode{}
 	idToIndexMap := map[uint64]int{}
-	traversalQueue := []*PipelineNode{}
 
 	// ensure that there aren't any cycles in the graph
 	if checkCycles(p.sources) {
@@ -136,24 +135,7 @@ func (p *PipelineBuilder) CompileWithOptions(clampMissingInputs bool) (*pipeline
 	}
 
 	// start processing from the roots
-	refCount := 0
-	for _, sourceNode := range p.sources {
-		err := validate(sourceNode)
-		if err != nil {
-			return nil, err
-		}
-
-		// set the primitive inputs to the pipeline inputs in a 1:1 fashion in order
-		args := sourceNode.step.GetArguments()
-		for _, arg := range args {
-			key := fmt.Sprintf("%s.%d", pipelineInputsKey, refCount)
-			sourceNode.step.UpdateArguments(arg.Name, key)
-			refCount++
-		}
-
-		// add to traversal queue
-		traversalQueue = append(traversalQueue, sourceNode)
-	}
+	traversalQueue := sortTraversal(p.sources)
 
 	// perform a breadth first traversal of the DAG to establish connections between
 	// steps
@@ -164,11 +146,6 @@ func (p *PipelineBuilder) CompileWithOptions(clampMissingInputs bool) (*pipeline
 		pipelineNodes, err = p.processNode(node, pipelineNodes, idToIndexMap, clampMissingInputs)
 		if err != nil {
 			return nil, err
-		}
-
-		// Process any children that haven't yet been visited
-		for _, child := range node.children {
-			traversalQueue = append(traversalQueue, child)
 		}
 	}
 
@@ -218,6 +195,38 @@ func (p *PipelineBuilder) CompileWithOptions(clampMissingInputs bool) (*pipeline
 	p.compiled = true
 
 	return pipelineDesc, nil
+}
+
+func traverseNodes(node *PipelineNode, processed []*PipelineNode) []*PipelineNode {
+	if !node.visited {
+		node.visited = true
+		for _, c := range node.children {
+			processed = append(processed, traverseNodes(c, processed)...)
+		}
+		processed = append(processed, node)
+	}
+
+	return processed
+}
+
+func sortTraversal(rootNodes []*PipelineNode) []*PipelineNode {
+	processed := make([]*PipelineNode, 0)
+	for _, s := range rootNodes {
+		processed = append(processed, traverseNodes(s, processed)...)
+	}
+	fmt.Printf("PROCESSED: %v", processed)
+	fmt.Println()
+
+	// reverse and reset nodes
+	count := len(processed)
+	reversed := make([]*PipelineNode, count)
+	for i := 0; i < count; i++ {
+		// reset the node visited flag for further use
+		processed[i].visited = false
+		reversed[count-i-1] = processed[i]
+	}
+
+	return reversed
 }
 
 func validate(node *PipelineNode) error {
