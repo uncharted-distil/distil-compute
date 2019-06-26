@@ -490,12 +490,16 @@ func CreateDSBoxJoinPipeline(name string, description string, leftJoinCols []str
 }
 
 // CreateTimeseriesFormatterPipeline creates a time series formatter pipeline.
-func CreateTimeseriesFormatterPipeline(name string, description string) (*pipeline.PipelineDescription, error) {
+func CreateTimeseriesFormatterPipeline(name string, description string, resourceId string) (*pipeline.PipelineDescription, error) {
 	step0 := NewPipelineNode(NewDatasetToDataframeStep())
-	step1 := NewPipelineNode(NewCSVReaderStep())
-	step2 := NewPipelineNode(NewDataFrameFlattenStep())
-	step0.Add(step1)
+	step1 := NewPipelineNode(NewDatasetToDataframeStepWithResource(resourceId))
+	step2 := NewPipelineNode(NewCSVReaderStep())
+	step3 := NewPipelineNode(NewHorizontalConcatStep())
+	step4 := NewPipelineNode(NewDataFrameFlattenStep())
+	step0.Add(step3)
 	step1.Add(step2)
+	step2.Add(step3)
+	step3.Add(step4)
 
 	pipeline, err := NewPipelineBuilder(name, description, step0).Compile()
 	if err != nil {

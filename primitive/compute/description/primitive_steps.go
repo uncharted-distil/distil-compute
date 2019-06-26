@@ -153,6 +153,7 @@ func NewCrocStep(targetColumns []string, outputLabels []string) *StepData {
 // NewDatasetToDataframeStep creates a primitive call that transforms an input dataset
 // into a PANDAS dataframe.
 func NewDatasetToDataframeStep() *StepData {
+
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "4b42ce1e-9b98-4a25-b68e-fad13311eb65",
@@ -162,6 +163,43 @@ func NewDatasetToDataframeStep() *StepData {
 			Digest:     "85b946aa6123354fe51a288c3be56aaca82e76d4071c1edc13be6f9e0e100144",
 		},
 		[]string{"produce"},
+	)
+}
+
+// NewHorizontalConcatStep creates a primitive call that concats two data frames.
+func NewHorizontalConcatStep() *StepData {
+
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "aff6a77a-faa0-41c5-9595-de2e7f7c4760",
+			Version:    "0.2.0",
+			Name:       "Concatenate two dataframes",
+			PythonPath: "d3m.primitives.data_transformation.horizontal_concat.DataFrameCommon",
+			Digest:     "dea9e41d4dc0204d963ee01617416a6c5165c008ac717c09e59703dcee5d6cfd",
+		},
+		[]string{"produce"},
+	)
+}
+
+// NewDatasetToDataframeStepWithResource creates a primitive call that transforms an input dataset
+// into a PANDAS dataframe using the specified resource.
+func NewDatasetToDataframeStepWithResource(resourceName string) *StepData {
+	if resourceName == "" {
+		resourceName = "learningData"
+	}
+
+	return NewStepDataWithHyperparameters(
+		&pipeline.Primitive{
+			Id:         "4b42ce1e-9b98-4a25-b68e-fad13311eb65",
+			Version:    "0.3.0",
+			Name:       "Dataset to DataFrame converter",
+			PythonPath: "d3m.primitives.data_transformation.dataset_to_dataframe.Common",
+			Digest:     "85b946aa6123354fe51a288c3be56aaca82e76d4071c1edc13be6f9e0e100144",
+		},
+		[]string{"produce"},
+		map[string]interface{}{
+			"dataframe_resource": resourceName,
+		},
 	)
 }
 
