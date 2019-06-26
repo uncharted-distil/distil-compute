@@ -98,7 +98,8 @@ type PipelineBuilder struct {
 	inferred    bool
 }
 
-// NewPipelineBuilder creates a new pipeline builder instance.  Source nodes need to be added in a subsequent call.
+// NewPipelineBuilder creates a new pipeline builder instance.  All of the source nodes in the pipeline
+// DAG need to be passed in to the builder via the sources argument, which is variadic.
 func NewPipelineBuilder(name string, description string, sources ...*PipelineNode) *PipelineBuilder {
 	builder := &PipelineBuilder{
 		sources:     sources,
