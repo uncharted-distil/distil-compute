@@ -387,6 +387,13 @@ func extractCompiledPrimitives(compileResults []*PipelineDescriptionSteps) []*pi
 		pipelineDescriptionSteps = append(pipelineDescriptionSteps, step.Step)
 		index = traverseAndUpdate(step, index)
 	}
+
+	// nested primitives need to have empty arguments and outputs to satisfy the runtime
+	for _, step := range nestedPipelineDescriptionSteps {
+		step.GetPrimitive().Arguments = map[string]*pipeline.PrimitiveStepArgument{}
+		step.GetPrimitive().Outputs = []*pipeline.StepOutput{}
+	}
+
 	return append(nestedPipelineDescriptionSteps, pipelineDescriptionSteps...)
 }
 
