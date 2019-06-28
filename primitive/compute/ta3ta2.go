@@ -29,6 +29,8 @@ import (
 
 const (
 	unknownAPIVersion  = "unknown"
+
+	// TaskTypeTimeseries represents timeseries forcasting
 	TaskTypeTimeseries = "timeSeriesForecasting"
 )
 
