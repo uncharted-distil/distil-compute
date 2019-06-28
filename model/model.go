@@ -142,7 +142,7 @@ type Grouping struct {
 	Dataset    string             `json:"dataset"`
 	Type       string             `json:"type"`
 	IDCol      string             `json:"idCol"`
-	SubIDs	   []string			  `json:"subIds"`
+	SubIDs     []string           `json:"subIds"`
 	Hidden     []string           `json:"hidden"`
 	Properties GroupingProperties `json:"properties"`
 }
