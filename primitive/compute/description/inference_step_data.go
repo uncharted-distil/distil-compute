@@ -16,24 +16,28 @@
 package description
 
 import (
-	"fmt"
-
 	"github.com/uncharted-distil/distil-compute/pipeline"
-	log "github.com/unchartedsoftware/plog"
 )
 
 // InferenceStepData provides data for a pipeline description placeholder step,
 // which marks the point at which a TA2 should be begin pipeline inference.
 type InferenceStepData struct {
-	Inputs  []string
-	Outputs []string
+	inputRefs map[string]DataRef
+	Inputs    []string
+	Outputs   []string
 }
 
 // NewInferenceStepData creates a InferenceStepData instance with default values.
-func NewInferenceStepData() *InferenceStepData {
+func NewInferenceStepData(arguments map[string]DataRef) *InferenceStepData {
+	values := make([]string, len(arguments))
+	i := 0
+	for _, arg := range arguments {
+		values[i] = arg.RefString()
+	}
 	return &InferenceStepData{
-		Inputs:  []string{},
-		Outputs: []string{"produce"},
+		Inputs:    values,
+		Outputs:   []string{"produce"},
+		inputRefs: arguments,
 	}
 }
 
@@ -45,24 +49,8 @@ func (s *InferenceStepData) GetPrimitive() *pipeline.Primitive {
 
 // GetArguments adapts the internal placeholder step argument type to the primitive
 // step argument type.
-func (s *InferenceStepData) GetArguments() []*Argument {
-	args := []*Argument{}
-	if len(s.Inputs) == 0 {
-		args = append(args, &Argument{stepInputsKey, ""})
-	} else {
-		for i, input := range s.Inputs {
-			args = append(args, &Argument{fmt.Sprintf("%s.%d", stepInputsKey, i), input})
-		}
-	}
-	return args
-}
-
-// UpdateArguments updates the placheolder step argument.
-func (s *InferenceStepData) UpdateArguments(key string, value string) {
-	if key != stepInputsKey {
-		log.Warnf("Compile warning - inference step key `%s` is not `%s` as expected", key, stepInputsKey)
-	}
-	s.Inputs = append(s.Inputs, value)
+func (s *InferenceStepData) GetArguments() map[string]DataRef {
+	return s.inputRefs
 }
 
 // GetHyperparameters returns an empty map since inference steps don't
@@ -79,7 +67,7 @@ func (s *InferenceStepData) GetOutputMethods() []string {
 
 // BuildDescriptionStep creates protobuf structures from a pipeline step
 // definition.
-func (s *InferenceStepData) BuildDescriptionStep() (*PipelineDescriptionSteps, error) {
+func (s *InferenceStepData) BuildDescriptionStep() (*pipeline.PipelineDescriptionStep, error) {
 	// generate arguments entries
 	inputs := []*pipeline.StepInput{}
 	for _, v := range s.Inputs {
@@ -109,8 +97,5 @@ func (s *InferenceStepData) BuildDescriptionStep() (*PipelineDescriptionSteps, e
 		},
 	}
 
-	return &PipelineDescriptionSteps{
-		Step:        step,
-		NestedSteps: map[string]*PipelineDescriptionSteps{},
-	}, nil
+	return step, nil
 }
