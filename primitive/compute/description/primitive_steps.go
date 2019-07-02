@@ -29,7 +29,7 @@ func NewSimonStep(inputs map[string]DataRef, outputMethods []string) *StepData {
 			Digest:     "44fe5bf57ddb776440d1e22ddd1cf3ffeef9a282a3899856db8741e07fd7325d",
 		},
 		outputMethods,
-		map[string]interface{}{},
+		map[string]interface{}{"statistical_classification": true},
 		inputs,
 	)
 }
@@ -195,7 +195,7 @@ func NewDatasetWrapperStep(inputs map[string]DataRef, outputMethods []string, pr
 			PythonPath: "d3m.primitives.operator.dataset_map.DataFrameCommon",
 			Digest:     "b602026372cab83090708ad7f1c8e8e9d48cd03b1841f59b52b59244727a4aa0",
 		},
-		[]string{"produce"},
+		outputMethods,
 		hyperparams,
 		inputs,
 	)
@@ -278,7 +278,13 @@ func NewColumnParserStep(inputs map[string]DataRef, outputMethods []string) *Ste
 			Digest:     "",
 		},
 		outputMethods,
-		map[string]interface{}{},
+		map[string]interface{}{
+			"parse_semantic_types": []string{
+				"http://schema.org/Boolean",
+				"http://schema.org/Integer",
+				"http://schema.org/Float",
+			},
+		},
 		inputs,
 	)
 }
