@@ -59,7 +59,8 @@ func CreateUserDatasetPipeline(name string, description string, allFeatures []*m
 		steps = append(steps, NewCSVReaderStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}))
 		steps = append(steps, NewHorizontalConcatStep(map[string]DataRef{"left": &StepDataRef{offset, "produce"}, "right": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, false, false))
 		steps = append(steps, NewDataFrameFlattenStep(map[string]DataRef{"inputs": &StepDataRef{offset + 3, "produce"}}, []string{"produce"}))
-		offset = offset + 4
+		steps = append(steps, NewRemoveDuplicateColumnsStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}))
+		offset = offset + 5
 	} else {
 		steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{offset}}, []string{"produce"}))
 		offset++
@@ -563,7 +564,7 @@ func CreateDSBoxJoinPipeline(name string, description string, leftJoinCols []str
 // CreateTimeseriesFormatterPipeline creates a time series formatter pipeline.
 func CreateTimeseriesFormatterPipeline(name string, description string, resourceId string) (*pipeline.PipelineDescription, error) {
 	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{4, "produce"}}
+	outputs := []DataRef{&StepDataRef{5, "produce"}}
 
 	steps := []Step{
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
@@ -571,6 +572,7 @@ func CreateTimeseriesFormatterPipeline(name string, description string, resource
 		NewCSVReaderStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}),
 		NewHorizontalConcatStep(map[string]DataRef{"left": &StepDataRef{0, "produce"}, "right": &StepDataRef{2, "produce"}}, []string{"produce"}, false, false),
 		NewDataFrameFlattenStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+		NewRemoveDuplicateColumnsStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
 	}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()

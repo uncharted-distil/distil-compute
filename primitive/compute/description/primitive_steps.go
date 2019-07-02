@@ -20,6 +20,12 @@ import "github.com/uncharted-distil/distil-compute/pipeline"
 // NewSimonStep creates a SIMON data classification step.  It examines an input
 // dataframe, and assigns types to the columns based on the exposed metadata.
 func NewSimonStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	// since Simon has fit & produce, need to set the params from
+	// set_training_data. In this case, outputs is not used.
+	if inputs["inputs"] != nil && inputs["outputs"] == nil {
+		inputs["outputs"] = inputs["inputs"]
+	}
+
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "d2fa8df2-6517-3c26-bafc-87b701c4043a",
@@ -36,12 +42,18 @@ func NewSimonStep(inputs map[string]DataRef, outputMethods []string) *StepData {
 
 // NewSlothStep creates a Sloth timeseries clustering step.
 func NewSlothStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	// since Sloth has fit & produce, need to set the params from
+	// set_training_data. In this case, outputs is not used.
+	if inputs["inputs"] != nil && inputs["outputs"] == nil {
+		inputs["outputs"] = inputs["inputs"]
+	}
+
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "77bf4b92-2faa-3e38-bb7e-804131243a7f",
-			Version:    "2.0.2",
+			Version:    "2.0.3",
 			Name:       "Sloth",
-			PythonPath: "d3m.primitives.time_series_segmentation.cluster.Sloth",
+			PythonPath: "d3m.primitives.clustering.k_means.Sloth",
 			Digest:     "576297f6bb41056ede966722bb0ed0d73403752e0a80eacd85bd71e8ea930e8a",
 		},
 		outputMethods,
@@ -385,6 +397,22 @@ func NewRemoveColumnsStep(inputs map[string]DataRef, outputMethods []string, col
 		map[string]interface{}{
 			"columns": colIndices,
 		},
+		inputs,
+	)
+}
+
+// NewRemoveDuplicateColumnsStep removes duplicate columns from a dataframe.
+func NewRemoveDuplicateColumnsStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "130513b9-09ca-4785-b386-37ab31d0cf8b",
+			Version:    "0.1.0",
+			Name:       "Removes duplicate columns",
+			PythonPath: "d3m.primitives.data_transformation.remove_duplicate_columns.Common",
+			Digest:     "1504533ed6c09a19c0b3fa3eeae4b8f626e5ceacdcbd247a65996c05f8eb3552",
+		},
+		outputMethods,
+		map[string]interface{}{},
 		inputs,
 	)
 }
