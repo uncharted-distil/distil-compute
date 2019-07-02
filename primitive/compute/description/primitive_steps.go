@@ -208,24 +208,12 @@ func NewDatasetToDataframeStepWithResource(resourceName string) *StepData {
 	)
 }
 
-// ColumnUpdate defines a set of column indices to add/remvoe
-// a set of semantic types to/from.
-type ColumnUpdate struct {
-	Indices       []int
-	SemanticTypes []string
-}
+// NewDatasetWrapperStep creates a primitive that wraps a dataframe primitive such that it can be
+// used as a datset primitive in the pipeline prepend.
+func NewDatasetWrapperStep(dataframePrimitive *StepData, resourceID string) *StepData {
 
-// NewUpdateSemanticTypeStep adds and removes semantic data values from an input
-// dataset.  An add of (1, 2), ("type a", "type b") would result in "type a" and "type b"
-// being added to index 1 and 2.  Leaving the resource ID
-// as the empty value allows the primitive to infer the main resource from the
-// the dataset.
-func NewUpdateSemanticTypeStep(resourceID string, add *ColumnUpdate, remove *ColumnUpdate) (*StepData, error) {
 	hyperparams := map[string]interface{}{
-		"add_columns":    add.Indices,
-		"add_types":      add.SemanticTypes,
-		"remove_columns": remove.Indices,
-		"remove_types":   remove.SemanticTypes,
+		"primitive": dataframePrimitive,
 	}
 	if resourceID != "" {
 		hyperparams["resource_id"] = resourceID
@@ -233,15 +221,68 @@ func NewUpdateSemanticTypeStep(resourceID string, add *ColumnUpdate, remove *Col
 
 	return NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
-			Id:         "98c79128-555a-4a6b-85fb-d4f4064c94ab",
-			Version:    "0.2.0",
-			Name:       "Semantic type updater",
-			PythonPath: "d3m.primitives.data_transformation.update_semantic_types.DatasetCommon",
-			Digest:     "85b946aa6123354fe51a288c3be56aaca82e76d4071c1edc13be6f9e0e100144",
+			Id:         "5bef5738-1638-48d6-9935-72445f0eecdc",
+			Version:    "0.1.0",
+			Name:       "Map DataFrame resources to new resources using provided primitive",
+			PythonPath: "d3m.primitives.operator.dataset_map.DataFrameCommon",
+			Digest:     "b602026372cab83090708ad7f1c8e8e9d48cd03b1841f59b52b59244727a4aa0",
 		},
 		[]string{"produce"},
 		hyperparams,
-	), nil
+	)
+}
+
+// ColumnUpdate defines a set of column indices to add/remvoe
+// a set of semantic types to/from.
+type ColumnUpdate struct {
+	Indices       []int
+	SemanticTypes []string
+}
+
+// NewAddSemanticTypeStep adds semantic data values to an input
+// dataset.  An add of (1, 2), ("type a", "type b") would result in "type a" and "type b"
+// being added to index 1 and 2.  Leaving the resource ID
+// as the empty value allows the primitive to infer the main resource from the
+// the dataset.
+func NewAddSemanticTypeStep(resourceID string, add *ColumnUpdate) *StepData {
+	step := NewStepDataWithHyperparameters(
+		&pipeline.Primitive{
+			Id:         "d7e14b12-abeb-42d8-942f-bdb077b4fd37",
+			Version:    "0.1.0",
+			Name:       "Add semantic types to columns",
+			PythonPath: "d3m.primitives.data_transformation.add_semantic_types.DataFrameCommon",
+			Digest:     "f165abd067b013c18459729c20c082efe7f450d98775e4b1579716f4fd988e76",
+		},
+		[]string{"produce"},
+		map[string]interface{}{
+			"columns":        add.Indices,
+			"semantic_types": add.SemanticTypes,
+		},
+	)
+	return NewDatasetWrapperStep(step, resourceID)
+}
+
+// NewRemoveSemanticTypeStep removes semantic data values from an input
+// dataset.  A remove of (1, 2), ("type a", "type b") would result in "type a" and "type b"
+// being removed from index 1 and 2.  Leaving the resource ID
+// as the empty value allows the primitive to infer the main resource from the
+// the dataset.
+func NewRemoveSemanticTypeStep(resourceID string, remove *ColumnUpdate) *StepData {
+	step := NewStepDataWithHyperparameters(
+		&pipeline.Primitive{
+			Id:         "3002bc5b-fa47-4a3d-882e-a8b5f3d756aa",
+			Version:    "0.1.0",
+			Name:       "Remove semantic types from columns",
+			PythonPath: "d3m.primitives.data_transformation.remove_semantic_types.DataFrameCommon",
+			Digest:     "ff48930a123697994f8b606b8a353c7e60aaf21738f4fd1a2611d8d1eb4a349a",
+		},
+		[]string{"produce"},
+		map[string]interface{}{
+			"columns":        remove.Indices,
+			"semantic_types": remove.SemanticTypes,
+		},
+	)
+	return NewDatasetWrapperStep(step, resourceID)
 }
 
 // NewDenormalizeStep denormalize data that is contained in multiple resource files.
@@ -252,7 +293,7 @@ func NewDenormalizeStep() *StepData {
 			Version:    "0.2.0",
 			Name:       "Denormalize datasets",
 			PythonPath: "d3m.primitives.data_transformation.denormalize.Common",
-			Digest:     "c39e3436373aed1944edbbc9b1cf24af5c71919d73bf0bb545cba0b685812df1",
+			Digest:     "6a80776d244347f0d29f4358df1cd0286c25f67e03a7e2ee517c6e853e6a9d1f",
 		},
 		[]string{"produce"},
 	)
@@ -313,25 +354,23 @@ func NewColumnParserStep() *StepData {
 // are specified by name and the match is case insensitive.  Leaving the resource ID
 // as the empty value allows the primitive to infer the main resource from the
 // the dataset.
-func NewRemoveColumnsStep(resourceID string, colIndices []int) (*StepData, error) {
-	hyperparams := map[string]interface{}{
-		"columns": colIndices,
-	}
-	if resourceID != "" {
-		hyperparams["resource_id"] = resourceID
-	}
-
-	return NewStepDataWithHyperparameters(
+func NewRemoveColumnsStep(resourceID string, colIndices []int) *StepData {
+	step := NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
-			Id:         "2eeff053-395a-497d-88db-7374c27812e6",
-			Version:    "0.2.0",
+			Id:         "3b09ba74-cc90-4f22-9e0a-0cf4f29a7e28",
+			Version:    "0.1.0",
 			Name:       "Column remover",
-			PythonPath: "d3m.primitives.data_transformation.remove_columns.DatasetCommon",
-			Digest:     "85b946aa6123354fe51a288c3be56aaca82e76d4071c1edc13be6f9e0e100144",
+			PythonPath: "d3m.primitives.data_transformation.remove_columns.DataFrameCommon",
+			Digest:     "d2d01abb8d2183baf0204a9ecb8fefdb43683547a1e26049bf4bf81af1137fa3",
 		},
 		[]string{"produce"},
-		hyperparams,
-	), nil
+		map[string]interface{}{
+			"columns": colIndices,
+		},
+	)
+
+	// Wrap the dataframe based primitive in the dataset adapter
+	return NewDatasetWrapperStep(step, resourceID)
 }
 
 // NewTermFilterStep creates a primitive step that filters dataset rows based on a match against a
@@ -339,27 +378,24 @@ func NewRemoveColumnsStep(resourceID string, colIndices []int) (*StepData, error
 // as the empty value allows the primitive to infer the main resource from the
 // the dataset.
 func NewTermFilterStep(resourceID string, colindex int, inclusive bool, terms []string, matchWhole bool) *StepData {
-	hyperparams := map[string]interface{}{
-		"column":      colindex,
-		"inclusive":   inclusive,
-		"terms":       terms,
-		"match_whole": matchWhole,
-	}
-	if resourceID != "" {
-		hyperparams["resource_id"] = resourceID
-	}
-
-	return NewStepDataWithHyperparameters(
+	step := NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
 			Id:         "622893c7-42fc-4561-a6f6-071fb85d610a",
 			Version:    "0.1.0",
 			Name:       "Term list dataset filter",
-			PythonPath: "d3m.primitives.datasets.TermFilter",
-			Digest:     "",
+			PythonPath: "d3m.primitives.data_preprocessing.term_filter.DataFrameCommon",
+			Digest:     "48ba9165ceddd92f740bfae8bbcb894986d3dffb430ee3c2269e7952bb2aad0d",
 		},
 		[]string{"produce"},
-		hyperparams,
+		map[string]interface{}{
+			"column":      colindex,
+			"inclusive":   inclusive,
+			"terms":       terms,
+			"match_whole": matchWhole,
+		},
 	)
+	// Wrap the dataframe based primitive in the dataset adapter
+	return NewDatasetWrapperStep(step, resourceID)
 }
 
 // NewRegexFilterStep creates a primitive step that filter dataset rows based on a regex match.
@@ -371,21 +407,19 @@ func NewRegexFilterStep(resourceID string, colindex int, inclusive bool, regex s
 		"inclusive": inclusive,
 		"regex":     regex,
 	}
-	if resourceID != "" {
-		hyperparams["resource_id"] = resourceID
-	}
-
-	return NewStepDataWithHyperparameters(
+	step := NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
-			Id:         "d1b4c4b7-63ba-4ee6-ab30-035157cccf22",
+			Id:         "cf73bb3d-170b-4ba9-9ead-3dd4b4524b61",
 			Version:    "0.1.0",
 			Name:       "Regex dataset filter",
-			PythonPath: "d3m.primitives.datasets.RegexFilter",
-			Digest:     "",
+			PythonPath: "d3m.primitives.data_preprocessing.regex_filter.DataFrameCommon",
+			Digest:     "b6594dce51b2d16d6468cea45619750bc73fcaf9731d52afa1328398b3d54371",
 		},
 		[]string{"produce"},
 		hyperparams,
 	)
+	// Wrap the dataframe based primitive in the dataset adapter
+	return NewDatasetWrapperStep(step, resourceID)
 }
 
 // NewNumericRangeFilterStep creates a primitive step that filters dataset rows based on an
@@ -393,28 +427,25 @@ func NewRegexFilterStep(resourceID string, colindex int, inclusive bool, regex s
 // Leaving the resource ID as the empty value allows the primitive to infer the main resource from the
 // the dataset.
 func NewNumericRangeFilterStep(resourceID string, colindex int, inclusive bool, min float64, max float64, strict bool) *StepData {
-	hyperparams := map[string]interface{}{
-		"column":    colindex,
-		"inclusive": inclusive,
-		"min":       min,
-		"max":       max,
-		"strict":    strict,
-	}
-	if resourceID != "" {
-		hyperparams["resource_id"] = resourceID
-	}
-
-	return NewStepDataWithHyperparameters(
+	step := NewStepDataWithHyperparameters(
 		&pipeline.Primitive{
-			Id:         "8b1c1140-8c21-4f41-aeca-662b7d35aa29",
+			Id:         "8c246c78-3082-4ec9-844e-5c98fcc76f9d",
 			Version:    "0.1.0",
 			Name:       "Numeric range filter",
-			PythonPath: "d3m.primitives.datasets.NumericRangeFilter",
-			Digest:     "",
+			PythonPath: "d3m.primitives.data_preprocessing.numeric_range_filter.DataFrameCommon",
+			Digest:     "031e249edabb35dbd4e6d7453d1e149774678603dfc186d0a1a03c153b132101",
 		},
 		[]string{"produce"},
-		hyperparams,
+		map[string]interface{}{
+			"column":    colindex,
+			"inclusive": inclusive,
+			"min":       min,
+			"max":       max,
+			"strict":    strict,
+		},
 	)
+	// Wrap the dataframe based primitive in the dataset adapter
+	return NewDatasetWrapperStep(step, resourceID)
 }
 
 // NewTimeSeriesLoaderStep creates a primitive step that reads time series values using a dataframe

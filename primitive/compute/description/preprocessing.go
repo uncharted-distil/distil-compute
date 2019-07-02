@@ -54,10 +54,7 @@ func CreateUserDatasetPipeline(name string, description string, allFeatures []*m
 	}
 
 	// create the feature selection primitive
-	removeFeatures, err := createRemoveFeatures(allFeatures, selectedSet)
-	if err != nil {
-		return nil, err
-	}
+	removeFeatures := createRemoveFeatures(allFeatures, selectedSet)
 
 	// add filter primitives
 	filterData := createFilterData(filters, columnIndices)
@@ -104,7 +101,7 @@ func CreateUserDatasetPipeline(name string, description string, allFeatures []*m
 	return pip, nil
 }
 
-func createRemoveFeatures(allFeatures []*model.Variable, selectedSet map[string]bool) (*StepData, error) {
+func createRemoveFeatures(allFeatures []*model.Variable, selectedSet map[string]bool) *StepData {
 	// create a list of features to remove
 	removeFeatures := []int{}
 	for _, v := range allFeatures {
@@ -114,15 +111,12 @@ func createRemoveFeatures(allFeatures []*model.Variable, selectedSet map[string]
 	}
 
 	if len(removeFeatures) == 0 {
-		return nil, nil
+		return nil
 	}
 
 	// instantiate the feature remove primitive
-	featureSelect, err := NewRemoveColumnsStep("", removeFeatures)
-	if err != nil {
-		return nil, err
-	}
-	return featureSelect, nil
+	featureSelect := NewRemoveColumnsStep("", removeFeatures)
+	return featureSelect
 }
 
 type update struct {
@@ -179,27 +173,28 @@ func createUpdateSemanticTypes(allFeatures []*model.Variable, selectedSet map[st
 	semanticTypeUpdates := []*StepData{}
 	for _, k := range keys {
 		v := updateMap[k]
+
 		var addKey string
 		if len(v.addIndices) > 0 {
 			addKey = k
+			add := &ColumnUpdate{
+				SemanticTypes: []string{addKey},
+				Indices:       v.addIndices,
+			}
+			addUpdate := NewAddSemanticTypeStep("", add)
+			semanticTypeUpdates = append(semanticTypeUpdates, addUpdate)
 		}
-		add := &ColumnUpdate{
-			SemanticTypes: []string{addKey},
-			Indices:       v.addIndices,
-		}
+
 		var removeKey string
 		if len(v.removeIndices) > 0 {
 			removeKey = k
+			remove := &ColumnUpdate{
+				SemanticTypes: []string{removeKey},
+				Indices:       v.removeIndices,
+			}
+			removeUpdate := NewRemoveSemanticTypeStep("", remove)
+			semanticTypeUpdates = append(semanticTypeUpdates, removeUpdate)
 		}
-		remove := &ColumnUpdate{
-			SemanticTypes: []string{removeKey},
-			Indices:       v.removeIndices,
-		}
-		semanticTypeUpdate, err := NewUpdateSemanticTypeStep("", add, remove)
-		if err != nil {
-			return nil, err
-		}
-		semanticTypeUpdates = append(semanticTypeUpdates, semanticTypeUpdate)
 	}
 	return semanticTypeUpdates, nil
 }

@@ -262,20 +262,28 @@ func TestMergePipeline(t *testing.T) {
 func TestCompoundPipeline(t *testing.T) {
 	step0 := NewPipelineNode(createTestStep(0))
 	step1 := NewPipelineNode(createTestStepWithNestedPrimitives(1, 2))
+	step2 := NewPipelineNode(createTestStepWithNestedPrimitives(2, 2))
 
 	step0.Add(step1)
+	step1.Add(step2)
 
-	desc, err := NewPipelineBuilder("test", "test pipeline", step0, step1).Compile()
+	desc, err := NewPipelineBuilder("test", "test pipeline", step0).Compile()
 	assert.NotNil(t, desc)
 	assert.NoError(t, err)
 
 	steps := desc.GetSteps()
-	assert.Equal(t, 4, len(steps))
+	for i, step := range steps {
+		t.Logf("Step %d: %s Inputs: %+v", i, step.GetPrimitive().GetPrimitive().GetName(), step.GetPrimitive().GetArguments()["inputs"])
+	}
+	assert.Equal(t, 7, len(steps))
 
-	topStep := steps[1]
-	primitiveIdx := topStep.GetPrimitive().GetHyperparams()["primitiveArg-0"].GetPrimitive().GetData()
+	primitiveIdx := steps[5].GetPrimitive().GetHyperparams()["primitiveArg-0"].GetPrimitive().GetData()
+	assert.Equal(t, int32(0), primitiveIdx)
+	primitiveIdx = steps[5].GetPrimitive().GetHyperparams()["primitiveArg-1"].GetPrimitive().GetData()
+	assert.Equal(t, int32(1), primitiveIdx)
+	primitiveIdx = steps[6].GetPrimitive().GetHyperparams()["primitiveArg-0"].GetPrimitive().GetData()
 	assert.Equal(t, int32(2), primitiveIdx)
-	primitiveIdx = topStep.GetPrimitive().GetHyperparams()["primitiveArg-1"].GetPrimitive().GetData()
+	primitiveIdx = steps[6].GetPrimitive().GetHyperparams()["primitiveArg-1"].GetPrimitive().GetData()
 	assert.Equal(t, int32(3), primitiveIdx)
 }
 
