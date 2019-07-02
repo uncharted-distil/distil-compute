@@ -19,7 +19,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/golang/protobuf/proto"
+	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 	"github.com/uncharted-distil/distil-compute/model"
 )
@@ -57,37 +57,45 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 		"test_user_pipeline", "a test user pipeline", variables, "test_target", []string{"test_var_0", "test_var_1", "test_var_3"}, nil)
 	assert.Equal(t, 8, len(pipeline.GetSteps()))
 
-	for i, step := range pipeline.GetSteps() {
-		t.Logf("Step %d: %s", i, step.GetPrimitive().GetPrimitive().GetPythonPath())
-	}
-
-	// denorm and the 4 are wrapper steps come after the wrapped primitives (requirement of d3m runtime)
-	pythonPath := pipeline.GetSteps()[3].GetPrimitive().GetPrimitive().GetPythonPath()
+	pythonPath := pipeline.GetSteps()[0].GetPrimitive().GetPrimitive().GetPythonPath()
 	assert.Equal(t, "d3m.primitives.data_transformation.denormalize.Common", pythonPath)
-	for i := 4; i < 7; i++ {
-		pythonPath := pipeline.GetSteps()[i].GetPrimitive().GetPrimitive().GetPythonPath()
-		assert.Equal(t, "d3m.primitives.operator.dataset_map.DataFrameCommon", pythonPath)
-	}
-	// next is the inference step, which doesn't have a primitive associated with it
-	assert.NotNil(t, pipeline.GetSteps()[7].GetPlaceholder())
+	inputs := pipeline.GetSteps()[0].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
+	assert.Equal(t, "inputs.0", inputs)
 
 	// add semantic type integer to cols 1,3
-	assert.Equal(t, int32(0), pipeline.GetSteps()[4].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
-	hyperParams := pipeline.GetSteps()[0].GetPrimitive().GetHyperparams()
+	hyperParams := pipeline.GetSteps()[1].GetPrimitive().GetHyperparams()
 	assert.Equal(t, []int64{1, 3}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
 	assert.Equal(t, []string{"http://schema.org/Integer"}, ConvertToStringArray(hyperParams["semantic_types"].GetValue().GetData().GetRaw().GetList()))
 
+	hyperParams = pipeline.GetSteps()[2].GetPrimitive().GetHyperparams()
+	assert.Equal(t, int32(1), pipeline.GetSteps()[2].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
+	inputs = pipeline.GetSteps()[2].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
+	assert.Equal(t, "steps.0.produce", inputs)
+
 	// remove semantic type categorical from cols 1,3
-	assert.Equal(t, int32(1), pipeline.GetSteps()[5].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
-	hyperParams = pipeline.GetSteps()[1].GetPrimitive().GetHyperparams()
+	hyperParams = pipeline.GetSteps()[3].GetPrimitive().GetHyperparams()
 	assert.Equal(t, []int64{1, 3}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
 	assert.Equal(t, []string{"https://metadata.datadrivendiscovery.org/types/CategoricalData"},
 		ConvertToStringArray(hyperParams["semantic_types"].GetValue().GetData().GetRaw().GetList()))
 
+	hyperParams = pipeline.GetSteps()[4].GetPrimitive().GetHyperparams()
+	assert.Equal(t, int32(3), pipeline.GetSteps()[4].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
+	inputs = pipeline.GetSteps()[4].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
+	assert.Equal(t, "steps.2.produce", inputs)
+
 	// remove column from index two
-	assert.Equal(t, int32(2), pipeline.GetSteps()[6].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
-	hyperParams = pipeline.GetSteps()[2].GetPrimitive().GetHyperparams()
+	hyperParams = pipeline.GetSteps()[5].GetPrimitive().GetHyperparams()
 	assert.Equal(t, []int64{2}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
+
+	hyperParams = pipeline.GetSteps()[6].GetPrimitive().GetHyperparams()
+	assert.Equal(t, int32(5), pipeline.GetSteps()[6].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
+	inputs = pipeline.GetSteps()[6].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
+	assert.Equal(t, "steps.4.produce", inputs)
+
+	// next is the inference step, which doesn't have a primitive associated with it
+	assert.NotNil(t, pipeline.GetSteps()[7].GetPlaceholder())
+	inputs = pipeline.GetSteps()[7].GetPlaceholder().GetInputs()[0].GetData()
+	assert.Equal(t, "steps.6.produce", inputs)
 
 	assert.NoError(t, err)
 }
