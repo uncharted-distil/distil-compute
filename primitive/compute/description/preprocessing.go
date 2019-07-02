@@ -314,8 +314,13 @@ func CreateSimonPipeline(name string, description string) (*pipeline.PipelineDes
 	outputs := []DataRef{&StepDataRef{1, "produce_metafeatures"}}
 
 	steps := []Step{
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewSimonStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce_metafeatures"}),
+		NewDatasetToDataframeStep(
+			map[string]DataRef{"inputs": &PipelineDataRef{0}},
+			[]string{"produce"},
+		),
+		NewSimonStep(
+			map[string]DataRef{"inputs": &StepDataRef{0, "produce"}},
+			[]string{"produce_metafeatures"}),
 	}
 
 	// produce metafeatures
@@ -329,11 +334,12 @@ func CreateSimonPipeline(name string, description string) (*pipeline.PipelineDes
 // CreateDataCleaningPipeline creates a pipeline to run data cleaning on a dataset.
 func CreateDataCleaningPipeline(name string, description string) (*pipeline.PipelineDescription, error) {
 	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{1, "produce"}}
+	outputs := []DataRef{&StepDataRef{2, "produce"}}
 
 	steps := []Step{
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewDataCleaningStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
+		NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
+		NewDataCleaningStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}),
 	}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
@@ -399,7 +405,7 @@ func CreatePCAFeaturesPipeline(name string, description string) (*pipeline.Pipel
 // CreateDenormalizePipeline creates a pipeline to run the denormalize primitive on an input dataset.
 func CreateDenormalizePipeline(name string, description string) (*pipeline.PipelineDescription, error) {
 	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{2, "produce"}}
+	outputs := []DataRef{&StepDataRef{1, "produce"}}
 
 	steps := []Step{
 		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
