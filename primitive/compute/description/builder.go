@@ -234,6 +234,31 @@ func sortTraversal(rootNodes []*PipelineNode) []*PipelineNode {
 		reversed[count-i-1] = processed[i]
 	}
 
+	// sort by input string to have the input args be in order
+	sort.Slice(reversed, func(i, j int) bool {
+		stepiArgs := reversed[i].step.GetArguments()
+		stepjArgs := reversed[j].step.GetArguments()
+
+		// check if arguments exist
+		if len(stepiArgs) > 0 && len(stepjArgs) > 0 {
+			stepiRef := stepiArgs[0].DataRef
+			stepjRef := stepjArgs[0].DataRef
+			if stepiRef != "" && stepjRef != "" {
+				// both have inputs set so sort alphabetically
+				return stepiRef < stepjRef
+			} else if stepiRef != "" {
+				// only i has input so sort to front
+				return true
+			} else if stepjRef != "" {
+				// only j has input so sort to front
+				return false
+			}
+		}
+
+		// no arguments so maintain the existing order
+		return i < j
+	})
+
 	return reversed
 }
 

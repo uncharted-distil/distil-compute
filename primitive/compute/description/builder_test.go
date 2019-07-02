@@ -69,12 +69,6 @@ func TestMultiInputPipelineCompile(t *testing.T) {
 
 	steps := desc.GetSteps()
 	assert.Equal(t, 3, len(steps))
-	fmt.Printf("FIRST: %v", steps[0].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
-	fmt.Println()
-	fmt.Printf("SECOND: %v", steps[1].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
-	fmt.Println()
-	fmt.Printf("THIRD: %v", steps[2].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
-	fmt.Println()
 
 	// validate step inputs
 	assert.Equal(t, "inputs.0", steps[0].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
@@ -140,15 +134,24 @@ func TestBranchPipelineCompile(t *testing.T) {
 	steps := desc.GetSteps()
 	assert.Equal(t, 3, len(steps))
 
+	fmt.Printf("STEP 0 BEFORE: %v", step0)
+	fmt.Println()
+	fmt.Printf("STEP 1 BEFORE: %v", step1)
+	fmt.Println()
+	fmt.Printf("STEP 2 BEFORE: %v", step2)
+	fmt.Println()
+	fmt.Printf("STEPS: %v", steps)
+	fmt.Println()
+
 	// validate step inputs
 	assert.Equal(t, "inputs.0", steps[0].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
 	testStep(t, 0, step0.step, steps)
 
 	assert.Equal(t, "steps.0.produce.0", steps[1].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
-	testStep(t, 1, step1.step, steps)
+	testStep(t, 2, step2.step, steps)
 
 	assert.Equal(t, "steps.0.produce.1", steps[2].GetPrimitive().GetArguments()[stepInputsKey].GetContainer().GetData())
-	testStep(t, 2, step2.step, steps)
+	testStep(t, 1, step1.step, steps)
 
 	// validate outputs
 	assert.Equal(t, 2, len(desc.GetOutputs()))
