@@ -307,7 +307,7 @@ func NewRemoveColumnsStep(inputs map[string]DataRef, outputMethods []string, col
 func NewTermFilterStep(inputs map[string]DataRef, outputMethods []string, colindex int, inclusive bool, terms []string, matchWhole bool) *StepData {
 	return NewStepData(
 		&pipeline.Primitive{
-			Id:         "622893c7-42fc-4561-a6f6-071fb85d610a",
+			Id:         "a6b27300-4625-41a9-9e91-b4338bfc219b",
 			Version:    "0.1.0",
 			Name:       "Term list dataset filter",
 			PythonPath: "d3m.primitives.data_preprocessing.term_filter.DataFrameCommon",
