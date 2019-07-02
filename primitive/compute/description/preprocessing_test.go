@@ -94,6 +94,8 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 
 	// next is the inference step, which doesn't have a primitive associated with it
 	assert.NotNil(t, pipeline.GetSteps()[7].GetPlaceholder())
+	inputs = pipeline.GetSteps()[7].GetPlaceholder().GetInputs()[0].GetData()
+	assert.Equal(t, "steps.6.produce", inputs)
 
 	assert.NoError(t, err)
 }

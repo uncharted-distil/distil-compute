@@ -83,11 +83,11 @@ func CreateUserDatasetPipeline(name string, description string, allFeatures []*m
 	}
 
 	// mark this is a preprocessing template
-	steps = append(steps, NewInferenceStepData(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}))
+	steps = append(steps, NewInferenceStepData(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}))
 	offset++
 
 	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{offset, "produce"}}
+	outputs := []DataRef{&StepDataRef{offset - 1, "produce"}}
 
 	pip, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
 	if err != nil {
