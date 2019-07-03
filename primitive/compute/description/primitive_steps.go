@@ -20,6 +20,12 @@ import "github.com/uncharted-distil/distil-compute/pipeline"
 // NewSimonStep creates a SIMON data classification step.  It examines an input
 // dataframe, and assigns types to the columns based on the exposed metadata.
 func NewSimonStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	// since Simon has fit & produce, need to set the params from
+	// set_training_data. In this case, outputs is not used.
+	if inputs["inputs"] != nil && inputs["outputs"] == nil {
+		inputs["outputs"] = inputs["inputs"]
+	}
+
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "d2fa8df2-6517-3c26-bafc-87b701c4043a",
@@ -36,12 +42,18 @@ func NewSimonStep(inputs map[string]DataRef, outputMethods []string) *StepData {
 
 // NewSlothStep creates a Sloth timeseries clustering step.
 func NewSlothStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	// since Sloth has fit & produce, need to set the params from
+	// set_training_data. In this case, outputs is not used.
+	if inputs["inputs"] != nil && inputs["outputs"] == nil {
+		inputs["outputs"] = inputs["inputs"]
+	}
+
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "77bf4b92-2faa-3e38-bb7e-804131243a7f",
-			Version:    "2.0.2",
+			Version:    "2.0.3",
 			Name:       "Sloth",
-			PythonPath: "d3m.primitives.time_series_segmentation.cluster.Sloth",
+			PythonPath: "d3m.primitives.clustering.k_means.Sloth",
 			Digest:     "576297f6bb41056ede966722bb0ed0d73403752e0a80eacd85bd71e8ea930e8a",
 		},
 		outputMethods,
@@ -174,6 +186,49 @@ func NewDatasetToDataframeStep(inputs map[string]DataRef, outputMethods []string
 	)
 }
 
+// NewHorizontalConcatStep creates a primitive call that concats two data frames.
+func NewHorizontalConcatStep(inputs map[string]DataRef, outputMethods []string, useIndex bool, removeSecondIndex bool) *StepData {
+
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "aff6a77a-faa0-41c5-9595-de2e7f7c4760",
+			Version:    "0.2.0",
+			Name:       "Concatenate two dataframes",
+			PythonPath: "d3m.primitives.data_transformation.horizontal_concat.DataFrameCommon",
+			Digest:     "dea9e41d4dc0204d963ee01617416a6c5165c008ac717c09e59703dcee5d6cfd",
+		},
+		outputMethods,
+		map[string]interface{}{
+			"use_index":           useIndex,
+			"remove_second_index": removeSecondIndex,
+		},
+		inputs,
+	)
+}
+
+// NewDatasetToDataframeStepWithResource creates a primitive call that transforms an input dataset
+// into a PANDAS dataframe using the specified resource.
+func NewDatasetToDataframeStepWithResource(inputs map[string]DataRef, outputMethods []string, resourceName string) *StepData {
+	if resourceName == "" {
+		resourceName = "learningData"
+	}
+
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "4b42ce1e-9b98-4a25-b68e-fad13311eb65",
+			Version:    "0.3.0",
+			Name:       "Dataset to DataFrame converter",
+			PythonPath: "d3m.primitives.data_transformation.dataset_to_dataframe.Common",
+			Digest:     "85b946aa6123354fe51a288c3be56aaca82e76d4071c1edc13be6f9e0e100144",
+		},
+		outputMethods,
+		map[string]interface{}{
+			"dataframe_resource": resourceName,
+		},
+		inputs,
+	)
+}
+
 // NewDatasetWrapperStep creates a primitive that wraps a dataframe primitive such that it can be
 // used as a datset primitive in the pipeline prepend.  The primitive to wrap is indicated using its
 // index in the pipeline.    Leaving the resource ID as the empty value allows the primitive to infer
@@ -266,6 +321,44 @@ func NewDenormalizeStep(inputs map[string]DataRef, outputMethods []string) *Step
 	)
 }
 
+// NewCSVReaderStep reads data from csv files into a nested dataframe structure.
+func NewCSVReaderStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	hyperparams := map[string]interface{}{
+		"return_result": "append",
+	}
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "989562ac-b50f-4462-99cb-abef80d765b2",
+			Version:    "0.1.0",
+			Name:       "Columns CSV reader",
+			PythonPath: "d3m.primitives.data_preprocessing.csv_reader.DataFrameCommon",
+			Digest:     "6f1075710f34deba5954489df0f2a997db5305e805833e0b595b57c5c176c078",
+		},
+		outputMethods,
+		hyperparams,
+		inputs,
+	)
+}
+
+// NewDataFrameFlattenStep searches for nested dataframes and pulls them out.
+func NewDataFrameFlattenStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	hyperparams := map[string]interface{}{
+		"return_result": "replace",
+	}
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "1c4aed23-f3d3-4e6b-9710-009a9bc9b694",
+			Version:    "0.1.0",
+			Name:       "DataFrame Flatten",
+			PythonPath: "d3m.primitives.data_preprocessing.flatten.DataFrameCommon",
+			Digest:     "48f7babc531059f17298ea401b9f02e63886179c1190ba15e45310265eac4f60",
+		},
+		outputMethods,
+		hyperparams,
+		inputs,
+	)
+}
+
 // NewColumnParserStep takes obj/string columns in a dataframe and parses them into their
 // associated raw python types based on the attached d3m metadata.
 func NewColumnParserStep(inputs map[string]DataRef, outputMethods []string) *StepData {
@@ -304,6 +397,22 @@ func NewRemoveColumnsStep(inputs map[string]DataRef, outputMethods []string, col
 		map[string]interface{}{
 			"columns": colIndices,
 		},
+		inputs,
+	)
+}
+
+// NewRemoveDuplicateColumnsStep removes duplicate columns from a dataframe.
+func NewRemoveDuplicateColumnsStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "130513b9-09ca-4785-b386-37ab31d0cf8b",
+			Version:    "0.1.0",
+			Name:       "Removes duplicate columns",
+			PythonPath: "d3m.primitives.data_transformation.remove_duplicate_columns.Common",
+			Digest:     "1504533ed6c09a19c0b3fa3eeae4b8f626e5ceacdcbd247a65996c05f8eb3552",
+		},
+		outputMethods,
+		map[string]interface{}{},
 		inputs,
 	)
 }
@@ -500,7 +609,7 @@ func NewTimeseriesFormatterStep(inputs map[string]DataRef, outputMethods []strin
 	}
 	return NewStepData(
 		&pipeline.Primitive{
-			Id:         "1c4aed23-f3d3-4e6b-9710-009a9bc9b694",
+			Id:         "24b09066-836f-4b8f-9773-8c86a5eee26c",
 			Version:    "0.2.0",
 			Name:       "Time series formatter",
 			PythonPath: "d3m.primitives.data_preprocessing.timeseries_formatter.DistilTimeSeriesFormatter",

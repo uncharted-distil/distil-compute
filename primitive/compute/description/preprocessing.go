@@ -53,11 +53,18 @@ func CreateUserDatasetPipeline(name string, description string, allFeatures []*m
 	}
 
 	if isTimeseries {
-		steps = append(steps, NewTimeseriesFormatterStep(map[string]DataRef{"inputs": &PipelineDataRef{offset}}, []string{"produce"}, defaultResource, -1))
+		// need to read csv data, flatten then concat back to the original pipeline
+		steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{offset}}, []string{"produce"}))
+		steps = append(steps, NewDatasetToDataframeStepWithResource(map[string]DataRef{"inputs": &PipelineDataRef{offset}}, []string{"produce"}, "0"))
+		steps = append(steps, NewCSVReaderStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}))
+		steps = append(steps, NewHorizontalConcatStep(map[string]DataRef{"left": &StepDataRef{offset, "produce"}, "right": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, false, false))
+		steps = append(steps, NewDataFrameFlattenStep(map[string]DataRef{"inputs": &StepDataRef{offset + 3, "produce"}}, []string{"produce"}))
+		steps = append(steps, NewRemoveDuplicateColumnsStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}))
+		offset = offset + 5
 	} else {
 		steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{offset}}, []string{"produce"}))
+		offset++
 	}
-	offset++
 
 	// create the semantic type update primitive
 	updateSemanticTypes, err := createUpdateSemanticTypes(allFeatures, selectedSet, offset)
@@ -533,9 +540,6 @@ func CreateJoinPipeline(name string, description string, leftJoinCol string, rig
 // CreateDSBoxJoinPipeline creates a pipeline that joins two input datasets
 // using caller supplied columns.
 func CreateDSBoxJoinPipeline(name string, description string, leftJoinCols []string, rightJoinCols []string, accuracy float32) (*pipeline.PipelineDescription, error) {
-	// compute column indices
-
-	// compute column indices
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{2, "produce"}}
 
@@ -558,13 +562,17 @@ func CreateDSBoxJoinPipeline(name string, description string, leftJoinCols []str
 }
 
 // CreateTimeseriesFormatterPipeline creates a time series formatter pipeline.
-func CreateTimeseriesFormatterPipeline(name string, description string, mainResourceID string, fileColIndex int) (*pipeline.PipelineDescription, error) {
+func CreateTimeseriesFormatterPipeline(name string, description string, resourceId string) (*pipeline.PipelineDescription, error) {
 	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{1, "produce"}}
+	outputs := []DataRef{&StepDataRef{5, "produce"}}
 
 	steps := []Step{
-		NewTimeseriesFormatterStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, mainResourceID, fileColIndex),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+		NewDatasetToDataframeStepWithResource(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, resourceId),
+		NewCSVReaderStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}),
+		NewHorizontalConcatStep(map[string]DataRef{"left": &StepDataRef{0, "produce"}, "right": &StepDataRef{2, "produce"}}, []string{"produce"}, false, false),
+		NewDataFrameFlattenStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+		NewRemoveDuplicateColumnsStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
 	}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
