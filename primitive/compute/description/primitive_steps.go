@@ -32,7 +32,7 @@ func NewSimonStep(inputs map[string]DataRef, outputMethods []string) *StepData {
 			Version:    "1.2.1",
 			Name:       "simon",
 			PythonPath: "d3m.primitives.data_cleaning.column_type_profiler.Simon",
-			Digest:     "44fe5bf57ddb776440d1e22ddd1cf3ffeef9a282a3899856db8741e07fd7325d",
+			Digest:     "6fa0e87f8044df78a99507a60648d3b7336161862aee8994ff2ed57bea5b0f05",
 		},
 		outputMethods,
 		map[string]interface{}{"statistical_classification": true},
@@ -54,7 +54,7 @@ func NewSlothStep(inputs map[string]DataRef, outputMethods []string) *StepData {
 			Version:    "2.0.3",
 			Name:       "Sloth",
 			PythonPath: "d3m.primitives.clustering.k_means.Sloth",
-			Digest:     "576297f6bb41056ede966722bb0ed0d73403752e0a80eacd85bd71e8ea930e8a",
+			Digest:     "cd237a13cbcc980d3c80ebdbc148c6a29dbb588c2897792e4b12aa65a39ce1f6",
 		},
 		outputMethods,
 		map[string]interface{}{"nclusters": 4},
@@ -87,10 +87,10 @@ func NewPCAFeaturesStep(inputs map[string]DataRef, outputMethods []string) *Step
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "04573880-d64f-4791-8932-52b7c3877639",
-			Version:    "3.0.1",
+			Version:    "3.0.2",
 			Name:       "PCA Features",
 			PythonPath: "d3m.primitives.feature_selection.pca_features.Pcafeatures",
-			Digest:     "51ae6de10bbc004ed2e0e81fa8dcf8b6972c62cec4549c1a5cd58305e70eec71",
+			Digest:     "48b7c56260320b32b800f628fbdb103741aa923750a4926a3ae9067f117ae119",
 		},
 		outputMethods,
 		map[string]interface{}{},
@@ -123,9 +123,9 @@ func NewDukeStep(inputs map[string]DataRef, outputMethods []string) *StepData {
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "46612a42-6120-3559-9db9-3aa9a76eb94f",
-			Version:    "1.1.6",
+			Version:    "1.1.7",
 			Name:       "duke",
-			PythonPath: "d3m.primitives.data_cleaning.labler.Duke",
+			PythonPath: "d3m.primitives.data_cleaning.text_summarization.Duke",
 			Digest:     "b40cbf3631a19ef0141fb852079330c622b00ef286e54a755e6a90fc85be5963",
 		},
 		outputMethods,
@@ -140,9 +140,9 @@ func NewDataCleaningStep(inputs map[string]DataRef, outputMethods []string) *Ste
 		&pipeline.Primitive{
 			Id:         "fc6bf33a-f3e0-3496-aa47-9a40289661bc",
 			Version:    "3.0.1",
-			Name:       "datacleaning",
+			Name:       "Data cleaning",
 			PythonPath: "d3m.primitives.data_cleaning.data_cleaning.Datacleaning",
-			Digest:     "e4fe3196b81200106c40669d72a561f7fe1d7f36a9ddb5c0d7ce87bfb59f76fd",
+			Digest:     "4b2ad84f9b1d4c906da37cd2c9ae5fc23c054a3e974be17ce6e75147d257cc3d",
 		},
 		outputMethods,
 		map[string]interface{}{},
@@ -155,7 +155,7 @@ func NewCrocStep(inputs map[string]DataRef, outputMethods []string, targetColumn
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "404fae2a-2f0a-4c9b-9ad2-fb1528990561",
-			Version:    "1.2.3",
+			Version:    "1.2.4",
 			Name:       "croc",
 			PythonPath: "d3m.primitives.digital_image_processing.croc.Croc",
 			Digest:     "a0cd922401d96b8ffbfe11f5db188b6a4d410119319392932e417b706ed5ae6",
@@ -176,9 +176,9 @@ func NewDatasetToDataframeStep(inputs map[string]DataRef, outputMethods []string
 		&pipeline.Primitive{
 			Id:         "4b42ce1e-9b98-4a25-b68e-fad13311eb65",
 			Version:    "0.3.0",
-			Name:       "Dataset to DataFrame converter",
+			Name:       "Extract a DataFrame from a Dataset",
 			PythonPath: "d3m.primitives.data_transformation.dataset_to_dataframe.Common",
-			Digest:     "85b946aa6123354fe51a288c3be56aaca82e76d4071c1edc13be6f9e0e100144",
+			Digest:     "a141e6821de7ae586968b0986237745a5510850e6940cf946db9d50d3828b030",
 		},
 		outputMethods,
 		map[string]interface{}{},
@@ -194,7 +194,7 @@ func NewHorizontalConcatStep(inputs map[string]DataRef, outputMethods []string, 
 			Id:         "aff6a77a-faa0-41c5-9595-de2e7f7c4760",
 			Version:    "0.2.0",
 			Name:       "Concatenate two dataframes",
-			PythonPath: "d3m.primitives.data_transformation.horizontal_concat.DataFrameCommon",
+			PythonPath: "d3m.primitives.data_transformation.horizontal_concat.DataFrameConcat",
 			Digest:     "dea9e41d4dc0204d963ee01617416a6c5165c008ac717c09e59703dcee5d6cfd",
 		},
 		outputMethods,
@@ -217,9 +217,9 @@ func NewDatasetToDataframeStepWithResource(inputs map[string]DataRef, outputMeth
 		&pipeline.Primitive{
 			Id:         "4b42ce1e-9b98-4a25-b68e-fad13311eb65",
 			Version:    "0.3.0",
-			Name:       "Dataset to DataFrame converter",
+			Name:       "Extract a DataFrame from a Dataset",
 			PythonPath: "d3m.primitives.data_transformation.dataset_to_dataframe.Common",
-			Digest:     "85b946aa6123354fe51a288c3be56aaca82e76d4071c1edc13be6f9e0e100144",
+			Digest:     "a141e6821de7ae586968b0986237745a5510850e6940cf946db9d50d3828b030",
 		},
 		outputMethods,
 		map[string]interface{}{
@@ -365,10 +365,10 @@ func NewColumnParserStep(inputs map[string]DataRef, outputMethods []string) *Ste
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "d510cb7a-1782-4f51-b44c-58f0236e47c7",
-			Version:    "0.4.0",
+			Version:    "0.5.0",
 			Name:       "Parses strings into their types",
 			PythonPath: "d3m.primitives.data_transformation.column_parser.DataFrameCommon",
-			Digest:     "",
+			Digest:     "d95eb0ea8a5e6f9abc0965a97e9c4f5d8f74a3df591c11c4145faea3e581cd06",
 		},
 		outputMethods,
 		map[string]interface{}{
@@ -389,7 +389,7 @@ func NewRemoveColumnsStep(inputs map[string]DataRef, outputMethods []string, col
 		&pipeline.Primitive{
 			Id:         "3b09ba74-cc90-4f22-9e0a-0cf4f29a7e28",
 			Version:    "0.1.0",
-			Name:       "Column remover",
+			Name:       "Removes columns",
 			PythonPath: "d3m.primitives.data_transformation.remove_columns.DataFrameCommon",
 			Digest:     "d2d01abb8d2183baf0204a9ecb8fefdb43683547a1e26049bf4bf81af1137fa3",
 		},
@@ -408,7 +408,7 @@ func NewRemoveDuplicateColumnsStep(inputs map[string]DataRef, outputMethods []st
 			Id:         "130513b9-09ca-4785-b386-37ab31d0cf8b",
 			Version:    "0.1.0",
 			Name:       "Removes duplicate columns",
-			PythonPath: "d3m.primitives.data_transformation.remove_duplicate_columns.Common",
+			PythonPath: "d3m.primitives.data_transformation.remove_duplicate_columns.DataFrameCommon",
 			Digest:     "1504533ed6c09a19c0b3fa3eeae4b8f626e5ceacdcbd247a65996c05f8eb3552",
 		},
 		outputMethods,
