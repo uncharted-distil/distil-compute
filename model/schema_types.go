@@ -118,6 +118,8 @@ const (
 	RealSchemaType = "real"
 	// StringSchemaType is the schema doc type for string/text data
 	StringSchemaType = "string"
+	// TextSchemaTypeDeprecated is the old schema doc type for string/text data
+	TextSchemaTypeDeprecated = "text"
 	// CategoricalSchemaType is the schema doc type for categorical data
 	CategoricalSchemaType = "categorical"
 	// DatetimeSchemaType is the schema doc type for datetime data
@@ -228,17 +230,18 @@ var (
 
 	// Maps from LL schema types to Distal internal type
 	llTypeMap = map[string]string{
-		BooleanSchemaType:     BoolType,
-		IntegerSchemaType:     IntegerType,
-		RealSchemaType:        RealType,
-		CategoricalSchemaType: CategoricalType,
-		DatetimeSchemaType:    DateTimeType,
-		RealVectorSchemaType:  RealVectorType,
-		JSONSchemaType:        StringType,
-		GeoJSONSchemaType:     StringType,
-		ImageSchemaType:       ImageType,
-		TimeSeriesSchemaType:  TimeSeriesType,
-		TimestampSchemaType:   TimestampType,
+		BooleanSchemaType:        BoolType,
+		IntegerSchemaType:        IntegerType,
+		RealSchemaType:           RealType,
+		CategoricalSchemaType:    CategoricalType,
+		DatetimeSchemaType:       DateTimeType,
+		RealVectorSchemaType:     RealVectorType,
+		JSONSchemaType:           StringType,
+		GeoJSONSchemaType:        StringType,
+		ImageSchemaType:          ImageType,
+		TimeSeriesSchemaType:     TimeSeriesType,
+		TimestampSchemaType:      TimestampType,
+		TextSchemaTypeDeprecated: StringType,
 	}
 
 	// Maps from Simon type to Distil internal type
