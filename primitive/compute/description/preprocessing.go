@@ -515,8 +515,8 @@ func CreateGoatReversePipeline(name string, description string, lonSource string
 // Accuracy is a normalized value that controls how exact the join has to be.
 func CreateJoinPipeline(name string, description string, leftJoinCol string, rightJoinCol string, accuracy float32) (*pipeline.PipelineDescription, error) {
 	// compute column indices
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{2, "produce"}}
+	inputs := []string{"left", "right"}
+	outputs := []DataRef{&StepDataRef{3, "produce"}}
 
 	// instantiate the pipeline - this merges two intput streams via a single join call
 	steps := []Step{
@@ -527,7 +527,7 @@ func CreateJoinPipeline(name string, description string, leftJoinCol string, rig
 			[]string{"produce"},
 			leftJoinCol, rightJoinCol, accuracy,
 		),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{2}}, []string{"produce"}),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
 	}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
