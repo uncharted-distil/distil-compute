@@ -15,11 +15,14 @@
 
 package model
 
-const (
-	// Internal Type Keys.  These reflect types produced by semantic typing
-	// analytics, and are not the set that is consumable by a downstream TA2
-	// system.
+import log "github.com/unchartedsoftware/plog"
 
+const (
+	// Distil Internal Type Keys.  These are the application's set of recognized types within the
+	// server and in the client code, and any external types, such as that used by Lincoln Labs in
+	// the D3M datasets, those used by TA2 systems and in the D3M runtime, or those produced by analytics like
+	// Simon, should be mapped and translated to/from this set.
+	//
 	// NOTE: these are copied to `distil/public/util/types.ts` and
 	// should be kept up to date in case of changes.
 
@@ -74,18 +77,52 @@ const (
 	// UnknownType is the schema type for unknown values
 	UnknownType = "unknown"
 
-	// Simon types
+	// Simon types - these are types produced by the Simon analytic which is run during ingest.  These types
+	// should not be used/stored internally, but instead translated into the Distil types at the application
+	// boundaries.
 
-	// SimonStringType is the Simon type representing a string
-	SimonStringType = "string"
+	// SimonAddressType is the Simon type representing a street address
+	SimonAddressType = "address"
+	// SimonBooleanType is the Simon type representing a boolean
+	SimonBooleanType = "boolean"
+	// SimonDateTimeType is the Simon representation of a date time value
+	SimonDateTimeType = "datetime"
+	// SimonEmailType is the Simon representation of an email address
+	SimonEmailType = "email"
 	// SimonFloatType is the Simon type representing a float
 	SimonFloatType = "float"
 	// SimonIntegerType is the Simon type representing an integer
 	SimonIntegerType = "int"
+	// SimonPhoneType is the Simon representation of a phone number
+	SimonPhoneType = "phone"
+	// SimonStringType is the Simon type representing a string
+	SimonStringType = "text"
+	// SimonURIType is the Simon type representing a URI
+	SimonURIType = "uri"
+	// SimonCategoricalType is the Simon type representing categorical values
+	SimonCategoricalType = "categorical"
+	// SimonOrdinalType is the Simon type representing ordinalvalues
+	SimonOrdinalType = "ordinal"
+	// SimonStateType is the Simon type representing state values
+	SimonStateType = "state"
+	// SimonCityType is the Simon type representing city values
+	SimonCityType = "city"
+	// SimonPostalCodeType is the Simon type representing postal code values
+	SimonPostalCodeType = "postal_code"
+	// SimonLatitudeType is the Simon type representing geographic latitude values
+	SimonLatitudeType = "latitude"
+	// SimonLongitudeType is the Simon type representing geographic longitude values
+	SimonLongitudeType = "longitude"
+	// SimonCountryType is the Simon type representing country values
+	SimonCountryType = "country"
+	// SimonCountryCodeType is the Simon type representing country code values
+	SimonCountryCodeType = "country_code"
 
 	// TA2 Semantic Type Keys - defined in
 	// https://gitlab.com/datadrivendiscovery/d3m/blob/devel/d3m/metadata/schemas/v0/definitions.json
-	// These are the agreed upond set of types that are consumable by a downstream TA2 system.
+	// These are the agreed upond set of types that are consumable by a downstream TA2 system and the
+	// D3M runtime.  These should not be used/stored internally, but instead translated into the Distil
+	// types at the application boundaries.
 
 	// TA2StringType is the semantic type reprsenting a text/string
 	TA2StringType = "http://schema.org/Text"
@@ -108,7 +145,14 @@ const (
 	// TA2TimeSeriesType is the TA2 semantic type for timeseries data
 	TA2TimeSeriesType = "https://metadata.datadrivendiscovery.org/types/Timeseries"
 
-	// D3M Dataset Type Keys - these are the types used by for the D3M dataset format.
+	// TA2 Role keys
+
+	// TA2TargetType is the semantic type indicating a prediction target
+	TA2TargetType = "https://metadata.datadrivendiscovery.org/types/Target"
+
+	// Lincoln Labs D3M Dataset Type Keys - these are the types used in the D3M dataset format.
+	// These should not be used/stored internally, but instead translated into the Distil
+	// types at the application boundaries.
 
 	// BooleanSchemaType is the schema doc type for boolean data
 	BooleanSchemaType = "boolean"
@@ -136,11 +180,6 @@ const (
 	TimeSeriesSchemaType = "timeseries"
 	// TimestampSchemaType is the schema doc type for image data
 	TimestampSchemaType = "timestamp"
-
-	// TA2 Role keys
-
-	// TA2TargetType is the semantic type indicating a prediction target
-	TA2TargetType = "https://metadata.datadrivendiscovery.org/types/Target"
 )
 
 var (
@@ -228,7 +267,7 @@ var (
 		TimestampType:   TimestampSchemaType,
 	}
 
-	// Maps from LL schema types to Distal internal type
+	// Maps from Lincoln Labs D3M dataset doc type to Distil internal type
 	llTypeMap = map[string]string{
 		BooleanSchemaType:        BoolType,
 		IntegerSchemaType:        IntegerType,
@@ -246,9 +285,24 @@ var (
 
 	// Maps from Simon type to Distil internal type
 	simonTypeMap = map[string]string{
-		SimonStringType:  StringType,
-		SimonFloatType:   RealType,
-		SimonIntegerType: IntegerType,
+		SimonAddressType:     AddressType,
+		SimonBooleanType:     BoolType,
+		SimonDateTimeType:    DateTimeType,
+		SimonEmailType:       EmailType,
+		SimonFloatType:       FloatType,
+		SimonIntegerType:     IntegerType,
+		SimonPhoneType:       PhoneType,
+		SimonStringType:      StringType,
+		SimonURIType:         URIType,
+		SimonCategoricalType: CategoricalType,
+		SimonOrdinalType:     OrdinalType,
+		SimonStateType:       StateType,
+		SimonCityType:        CityType,
+		SimonPostalCodeType:  PostalCodeType,
+		SimonLatitudeType:    LatitudeType,
+		SimonLongitudeType:   LongitudeType,
+		SimonCountryType:     CountryType,
+		SimonCountryCodeType: CountryType,
 	}
 
 	simonBasicTypes = map[string]bool{
@@ -328,20 +382,23 @@ func HasClusterVar(typ string) bool {
 	return IsTimeSeries(typ)
 }
 
-// MapTA2Type maps an internal Distil type to a TA2 type.
+// MapTA2Type maps an internal Distil type to a TA2 type.  Distil
+// type should be recognized at this point and it is programmer error if not.
 func MapTA2Type(typ string) string {
 	return ta2TypeMap[typ]
 }
 
-// MapSchemaType maps a type to a D3M dataset doc type.
+// MapSchemaType maps an internal Distil type to an LL D3M dataset doc type.  Distil
+// type should be recognized at this point and it is programmer error if not.
 func MapSchemaType(typ string) string {
 	return schemaTypeMap[typ]
 }
 
-// MapLLType maps a LL schema type to an internal type.
+// MapLLType maps a LL D3M dataset doc type to an internal type
 func MapLLType(typ string) string {
 	mapped := llTypeMap[typ]
 	if mapped == "" {
+		log.Warnf("D3M dataset doc type '%s' has no mappping to Distl type defined and will be passed through", typ)
 		mapped = typ
 	}
 
@@ -352,6 +409,7 @@ func MapLLType(typ string) string {
 func MapSimonType(typ string) string {
 	mapped := simonTypeMap[typ]
 	if mapped == "" {
+		log.Warnf("Simon type %s has no mappping to Distil type defined and will be passed through", typ)
 		mapped = typ
 	}
 
