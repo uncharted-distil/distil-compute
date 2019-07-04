@@ -386,7 +386,7 @@ func MapD3MTypeToPostgresType(typ string) string {
 	switch typ {
 	case IndexType:
 		return dataTypeInteger
-	case IntegerType, FloatType, LongitudeType, LatitudeType, RealType, TimestampType:
+	case IntegerType, LongitudeType, LatitudeType, RealType, TimestampType:
 		return dataTypeFloat
 	case OrdinalType, CategoricalType, StringType:
 		return dataTypeText
@@ -404,7 +404,7 @@ func DefaultPostgresValueFromD3MType(typ string) interface{} {
 	switch typ {
 	case IndexType:
 		return float64(0)
-	case FloatType, LongitudeType, LatitudeType, RealType:
+	case LongitudeType, LatitudeType, RealType:
 		return float64(0)
 	case IntegerType, TimestampType:
 		return int(0)

@@ -32,8 +32,6 @@ const (
 	IndexType = "index"
 	// IntegerType is the schema type for int values
 	IntegerType = "integer"
-	// FloatType is the schema type for float values
-	FloatType = "float"
 	// RealType is the schema type for real values, and is equivalent to FloatType
 	RealType = "real"
 	// RealVectorType is the schema type for a vector of real values
@@ -200,7 +198,6 @@ var (
 	numericalTypes = map[string]bool{
 		LongitudeType: true,
 		LatitudeType:  true,
-		FloatType:     true,
 		RealType:      true,
 		IntegerType:   true,
 		IndexType:     true,
@@ -209,7 +206,6 @@ var (
 		LongitudeType: true,
 		LatitudeType:  true,
 		RealType:      true,
-		FloatType:     true,
 	}
 
 	// Maps from Distil internal type to TA2 supported type
@@ -217,7 +213,6 @@ var (
 		AddressType:     TA2StringType,
 		IndexType:       TA2IntegerType,
 		IntegerType:     TA2IntegerType,
-		FloatType:       TA2RealType,
 		RealType:        TA2RealType,
 		BoolType:        TA2BooleanType,
 		DateTimeType:    TA2TimeType,
@@ -245,7 +240,6 @@ var (
 		AddressType:     StringSchemaType,
 		IndexType:       IntegerSchemaType,
 		IntegerType:     IntegerSchemaType,
-		FloatType:       RealSchemaType,
 		RealType:        RealSchemaType,
 		BoolType:        BooleanSchemaType,
 		DateTimeType:    DatetimeSchemaType,
@@ -290,7 +284,7 @@ var (
 		SimonBooleanType:     BoolType,
 		SimonDateTimeType:    DateTimeType,
 		SimonEmailType:       EmailType,
-		SimonFloatType:       FloatType,
+		SimonFloatType:       RealType,
 		SimonIntegerType:     IntegerType,
 		SimonPhoneType:       PhoneType,
 		SimonStringType:      StringType,
@@ -309,7 +303,6 @@ var (
 	simonBasicTypes = map[string]bool{
 		IndexType:      true,
 		IntegerType:    true,
-		FloatType:      true,
 		RealType:       true,
 		RealVectorType: true,
 		BoolType:       true,
