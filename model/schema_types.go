@@ -281,6 +281,7 @@ var (
 		TimeSeriesSchemaType:     TimeSeriesType,
 		TimestampSchemaType:      TimestampType,
 		TextSchemaTypeDeprecated: StringType,
+		StringSchemaType:         StringType,
 	}
 
 	// Maps from Simon type to Distil internal type
@@ -409,7 +410,7 @@ func MapLLType(typ string) string {
 func MapSimonType(typ string) string {
 	mapped := simonTypeMap[typ]
 	if mapped == "" {
-		log.Warnf("Simon type %s has no mappping to Distil type defined and will be passed through", typ)
+		log.Warnf("Simon type '%s' has no mappping to Distil type defined and will be passed through", typ)
 		mapped = typ
 	}
 
