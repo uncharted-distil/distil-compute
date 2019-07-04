@@ -345,7 +345,11 @@ func CreateDataCleaningPipeline(name string, description string) (*pipeline.Pipe
 
 	steps := []Step{
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
+		NewColumnParserStep(
+			map[string]DataRef{"inputs": &StepDataRef{0, "produce"}},
+			[]string{"produce"},
+			[]string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType},
+		),
 		NewDataCleaningStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}),
 	}
 
@@ -460,7 +464,12 @@ func CreateTargetRankingPipeline(name string, description string, target string,
 	offset += len(updateSemanticTypeStep)
 	steps = append(steps,
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}),
-		NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}),
+		NewColumnParserStep(
+			map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}},
+			[]string{"produce"},
+			// inlcude categorical because the parser will hash all the values into ints, which the MIRanking primitive can handle
+			[]string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType, model.TA2CategoricalType},
+		),
 		NewTargetRankingStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}, targetIdx),
 	)
 	offset += 3

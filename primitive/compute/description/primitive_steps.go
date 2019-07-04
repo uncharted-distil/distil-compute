@@ -361,7 +361,7 @@ func NewDataFrameFlattenStep(inputs map[string]DataRef, outputMethods []string) 
 
 // NewColumnParserStep takes obj/string columns in a dataframe and parses them into their
 // associated raw python types based on the attached d3m metadata.
-func NewColumnParserStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+func NewColumnParserStep(inputs map[string]DataRef, outputMethods []string, types []string) *StepData {
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "d510cb7a-1782-4f51-b44c-58f0236e47c7",
@@ -371,13 +371,7 @@ func NewColumnParserStep(inputs map[string]DataRef, outputMethods []string) *Ste
 			Digest:     "d95eb0ea8a5e6f9abc0965a97e9c4f5d8f74a3df591c11c4145faea3e581cd06",
 		},
 		outputMethods,
-		map[string]interface{}{
-			"parse_semantic_types": []string{
-				"http://schema.org/Boolean",
-				"http://schema.org/Integer",
-				"http://schema.org/Float",
-			},
-		},
+		map[string]interface{}{"parse_semantic_types": types},
 		inputs,
 	)
 }
