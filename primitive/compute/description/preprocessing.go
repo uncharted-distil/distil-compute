@@ -599,7 +599,7 @@ func mapColumns(allFeatures []*model.Variable, selectedSet map[string]bool) map[
 	colIndices := make(map[string]int)
 	index := 0
 	for _, f := range allFeatures {
-		if selectedSet[f.Name] {
+		if selectedSet[strings.ToLower(f.Name)] {
 			colIndices[f.Name] = index
 			index = index + 1
 		}
