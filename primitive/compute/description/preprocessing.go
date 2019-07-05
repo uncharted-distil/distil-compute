@@ -60,10 +60,14 @@ func CreateUserDatasetPipeline(name string, description string, allFeatures []*m
 		steps = append(steps, NewHorizontalConcatStep(map[string]DataRef{"left": &StepDataRef{offset, "produce"}, "right": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, false, false))
 		steps = append(steps, NewDataFrameFlattenStep(map[string]DataRef{"inputs": &StepDataRef{offset + 3, "produce"}}, []string{"produce"}))
 		steps = append(steps, NewRemoveDuplicateColumnsStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}))
-		offset = offset + 5
+		offset += 5
 	} else {
-		steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{offset}}, []string{"produce"}))
-		offset++
+		steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
+		steps = append(steps, NewColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType}))
+		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, ""))
+		steps = append(steps, NewDataCleaningStep(nil, nil))
+		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, offset+3, ""))
+		offset += 5
 	}
 
 	// create the semantic type update primitive

@@ -55,47 +55,65 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 
 	pipeline, err := CreateUserDatasetPipeline(
 		"test_user_pipeline", "a test user pipeline", variables, "test_target", []string{"test_var_0", "test_var_1", "test_var_3"}, nil)
-	assert.Equal(t, 8, len(pipeline.GetSteps()))
+	assert.Equal(t, 12, len(pipeline.GetSteps()))
 
 	pythonPath := pipeline.GetSteps()[0].GetPrimitive().GetPrimitive().GetPythonPath()
 	assert.Equal(t, "d3m.primitives.data_transformation.denormalize.Common", pythonPath)
 	inputs := pipeline.GetSteps()[0].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
 	assert.Equal(t, "inputs.0", inputs)
 
-	// add semantic type integer to cols 1,3
-	hyperParams := pipeline.GetSteps()[1].GetPrimitive().GetHyperparams()
-	assert.Equal(t, []int64{1, 3}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
-	assert.Equal(t, []string{"http://schema.org/Integer"}, ConvertToStringArray(hyperParams["semantic_types"].GetValue().GetData().GetRaw().GetList()))
+	pythonPath = pipeline.GetSteps()[1].GetPrimitive().GetPrimitive().GetPythonPath()
+	assert.Equal(t, "d3m.primitives.data_transformation.column_parser.DataFrameCommon", pythonPath)
 
-	hyperParams = pipeline.GetSteps()[2].GetPrimitive().GetHyperparams()
+	pythonPath = pipeline.GetSteps()[2].GetPrimitive().GetPrimitive().GetPythonPath()
+	assert.Equal(t, "d3m.primitives.operator.dataset_map.DataFrameCommon", pythonPath)
 	assert.Equal(t, int32(1), pipeline.GetSteps()[2].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
 	inputs = pipeline.GetSteps()[2].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
 	assert.Equal(t, "steps.0.produce", inputs)
 
-	// remove semantic type categorical from cols 1,3
-	hyperParams = pipeline.GetSteps()[3].GetPrimitive().GetHyperparams()
-	assert.Equal(t, []int64{1, 3}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
-	assert.Equal(t, []string{"https://metadata.datadrivendiscovery.org/types/CategoricalData"},
-		ConvertToStringArray(hyperParams["semantic_types"].GetValue().GetData().GetRaw().GetList()))
+	pythonPath = pipeline.GetSteps()[3].GetPrimitive().GetPrimitive().GetPythonPath()
+	assert.Equal(t, "d3m.primitives.data_cleaning.data_cleaning.Datacleaning", pythonPath)
 
-	hyperParams = pipeline.GetSteps()[4].GetPrimitive().GetHyperparams()
+	pythonPath = pipeline.GetSteps()[4].GetPrimitive().GetPrimitive().GetPythonPath()
+	assert.Equal(t, "d3m.primitives.operator.dataset_map.DataFrameCommon", pythonPath)
 	assert.Equal(t, int32(3), pipeline.GetSteps()[4].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
 	inputs = pipeline.GetSteps()[4].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
 	assert.Equal(t, "steps.2.produce", inputs)
 
-	// remove column from index two
-	hyperParams = pipeline.GetSteps()[5].GetPrimitive().GetHyperparams()
-	assert.Equal(t, []int64{2}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
+	// add semantic type integer to cols 1,3
+	hyperParams := pipeline.GetSteps()[5].GetPrimitive().GetHyperparams()
+	assert.Equal(t, []int64{1, 3}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
+	assert.Equal(t, []string{"http://schema.org/Integer"}, ConvertToStringArray(hyperParams["semantic_types"].GetValue().GetData().GetRaw().GetList()))
 
 	hyperParams = pipeline.GetSteps()[6].GetPrimitive().GetHyperparams()
 	assert.Equal(t, int32(5), pipeline.GetSteps()[6].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
 	inputs = pipeline.GetSteps()[6].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
 	assert.Equal(t, "steps.4.produce", inputs)
 
-	// next is the inference step, which doesn't have a primitive associated with it
-	assert.NotNil(t, pipeline.GetSteps()[7].GetPlaceholder())
-	inputs = pipeline.GetSteps()[7].GetPlaceholder().GetInputs()[0].GetData()
+	// remove semantic type categorical from cols 1,3
+	hyperParams = pipeline.GetSteps()[7].GetPrimitive().GetHyperparams()
+	assert.Equal(t, []int64{1, 3}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
+	assert.Equal(t, []string{"https://metadata.datadrivendiscovery.org/types/CategoricalData"},
+		ConvertToStringArray(hyperParams["semantic_types"].GetValue().GetData().GetRaw().GetList()))
+
+	hyperParams = pipeline.GetSteps()[8].GetPrimitive().GetHyperparams()
+	assert.Equal(t, int32(7), pipeline.GetSteps()[8].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
+	inputs = pipeline.GetSteps()[8].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
 	assert.Equal(t, "steps.6.produce", inputs)
+
+	// remove column from index two
+	hyperParams = pipeline.GetSteps()[9].GetPrimitive().GetHyperparams()
+	assert.Equal(t, []int64{2}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
+
+	hyperParams = pipeline.GetSteps()[10].GetPrimitive().GetHyperparams()
+	assert.Equal(t, int32(9), pipeline.GetSteps()[10].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
+	inputs = pipeline.GetSteps()[10].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
+	assert.Equal(t, "steps.8.produce", inputs)
+
+	// next is the inference step, which doesn't have a primitive associated with it
+	assert.NotNil(t, pipeline.GetSteps()[11].GetPlaceholder())
+	inputs = pipeline.GetSteps()[11].GetPlaceholder().GetInputs()[0].GetData()
+	assert.Equal(t, "steps.10.produce", inputs)
 
 	assert.NoError(t, err)
 }

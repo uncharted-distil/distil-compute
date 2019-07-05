@@ -239,7 +239,7 @@ func NewDatasetWrapperStep(inputs map[string]DataRef, outputMethods []string, pr
 		"primitive": &PrimitiveReference{primitiveIndex},
 	}
 	if resourceID != "" {
-		hyperparams["resource_id"] = resourceID
+		hyperparams["resources"] = []string{resourceID}
 	}
 
 	return NewStepData(
