@@ -595,6 +595,23 @@ func CreateTimeseriesFormatterPipeline(name string, description string, resource
 	return pipeline, nil
 }
 
+// CreateDatamartDownloadPipeline creates a pipeline to download data from a datamart.
+func CreateDatamartDownloadPipeline(name string, description string, searchResult string, systemIdentifier string) (*pipeline.PipelineDescription, error) {
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{1, "produce"}}
+
+	steps := []Step{
+		NewDatamartDownloadStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, searchResult, systemIdentifier),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
+	}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+	return pipeline, nil
+}
+
 func mapColumns(allFeatures []*model.Variable, selectedSet map[string]bool) map[string]int {
 	colIndices := make(map[string]int)
 	index := 0

@@ -169,6 +169,26 @@ func NewCrocStep(inputs map[string]DataRef, outputMethods []string, targetColumn
 	)
 }
 
+// NewDatamartDownloadStep creates a primitive call that downloads a dataset
+// from a datamart.
+func NewDatamartDownloadStep(inputs map[string]DataRef, outputMethods []string, searchResult string, systemIdentifier string) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "9e2077eb-3e38-4df1-99a5-5e647d21331f",
+			Version:    "0.1",
+			Name:       "Download a dataset from Datamart",
+			PythonPath: "d3m.primitives.data_augmentation.datamart_download.Common",
+			Digest:     "7e92079cf5dd2052e93ad152d626fc16670f0dde0ae19433a2e8ce7bf2dc7746",
+		},
+		outputMethods,
+		map[string]interface{}{
+			"search_result":     searchResult,
+			"system_identifier": systemIdentifier,
+		},
+		inputs,
+	)
+}
+
 // NewDatasetToDataframeStep creates a primitive call that transforms an input dataset
 // into a PANDAS dataframe.
 func NewDatasetToDataframeStep(inputs map[string]DataRef, outputMethods []string) *StepData {
