@@ -24,6 +24,201 @@ import (
 	"github.com/uncharted-distil/distil-compute/model"
 )
 
+const (
+	searchResult = `
+	{
+		"id": "datamart.url.a3943fd7892d5d219012f889327c6661",
+		"score": 12.832686,
+		"metadata":
+		{
+			"name": "Newyork Weather Data around Airport 2016-18",
+			"description": "This data contains weather information for NY city around LaGuardia Airport from 2016 to 2018; we...",
+			"size": 1523693,
+			"nb_rows": 24624,
+			"columns":
+			[
+				{
+					"name": "DATE",
+					"structural_type": "http://schema.org/Text",
+					"semantic_types": ["http://schema.org/DateTime"],
+					"mean": 1495931400.0,
+					"stddev": 25590011.431395352,
+					"coverage":
+					[
+						{
+							"range":
+							{
+								"gte": 1482850800.0,
+								"lte": 1509444000.0
+							}
+						},
+						{
+							"range":
+							{
+								"gte": 1453096800.0,
+								"lte": 1479884400.0
+							}
+						},
+						{
+							"range":
+							{
+								"gte": 1512388800.0,
+								"lte": 1538787600.0
+							}
+						}
+					]
+				},
+				{
+					"name": "HOURLYSKYCONDITIONS",
+					"structural_type":
+					"http://schema.org/Text",
+					"semantic_types": []
+				},
+				{
+					"name": "HOURLYDRYBULBTEMPC",
+					"structural_type": "http://schema.org/Float",
+					"semantic_types": [],
+					"mean": 14.666224009096823,
+					"stddev": 9.973788193915643,
+					"coverage":
+					[
+						{
+							"range":
+							{
+								"gte": 9.0,
+								"lte": 19.0
+							}
+						},
+						{
+							"range":
+							{
+								"gte": -6.1,
+								"lte": 8.0
+							}
+						},
+						{
+							"range":
+							{
+								"gte": 20.6,
+								"lte": 31.7
+							}
+						}
+					]
+				},
+				{
+					"name": "HOURLYRelativeHumidity",
+					"structural_type": "http://schema.org/Float",
+					"semantic_types": [],
+					"mean": 60.70849577647823,
+					"stddev": 18.42048051096981,
+					"coverage":
+					[
+						{
+							"range":
+							{
+								"gte": 50.0,
+								"lte": 70.0
+							}
+						},
+						{
+							"range":
+							{
+								"gte": 26.0,
+								"lte": 49.0
+							}
+						},
+						{
+							"range":
+							{
+								"gte": 73.0,
+								"lte": 96.0
+							}
+						}
+					]
+				},
+				{
+					"name": "HOURLYWindSpeed",
+					"structural_type": "http://schema.org/Float",
+					"semantic_types": [],
+					"mean": 10.68859649122807,
+					"stddev": 5.539675475162907,
+					"coverage":
+					[
+						{
+							"range":
+							{
+								"gte": 0.0,
+								"lte": 8.0
+							}
+						},
+						{
+							"range":
+							{
+								"gte": 16.0,
+								"lte": 28.0
+							}
+						},
+						{
+							"range":
+							{
+								"gte": 9.0,
+								"lte": 15.0
+							}
+						}
+					]
+				},
+				{
+					"name": "HOURLYWindDirection",
+					"structural_type": "http://schema.org/Text",
+					"semantic_types": []
+				},
+				{
+					"name": "HOURLYStationPressure",
+					"structural_type": "http://schema.org/Float",
+					"semantic_types": ["https://metadata.datadrivendiscovery.org/types/PhoneNumber"],
+					"mean": 29.90760315139694,
+					"stddev": 0.24584097919742368,
+					"coverage":
+					[
+						{
+							"range":
+							{
+								"gte": 29.86,
+								"lte": 30.12
+							}
+						},
+						{
+							"range":
+							{
+								"gte": 30.14,
+								"lte": 30.55
+							}
+						},
+						{
+							"range":
+							{
+								"gte": 29.42,
+								"lte": 29.84
+							}
+						}
+					]
+				}
+			],
+			"materialize":
+			{
+				 "direct_url": "https://drive.google.com/uc?export=download&id=1jRwzZwEGMICE3n6-nwmVxMD2c0QCHad4",
+				 "identifier": "datamart.url"
+			},
+			"date": "2019-07-02T15:38:00.413962Z"},
+			"augmentation":
+			{
+				"type": "none",
+				"left_columns": [],
+				"right_columns": []
+			}
+		}`
+)
+
 func TestCreateUserDatasetPipeline(t *testing.T) {
 
 	variables := []*model.Variable{
@@ -53,8 +248,15 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 		},
 	}
 
-	pipeline, err := CreateUserDatasetPipeline(
-		"test_user_pipeline", "a test user pipeline", variables, "test_target", []string{"test_var_0", "test_var_1", "test_var_3"}, nil)
+	pipeline, err := CreateUserDatasetPipeline("test_user_pipeline", "a test user pipeline",
+		&UserDatasetDescription{
+			AllFeatures:      variables,
+			TargetFeature:    "test_target",
+			SelectedFeatures: []string{"test_var_0", "test_var_1", "test_var_3"},
+			Filters:          nil,
+		},
+		nil,
+	)
 	assert.Equal(t, 12, len(pipeline.GetSteps()))
 
 	pythonPath := pipeline.GetSteps()[0].GetPrimitive().GetPrimitive().GetPythonPath()
@@ -129,8 +331,13 @@ func TestCreateUserDatasetPipelineMappingError(t *testing.T) {
 		},
 	}
 
-	_, err := CreateUserDatasetPipeline(
-		"test_user_pipeline", "a test user pipeline", variables, "test_target", []string{"test_var_0"}, nil)
+	_, err := CreateUserDatasetPipeline("test_user_pipeline", "a test user pipeline",
+		&UserDatasetDescription{
+			AllFeatures:      variables,
+			TargetFeature:    "test_target",
+			SelectedFeatures: []string{"test_var_0"},
+			Filters:          nil,
+		}, nil)
 	assert.Error(t, err)
 }
 
@@ -145,8 +352,13 @@ func TestCreateUserDatasetEmpty(t *testing.T) {
 		},
 	}
 
-	pipeline, err := CreateUserDatasetPipeline(
-		"test_user_pipeline", "a test user pipeline", variables, "test_target", []string{"test_var_0"}, nil)
+	pipeline, err := CreateUserDatasetPipeline("test_user_pipeline", "a test user pipeline",
+		&UserDatasetDescription{
+			AllFeatures:      variables,
+			TargetFeature:    "test_target",
+			SelectedFeatures: []string{"test_var_0"},
+			Filters:          nil,
+		}, nil)
 
 	assert.Nil(t, pipeline)
 	assert.Nil(t, err)
@@ -330,5 +542,29 @@ func TestCreateTimeseriesFormatterPipeline(t *testing.T) {
 	assert.NotNil(t, data)
 
 	err = ioutil.WriteFile("/tmp/formatter.pln", data, 0644)
+	assert.NoError(t, err)
+}
+
+func TestCreateDatamartDownloadPipeline(t *testing.T) {
+	pipeline, err := CreateDatamartDownloadPipeline("download_test", "test download pipeline", searchResult, "NYU", "DA_ny_taxi_demand_dataset_TRAIN")
+	assert.NoError(t, err)
+
+	data, err := proto.Marshal(pipeline)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+
+	err = ioutil.WriteFile("/tmp/download.pln", data, 0644)
+	assert.NoError(t, err)
+}
+
+func TestCreateDatamartAugmentPipeline(t *testing.T) {
+	pipeline, err := CreateDatamartAugmentPipeline("augment_test", "test augment pipeline", searchResult, "NYU", "DA_ny_taxi_demand_dataset_TRAIN")
+	assert.NoError(t, err)
+
+	data, err := proto.Marshal(pipeline)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+
+	err = ioutil.WriteFile("/tmp/augment.pln", data, 0644)
 	assert.NoError(t, err)
 }

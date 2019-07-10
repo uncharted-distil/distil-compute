@@ -26,43 +26,76 @@ import (
 
 const defaultResource = "learningData"
 
+// UserDatasetDescription contains the basic parameters needs to generate
+// the user dataset pipeline.
+type UserDatasetDescription struct {
+	AllFeatures      []*model.Variable
+	TargetFeature    string
+	SelectedFeatures []string
+	Filters          []*model.Filter
+}
+
+// UserDatasetAugmentation contains the augmentation parameters required
+// for user dataset pipelines.
+type UserDatasetAugmentation struct {
+	SearchResult  string
+	SystemID      string
+	BaseDatasetID string
+}
+
 // CreateUserDatasetPipeline creates a pipeline description to capture user feature selection and
 // semantic type information.
-func CreateUserDatasetPipeline(name string, description string, allFeatures []*model.Variable,
-	targetFeature string, selectedFeatures []string, filters []*model.Filter) (*pipeline.PipelineDescription, error) {
+func CreateUserDatasetPipeline(name string, description string, datasetDescription *UserDatasetDescription,
+	augmentation *UserDatasetAugmentation) (*pipeline.PipelineDescription, error) {
 
 	offset := 0
 
 	// save the selected features in a set for quick lookup
 	selectedSet := map[string]bool{}
-	for _, v := range selectedFeatures {
+	for _, v := range datasetDescription.SelectedFeatures {
 		selectedSet[strings.ToLower(v)] = true
 	}
-	columnIndices := mapColumns(allFeatures, selectedSet)
+	columnIndices := mapColumns(datasetDescription.AllFeatures, selectedSet)
 
 	// create pipeline nodes for step we need to execute
 	steps := []Step{} // add the denorm primitive
 
 	// determine if this is a timeseries dataset
 	isTimeseries := false
-	for _, v := range allFeatures {
+	for _, v := range datasetDescription.AllFeatures {
 		if v.Grouping != nil && model.IsTimeSeries(v.Grouping.Type) {
 			isTimeseries = true
 			break
 		}
 	}
 
+	// augment the dataset if needed
+	// need to track the initial dataref and set the offset properly
+	var dataRef DataRef
+	dataRef = &PipelineDataRef{0}
+	if augmentation != nil {
+		steps = append(steps, NewDatamartAugmentStep(
+			map[string]DataRef{"inputs": dataRef},
+			[]string{"produce"},
+			augmentation.SearchResult,
+			augmentation.SystemID,
+			augmentation.BaseDatasetID,
+		))
+		dataRef = &StepDataRef{offset, "produce"}
+		offset++
+	}
+
 	if isTimeseries {
 		// need to read csv data, flatten then concat back to the original pipeline
-		steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{offset}}, []string{"produce"}))
-		steps = append(steps, NewDatasetToDataframeStepWithResource(map[string]DataRef{"inputs": &PipelineDataRef{offset}}, []string{"produce"}, "0"))
+		steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}))
+		steps = append(steps, NewDatasetToDataframeStepWithResource(map[string]DataRef{"inputs": dataRef}, []string{"produce"}, "0"))
 		steps = append(steps, NewCSVReaderStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}))
 		steps = append(steps, NewHorizontalConcatStep(map[string]DataRef{"left": &StepDataRef{offset, "produce"}, "right": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, false, false))
 		steps = append(steps, NewDataFrameFlattenStep(map[string]DataRef{"inputs": &StepDataRef{offset + 3, "produce"}}, []string{"produce"}))
 		steps = append(steps, NewRemoveDuplicateColumnsStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}))
 		offset += 5
 	} else {
-		steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
+		steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}))
 		steps = append(steps, NewColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType}))
 		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, ""))
 		steps = append(steps, NewDataCleaningStep(nil, nil))
@@ -71,7 +104,7 @@ func CreateUserDatasetPipeline(name string, description string, allFeatures []*m
 	}
 
 	// create the semantic type update primitive
-	updateSemanticTypes, err := createUpdateSemanticTypes(allFeatures, selectedSet, offset)
+	updateSemanticTypes, err := createUpdateSemanticTypes(datasetDescription.AllFeatures, selectedSet, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -79,12 +112,12 @@ func CreateUserDatasetPipeline(name string, description string, allFeatures []*m
 	offset += len(updateSemanticTypes)
 
 	// create the feature selection primitive
-	removeFeatures := createRemoveFeatures(allFeatures, selectedSet, offset)
+	removeFeatures := createRemoveFeatures(datasetDescription.AllFeatures, selectedSet, offset)
 	steps = append(steps, removeFeatures...)
 	offset += len(removeFeatures)
 
 	// add filter primitives
-	filterData := createFilterData(filters, columnIndices, offset)
+	filterData := createFilterData(datasetDescription.Filters, columnIndices, offset)
 	steps = append(steps, filterData...)
 	offset += len(filterData)
 
@@ -586,6 +619,40 @@ func CreateTimeseriesFormatterPipeline(name string, description string, resource
 		NewHorizontalConcatStep(map[string]DataRef{"left": &StepDataRef{0, "produce"}, "right": &StepDataRef{2, "produce"}}, []string{"produce"}, false, false),
 		NewDataFrameFlattenStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
 		NewRemoveDuplicateColumnsStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
+	}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+	return pipeline, nil
+}
+
+// CreateDatamartDownloadPipeline creates a pipeline to download data from a datamart.
+func CreateDatamartDownloadPipeline(name string, description string, searchResult string, systemIdentifier string, dataset string) (*pipeline.PipelineDescription, error) {
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{1, "produce"}}
+
+	steps := []Step{
+		NewDatamartDownloadStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, searchResult, systemIdentifier, dataset),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
+	}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+	return pipeline, nil
+}
+
+// CreateDatamartAugmentPipeline creates a pipeline to augment data with datamart data.
+func CreateDatamartAugmentPipeline(name string, description string, searchResult string, systemIdentifier string, dataset string) (*pipeline.PipelineDescription, error) {
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{1, "produce"}}
+
+	steps := []Step{
+		NewDatamartAugmentStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, searchResult, systemIdentifier, dataset),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 	}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()

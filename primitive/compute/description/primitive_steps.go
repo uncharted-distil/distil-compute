@@ -15,7 +15,12 @@
 
 package description
 
-import "github.com/uncharted-distil/distil-compute/pipeline"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/uncharted-distil/distil-compute/pipeline"
+)
 
 // NewSimonStep creates a SIMON data classification step.  It examines an input
 // dataframe, and assigns types to the columns based on the exposed metadata.
@@ -164,6 +169,70 @@ func NewCrocStep(inputs map[string]DataRef, outputMethods []string, targetColumn
 		map[string]interface{}{
 			"target_columns": targetColumns,
 			"output_labels":  outputLabels,
+		},
+		inputs,
+	)
+}
+
+// NewDatamartDownloadStep creates a primitive call that downloads a dataset
+// from a datamart.
+func NewDatamartDownloadStep(inputs map[string]DataRef, outputMethods []string, searchResult string, systemIdentifier string, dataset string) *StepData {
+	// supplied_id and supplied_resource_id need to be part of search result.
+	//   supplied_id: dataset id of the linked dataset
+	//   supplied_resource_id: resource id of the dataset
+	// searchResult is a json struct so ends with '}'
+	// simply update that search result to fit in the required params
+	searchResult = strings.TrimSpace(searchResult)
+	searchResult = fmt.Sprintf(`%s, "supplied_id": "%s", "supplied_resource_id": "%s"}`,
+		searchResult[:len(searchResult)-1],
+		dataset,
+		defaultResource,
+	)
+
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "9e2077eb-3e38-4df1-99a5-5e647d21331f",
+			Version:    "0.1",
+			Name:       "Download a dataset from Datamart",
+			PythonPath: "d3m.primitives.data_augmentation.datamart_download.Common",
+			Digest:     "7e92079cf5dd2052e93ad152d626fc16670f0dde0ae19433a2e8ce7bf2dc7746",
+		},
+		outputMethods,
+		map[string]interface{}{
+			"search_result":     searchResult,
+			"system_identifier": systemIdentifier,
+		},
+		inputs,
+	)
+}
+
+// NewDatamartAugmentStep creates a primitive call that augments a dataset
+// with a datamart dataset.
+func NewDatamartAugmentStep(inputs map[string]DataRef, outputMethods []string, searchResult string, systemIdentifier string, dataset string) *StepData {
+	// supplied_id and supplied_resource_id need to be part of search result.
+	//   supplied_id: dataset id of the linked dataset
+	//   supplied_resource_id: resource id of the dataset
+	// searchResult is a json struct so ends with '}'
+	// simply update that search result to fit in the required params
+	searchResult = strings.TrimSpace(searchResult)
+	searchResult = fmt.Sprintf(`%s, "supplied_id": "%s", "supplied_resource_id": "%s"}`,
+		searchResult[:len(searchResult)-1],
+		dataset,
+		defaultResource,
+	)
+
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "fe0f1ac8-1d39-463a-b344-7bd498a31b91",
+			Version:    "0.1",
+			Name:       "Perform dataset augmentation using Datamart",
+			PythonPath: "d3m.primitives.data_augmentation.datamart_augmentation.Common",
+			Digest:     "498665b64f05ebcc14cd78f3000804fff366b833628462010d4eca931c086b81",
+		},
+		outputMethods,
+		map[string]interface{}{
+			"search_result":     searchResult,
+			"system_identifier": systemIdentifier,
 		},
 		inputs,
 	)
