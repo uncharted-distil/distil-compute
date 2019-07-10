@@ -248,8 +248,15 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 		},
 	}
 
-	pipeline, err := CreateUserDatasetPipeline(
-		"test_user_pipeline", "a test user pipeline", variables, "test_target", []string{"test_var_0", "test_var_1", "test_var_3"}, nil)
+	pipeline, err := CreateUserDatasetPipeline("test_user_pipeline", "a test user pipeline",
+		&UserDatasetDescription{
+			AllFeatures:      variables,
+			TargetFeature:    "test_target",
+			SelectedFeatures: []string{"test_var_0", "test_var_1", "test_var_3"},
+			Filters:          nil,
+		},
+		nil,
+	)
 	assert.Equal(t, 12, len(pipeline.GetSteps()))
 
 	pythonPath := pipeline.GetSteps()[0].GetPrimitive().GetPrimitive().GetPythonPath()
@@ -324,8 +331,13 @@ func TestCreateUserDatasetPipelineMappingError(t *testing.T) {
 		},
 	}
 
-	_, err := CreateUserDatasetPipeline(
-		"test_user_pipeline", "a test user pipeline", variables, "test_target", []string{"test_var_0"}, nil)
+	_, err := CreateUserDatasetPipeline("test_user_pipeline", "a test user pipeline",
+		&UserDatasetDescription{
+			AllFeatures:      variables,
+			TargetFeature:    "test_target",
+			SelectedFeatures: []string{"test_var_0"},
+			Filters:          nil,
+		}, nil)
 	assert.Error(t, err)
 }
 
@@ -340,8 +352,13 @@ func TestCreateUserDatasetEmpty(t *testing.T) {
 		},
 	}
 
-	pipeline, err := CreateUserDatasetPipeline(
-		"test_user_pipeline", "a test user pipeline", variables, "test_target", []string{"test_var_0"}, nil)
+	pipeline, err := CreateUserDatasetPipeline("test_user_pipeline", "a test user pipeline",
+		&UserDatasetDescription{
+			AllFeatures:      variables,
+			TargetFeature:    "test_target",
+			SelectedFeatures: []string{"test_var_0"},
+			Filters:          nil,
+		}, nil)
 
 	assert.Nil(t, pipeline)
 	assert.Nil(t, err)

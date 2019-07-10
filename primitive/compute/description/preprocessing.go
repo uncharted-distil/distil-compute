@@ -27,26 +27,42 @@ import (
 
 const defaultResource = "learningData"
 
+// UserDatasetDescription contains the basic parameters needs to generate
+// the user dataset pipeline.
+type UserDatasetDescription struct {
+	AllFeatures      []*model.Variable
+	TargetFeature    string
+	SelectedFeatures []string
+	Filters          []*model.Filter
+}
+
+// UserDatasetAugmentation contains the augmentation parameters required
+// for user dataset pipelines.
+type UserDatasetAugmentation struct {
+	SearchResult     string
+	SystemIdentifier string
+}
+
 // CreateUserDatasetPipeline creates a pipeline description to capture user feature selection and
 // semantic type information.
-func CreateUserDatasetPipeline(name string, description string, allFeatures []*model.Variable,
-	targetFeature string, selectedFeatures []string, filters []*model.Filter) (*pipeline.PipelineDescription, error) {
+func CreateUserDatasetPipeline(name string, description string, datasetDescription *UserDatasetDescription,
+	augmentation *UserDatasetAugmentation) (*pipeline.PipelineDescription, error) {
 
 	offset := 0
 
 	// save the selected features in a set for quick lookup
 	selectedSet := map[string]bool{}
-	for _, v := range selectedFeatures {
+	for _, v := range datasetDescription.SelectedFeatures {
 		selectedSet[strings.ToLower(v)] = true
 	}
-	columnIndices := mapColumns(allFeatures, selectedSet)
+	columnIndices := mapColumns(datasetDescription.AllFeatures, selectedSet)
 
 	// create pipeline nodes for step we need to execute
 	steps := []Step{} // add the denorm primitive
 
 	// determine if this is a timeseries dataset
 	isTimeseries := false
-	for _, v := range allFeatures {
+	for _, v := range datasetDescription.AllFeatures {
 		if v.Grouping != nil && model.IsTimeSeries(v.Grouping.Type) {
 			isTimeseries = true
 			break
@@ -72,7 +88,7 @@ func CreateUserDatasetPipeline(name string, description string, allFeatures []*m
 	}
 
 	// create the semantic type update primitive
-	updateSemanticTypes, err := createUpdateSemanticTypes(allFeatures, selectedSet, offset)
+	updateSemanticTypes, err := createUpdateSemanticTypes(datasetDescription.AllFeatures, selectedSet, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -80,12 +96,12 @@ func CreateUserDatasetPipeline(name string, description string, allFeatures []*m
 	offset += len(updateSemanticTypes)
 
 	// create the feature selection primitive
-	removeFeatures := createRemoveFeatures(allFeatures, selectedSet, offset)
+	removeFeatures := createRemoveFeatures(datasetDescription.AllFeatures, selectedSet, offset)
 	steps = append(steps, removeFeatures...)
 	offset += len(removeFeatures)
 
 	// add filter primitives
-	filterData := createFilterData(filters, columnIndices, offset)
+	filterData := createFilterData(datasetDescription.Filters, columnIndices, offset)
 	steps = append(steps, filterData...)
 	offset += len(filterData)
 
