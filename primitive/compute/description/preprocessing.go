@@ -16,7 +16,6 @@
 package description
 
 import (
-	"fmt"
 	"sort"
 	"strings"
 
@@ -39,8 +38,9 @@ type UserDatasetDescription struct {
 // UserDatasetAugmentation contains the augmentation parameters required
 // for user dataset pipelines.
 type UserDatasetAugmentation struct {
-	SearchResult     string
-	SystemIdentifier string
+	SearchResult  string
+	SystemID      string
+	BaseDatasetID string
 }
 
 // CreateUserDatasetPipeline creates a pipeline description to capture user feature selection and
@@ -69,17 +69,33 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 		}
 	}
 
+	// augment the dataset if needed
+	// need to track the initial dataref and set the offset properly
+	var dataRef DataRef
+	dataRef = &PipelineDataRef{0}
+	if augmentation != nil {
+		steps = append(steps, NewDatamartAugmentStep(
+			map[string]DataRef{"inputs": dataRef},
+			[]string{"produce"},
+			augmentation.SearchResult,
+			augmentation.SystemID,
+			augmentation.BaseDatasetID,
+		))
+		dataRef = &StepDataRef{offset, "produce"}
+		offset++
+	}
+
 	if isTimeseries {
 		// need to read csv data, flatten then concat back to the original pipeline
-		steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{offset}}, []string{"produce"}))
-		steps = append(steps, NewDatasetToDataframeStepWithResource(map[string]DataRef{"inputs": &PipelineDataRef{offset}}, []string{"produce"}, "0"))
+		steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}))
+		steps = append(steps, NewDatasetToDataframeStepWithResource(map[string]DataRef{"inputs": dataRef}, []string{"produce"}, "0"))
 		steps = append(steps, NewCSVReaderStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}))
 		steps = append(steps, NewHorizontalConcatStep(map[string]DataRef{"left": &StepDataRef{offset, "produce"}, "right": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, false, false))
 		steps = append(steps, NewDataFrameFlattenStep(map[string]DataRef{"inputs": &StepDataRef{offset + 3, "produce"}}, []string{"produce"}))
 		steps = append(steps, NewRemoveDuplicateColumnsStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}))
 		offset += 5
 	} else {
-		steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
+		steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}))
 		steps = append(steps, NewColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType}))
 		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, ""))
 		steps = append(steps, NewDataCleaningStep(nil, nil))
@@ -613,23 +629,12 @@ func CreateTimeseriesFormatterPipeline(name string, description string, resource
 }
 
 // CreateDatamartDownloadPipeline creates a pipeline to download data from a datamart.
-func CreateDatamartDownloadPipeline(name string, description string, searchResult string, systemIdentifier string, datasetID string) (*pipeline.PipelineDescription, error) {
-	// supplied_id and supplied_resource_id need to be part of search result.
-	//   supplied_id: dataset id of the linked dataset
-	//   supplied_resource_id: resource id of the dataset
-	// searchResult is a json struct so ends with '}'
-	// simply update that search result to fit in the required params
-	searchResult = strings.TrimSpace(searchResult)
-	searchResult = fmt.Sprintf(`%s, "supplied_id": "%s", "supplied_resource_id": "%s"}`,
-		searchResult[:len(searchResult)-1],
-		datasetID,
-		defaultResource,
-	)
+func CreateDatamartDownloadPipeline(name string, description string, searchResult string, systemIdentifier string, dataset string) (*pipeline.PipelineDescription, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{1, "produce"}}
 
 	steps := []Step{
-		NewDatamartDownloadStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, searchResult, systemIdentifier),
+		NewDatamartDownloadStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, searchResult, systemIdentifier, dataset),
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 	}
 
@@ -641,23 +646,12 @@ func CreateDatamartDownloadPipeline(name string, description string, searchResul
 }
 
 // CreateDatamartAugmentPipeline creates a pipeline to augment data with datamart data.
-func CreateDatamartAugmentPipeline(name string, description string, searchResult string, systemIdentifier string, datasetID string) (*pipeline.PipelineDescription, error) {
-	// supplied_id and supplied_resource_id need to be part of search result.
-	//   supplied_id: dataset id of the linked dataset
-	//   supplied_resource_id: resource id of the dataset
-	// searchResult is a json struct so ends with '}'
-	// simply update that search result to fit in the required params
-	searchResult = strings.TrimSpace(searchResult)
-	searchResult = fmt.Sprintf(`%s, "supplied_id": "%s", "supplied_resource_id": "%s"}`,
-		searchResult[:len(searchResult)-1],
-		datasetID,
-		defaultResource,
-	)
+func CreateDatamartAugmentPipeline(name string, description string, searchResult string, systemIdentifier string, dataset string) (*pipeline.PipelineDescription, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{1, "produce"}}
 
 	steps := []Step{
-		NewDatamartAugmentStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, searchResult, systemIdentifier),
+		NewDatamartAugmentStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, searchResult, systemIdentifier, dataset),
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 	}
 

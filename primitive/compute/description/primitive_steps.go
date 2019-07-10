@@ -15,7 +15,12 @@
 
 package description
 
-import "github.com/uncharted-distil/distil-compute/pipeline"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/uncharted-distil/distil-compute/pipeline"
+)
 
 // NewSimonStep creates a SIMON data classification step.  It examines an input
 // dataframe, and assigns types to the columns based on the exposed metadata.
@@ -171,7 +176,19 @@ func NewCrocStep(inputs map[string]DataRef, outputMethods []string, targetColumn
 
 // NewDatamartDownloadStep creates a primitive call that downloads a dataset
 // from a datamart.
-func NewDatamartDownloadStep(inputs map[string]DataRef, outputMethods []string, searchResult string, systemIdentifier string) *StepData {
+func NewDatamartDownloadStep(inputs map[string]DataRef, outputMethods []string, searchResult string, systemIdentifier string, dataset string) *StepData {
+	// supplied_id and supplied_resource_id need to be part of search result.
+	//   supplied_id: dataset id of the linked dataset
+	//   supplied_resource_id: resource id of the dataset
+	// searchResult is a json struct so ends with '}'
+	// simply update that search result to fit in the required params
+	searchResult = strings.TrimSpace(searchResult)
+	searchResult = fmt.Sprintf(`%s, "supplied_id": "%s", "supplied_resource_id": "%s"}`,
+		searchResult[:len(searchResult)-1],
+		dataset,
+		defaultResource,
+	)
+
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "9e2077eb-3e38-4df1-99a5-5e647d21331f",
@@ -191,7 +208,19 @@ func NewDatamartDownloadStep(inputs map[string]DataRef, outputMethods []string, 
 
 // NewDatamartAugmentStep creates a primitive call that augments a dataset
 // with a datamart dataset.
-func NewDatamartAugmentStep(inputs map[string]DataRef, outputMethods []string, searchResult string, systemIdentifier string) *StepData {
+func NewDatamartAugmentStep(inputs map[string]DataRef, outputMethods []string, searchResult string, systemIdentifier string, dataset string) *StepData {
+	// supplied_id and supplied_resource_id need to be part of search result.
+	//   supplied_id: dataset id of the linked dataset
+	//   supplied_resource_id: resource id of the dataset
+	// searchResult is a json struct so ends with '}'
+	// simply update that search result to fit in the required params
+	searchResult = strings.TrimSpace(searchResult)
+	searchResult = fmt.Sprintf(`%s, "supplied_id": "%s", "supplied_resource_id": "%s"}`,
+		searchResult[:len(searchResult)-1],
+		dataset,
+		defaultResource,
+	)
+
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "fe0f1ac8-1d39-463a-b344-7bd498a31b91",
