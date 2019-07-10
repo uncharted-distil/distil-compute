@@ -16,6 +16,7 @@
 package description
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 
@@ -596,12 +597,51 @@ func CreateTimeseriesFormatterPipeline(name string, description string, resource
 }
 
 // CreateDatamartDownloadPipeline creates a pipeline to download data from a datamart.
-func CreateDatamartDownloadPipeline(name string, description string, searchResult string, systemIdentifier string) (*pipeline.PipelineDescription, error) {
+func CreateDatamartDownloadPipeline(name string, description string, searchResult string, systemIdentifier string, datasetID string) (*pipeline.PipelineDescription, error) {
+	// supplied_id and supplied_resource_id need to be part of search result.
+	//   supplied_id: dataset id of the linked dataset
+	//   supplied_resource_id: resource id of the dataset
+	// searchResult is a json struct so ends with '}'
+	// simply update that search result to fit in the required params
+	searchResult = strings.TrimSpace(searchResult)
+	searchResult = fmt.Sprintf(`%s, "supplied_id": "%s", "supplied_resource_id": "%s"}`,
+		searchResult[:len(searchResult)-1],
+		datasetID,
+		defaultResource,
+	)
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{1, "produce"}}
 
 	steps := []Step{
 		NewDatamartDownloadStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, searchResult, systemIdentifier),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
+	}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+	return pipeline, nil
+}
+
+// CreateDatamartAugmentPipeline creates a pipeline to augment data with datamart data.
+func CreateDatamartAugmentPipeline(name string, description string, searchResult string, systemIdentifier string, datasetID string) (*pipeline.PipelineDescription, error) {
+	// supplied_id and supplied_resource_id need to be part of search result.
+	//   supplied_id: dataset id of the linked dataset
+	//   supplied_resource_id: resource id of the dataset
+	// searchResult is a json struct so ends with '}'
+	// simply update that search result to fit in the required params
+	searchResult = strings.TrimSpace(searchResult)
+	searchResult = fmt.Sprintf(`%s, "supplied_id": "%s", "supplied_resource_id": "%s"}`,
+		searchResult[:len(searchResult)-1],
+		datasetID,
+		defaultResource,
+	)
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{1, "produce"}}
+
+	steps := []Step{
+		NewDatamartAugmentStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, searchResult, systemIdentifier),
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 	}
 

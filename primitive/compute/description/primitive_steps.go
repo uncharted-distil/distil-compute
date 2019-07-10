@@ -189,6 +189,26 @@ func NewDatamartDownloadStep(inputs map[string]DataRef, outputMethods []string, 
 	)
 }
 
+// NewDatamartAugmentStep creates a primitive call that augments a dataset
+// with a datamart dataset.
+func NewDatamartAugmentStep(inputs map[string]DataRef, outputMethods []string, searchResult string, systemIdentifier string) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "fe0f1ac8-1d39-463a-b344-7bd498a31b91",
+			Version:    "0.1",
+			Name:       "Perform dataset augmentation using Datamart",
+			PythonPath: "d3m.primitives.data_augmentation.datamart_augmentation.Common",
+			Digest:     "498665b64f05ebcc14cd78f3000804fff366b833628462010d4eca931c086b81",
+		},
+		outputMethods,
+		map[string]interface{}{
+			"search_result":     searchResult,
+			"system_identifier": systemIdentifier,
+		},
+		inputs,
+	)
+}
+
 // NewDatasetToDataframeStep creates a primitive call that transforms an input dataset
 // into a PANDAS dataframe.
 func NewDatasetToDataframeStep(inputs map[string]DataRef, outputMethods []string) *StepData {

@@ -529,7 +529,7 @@ func TestCreateTimeseriesFormatterPipeline(t *testing.T) {
 }
 
 func TestCreateDatamartDownloadPipeline(t *testing.T) {
-	pipeline, err := CreateDatamartDownloadPipeline("formatter_test", "test formatter pipeline", searchResult, "NYU")
+	pipeline, err := CreateDatamartDownloadPipeline("download_test", "test download pipeline", searchResult, "NYU", "DA_ny_taxi_demand_dataset_TRAIN")
 	assert.NoError(t, err)
 
 	data, err := proto.Marshal(pipeline)
@@ -537,5 +537,17 @@ func TestCreateDatamartDownloadPipeline(t *testing.T) {
 	assert.NotNil(t, data)
 
 	err = ioutil.WriteFile("/tmp/download.pln", data, 0644)
+	assert.NoError(t, err)
+}
+
+func TestCreateDatamartAugmentPipeline(t *testing.T) {
+	pipeline, err := CreateDatamartAugmentPipeline("augment_test", "test augment pipeline", searchResult, "NYU", "DA_ny_taxi_demand_dataset_TRAIN")
+	assert.NoError(t, err)
+
+	data, err := proto.Marshal(pipeline)
+	assert.NoError(t, err)
+	assert.NotNil(t, data)
+
+	err = ioutil.WriteFile("/tmp/augment.pln", data, 0644)
 	assert.NoError(t, err)
 }
