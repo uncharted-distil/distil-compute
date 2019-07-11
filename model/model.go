@@ -261,10 +261,11 @@ func doesNameAlreadyExist(name string, existingVariables []*Variable) bool {
 }
 
 func ensureUniqueNameRecursive(name string, existingVariables []*Variable, count int) string {
-	if doesNameAlreadyExist(name, existingVariables) {
+	newName := fmt.Sprintf("%s_%d", name, count)
+	if doesNameAlreadyExist(newName, existingVariables) {
 		return ensureUniqueNameRecursive(name, existingVariables, count+1)
 	}
-	return fmt.Sprintf("%s_%d", name, count)
+	return newName
 }
 
 func ensureUniqueName(name string, existingVariables []*Variable) string {
