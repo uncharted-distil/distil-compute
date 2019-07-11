@@ -557,24 +557,57 @@ func CreateGoatReversePipeline(name string, description string, lonSource string
 	return pipeline, nil
 }
 
+func getSemanticTypeUpdates(v *model.Variable, inputIndex int, offset int) []Step {
+	addType := model.MapTA2Type(v.Type)
+	removeType := model.MapTA2Type(v.OriginalType)
+
+	add := &ColumnUpdate{
+		SemanticTypes: []string{addType},
+		Indices:       []int{v.Index},
+	}
+	remove := &ColumnUpdate{
+		SemanticTypes: []string{removeType},
+		Indices:       []int{v.Index},
+	}
+	return []Step{
+		NewAddSemanticTypeStep(nil, nil, add),
+		NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{inputIndex, "produce"}}, []string{"produce"}, offset, ""),
+		NewRemoveSemanticTypeStep(nil, nil, remove),
+		NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{inputIndex, "produce"}}, []string{"produce"}, offset+2, ""),
+	}
+}
+
 // CreateJoinPipeline creates a pipeline that joins two input datasets using a caller supplied column.
 // Accuracy is a normalized value that controls how exact the join has to be.
-func CreateJoinPipeline(name string, description string, leftJoinCol string, rightJoinCol string, accuracy float32) (*pipeline.PipelineDescription, error) {
-	// compute column indices
-	inputs := []string{"left", "right"}
-	outputs := []DataRef{&StepDataRef{3, "produce"}}
+func CreateJoinPipeline(name string, description string, leftJoinCol *model.Variable, rightJoinCol *model.Variable, accuracy float32) (*pipeline.PipelineDescription, error) {
+	steps := make([]Step, 0)
+	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
+	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}))
+	offset := 2
+
+	// update semantic types as needed
+	if leftJoinCol.Type != leftJoinCol.OriginalType {
+		stepsRetype := getSemanticTypeUpdates(leftJoinCol, 0, offset)
+		steps = append(steps, stepsRetype...)
+		offset += len(stepsRetype)
+	}
+	if rightJoinCol.Type != rightJoinCol.OriginalType {
+		stepsRetype := getSemanticTypeUpdates(rightJoinCol, 1, offset)
+		steps = append(steps, stepsRetype...)
+		offset += len(stepsRetype)
+	}
 
 	// instantiate the pipeline - this merges two intput streams via a single join call
-	steps := []Step{
-		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}),
-		NewJoinStep(
-			map[string]DataRef{"left": &StepDataRef{0, "produce"}, "right": &StepDataRef{1, "produce"}},
-			[]string{"produce"},
-			leftJoinCol, rightJoinCol, accuracy,
-		),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
-	}
+	steps = append(steps, NewJoinStep(
+		map[string]DataRef{"left": &StepDataRef{0, "produce"}, "right": &StepDataRef{1, "produce"}},
+		[]string{"produce"},
+		leftJoinCol.DisplayName, rightJoinCol.DisplayName, accuracy,
+	))
+	steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}))
+
+	// compute column indices
+	inputs := []string{"left", "right"}
+	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
 	if err != nil {
