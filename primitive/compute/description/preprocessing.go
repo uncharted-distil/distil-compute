@@ -573,7 +573,7 @@ func getSemanticTypeUpdates(v *model.Variable, inputIndex int, offset int) []Ste
 		NewAddSemanticTypeStep(nil, nil, add),
 		NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{inputIndex, "produce"}}, []string{"produce"}, offset, ""),
 		NewRemoveSemanticTypeStep(nil, nil, remove),
-		NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{inputIndex, "produce"}}, []string{"produce"}, offset+2, ""),
+		NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}, offset+2, ""),
 	}
 }
 
@@ -584,26 +584,30 @@ func CreateJoinPipeline(name string, description string, leftJoinCol *model.Vari
 	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
 	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}))
 	offset := 2
+	offsetLeft := 0
+	offsetRight := 1
 
 	// update semantic types as needed
 	if leftJoinCol.Type != leftJoinCol.OriginalType {
 		stepsRetype := getSemanticTypeUpdates(leftJoinCol, 0, offset)
 		steps = append(steps, stepsRetype...)
 		offset += len(stepsRetype)
+		offsetLeft = offset - 1
 	}
 	if rightJoinCol.Type != rightJoinCol.OriginalType {
 		stepsRetype := getSemanticTypeUpdates(rightJoinCol, 1, offset)
 		steps = append(steps, stepsRetype...)
 		offset += len(stepsRetype)
+		offsetRight = offset - 1
 	}
 
-	// instantiate the pipeline - this merges two intput streams via a single join call
+	// merge two intput streams via a single join call
 	steps = append(steps, NewJoinStep(
-		map[string]DataRef{"left": &StepDataRef{0, "produce"}, "right": &StepDataRef{1, "produce"}},
+		map[string]DataRef{"left": &StepDataRef{offsetLeft, "produce"}, "right": &StepDataRef{offsetRight, "produce"}},
 		[]string{"produce"},
 		leftJoinCol.DisplayName, rightJoinCol.DisplayName, accuracy,
 	))
-	steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}))
+	steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 
 	// compute column indices
 	inputs := []string{"left", "right"}
