@@ -202,6 +202,8 @@ type Metadata struct {
 	SchemaSource     string
 	Redacted         bool
 	DatasetFolder    string
+	SearchResult     string
+	SearchProvenance string
 }
 
 // NewMetadata creates a new metadata instance.
