@@ -214,12 +214,12 @@ func NewDatamartAugmentStep(inputs map[string]DataRef, outputMethods []string, s
 	//   supplied_resource_id: resource id of the dataset
 	// searchResult is a json struct so ends with '}'
 	// simply update that search result to fit in the required params
-	searchResult = strings.TrimSpace(searchResult)
-	searchResult = fmt.Sprintf(`%s, "supplied_id": "%s", "supplied_resource_id": "%s"}`,
-		searchResult[:len(searchResult)-1],
-		dataset,
-		defaultResource,
-	)
+	//searchResult = strings.TrimSpace(searchResult)
+	//searchResult = fmt.Sprintf(`%s, "supplied_id": "%s", "supplied_resource_id": "%s"}`,
+	//	searchResult[:len(searchResult)-1],
+	//	dataset,
+	//	defaultResource,
+	//)
 
 	return NewStepData(
 		&pipeline.Primitive{
