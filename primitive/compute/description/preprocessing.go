@@ -62,12 +62,16 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 
 	// determine if this is a timeseries dataset
 	isTimeseries := false
-	for _, v := range datasetDescription.AllFeatures {
-		if v.Grouping != nil && model.IsTimeSeries(v.Grouping.Type) {
-			isTimeseries = true
-			break
-		}
-	}
+	// TODO: CSV reader is currently not working correctly, so we need to disable the timeseries
+	// prepend and use the data as-is.  This is sufficient for now as the NK classification primitives
+	// run off the unmodified dataset (although they can be configured to long form)
+	// prend for now
+	// for _, v := range datasetDescription.AllFeatures {
+	// 	if v.Grouping != nil && model.IsTimeSeries(v.Grouping.Type) {
+	// 		isTimeseries = true
+	// 		break
+	// 	}
+	// }
 
 	// augment the dataset if needed
 	// need to track the initial dataref and set the offset properly
