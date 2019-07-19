@@ -409,7 +409,7 @@ func DefaultPostgresValueFromD3MType(typ string) interface{} {
 	case IndexType:
 		return float64(0)
 	case LongitudeType, LatitudeType, RealType:
-		return float64(0)
+		return "'NaN'::double precision"
 	case IntegerType, TimestampType:
 		return int(0)
 	case DateTimeType:
