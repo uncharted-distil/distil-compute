@@ -324,6 +324,12 @@ func IsFloatingPoint(typ string) bool {
 	return floatingPointTypes[typ]
 }
 
+// IsDatabaseFloatingPoint indicates whether or not a database type is a floating point
+// value.
+func IsDatabaseFloatingPoint(typ string) bool {
+	return typ == dataTypeFloat
+}
+
 // IsCategorical indicates whether or not a schema type is categorical for the purposes
 // of analysis.
 func IsCategorical(typ string) bool {
