@@ -59,10 +59,11 @@ func GenerateUnaryClientInterceptor(trace bool, logger MethodLogger) grpc.UnaryC
 }
 
 // GenerateStreamClientInterceptor creates an interceptor function that will log grpc streaming calls.
-func GenerateStreamClientInterceptor(trace bool) grpc.StreamClientInterceptor {
-	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+func GenerateStreamClientInterceptor(trace bool, logger MethodLogger) grpc.StreamClientInterceptor {
+	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn,
+		method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		clientStream, err := streamer(ctx, desc, cc, method, opts...)
-		loggingClientStream := newLoggingClientStream(&clientStream, "GRPC.STREAM_CLIENT", method, trace)
+		loggingClientStream := newLoggingClientStream(&clientStream, "GRPC.STREAM_CLIENT", method, trace, logger)
 		if err != nil {
 			err = errors.Wrap(err, "stream create call failed")
 		}
@@ -76,10 +77,11 @@ type LoggingClientStream struct {
 	requestType string
 	method      string
 	trace       bool
+	logger      MethodLogger
 }
 
-func newLoggingClientStream(c *grpc.ClientStream, requestType string, request string, trace bool) *LoggingClientStream {
-	return &LoggingClientStream{*c, requestType, request, trace}
+func newLoggingClientStream(c *grpc.ClientStream, requestType string, request string, trace bool, logger MethodLogger) *LoggingClientStream {
+	return &LoggingClientStream{*c, requestType, request, trace, logger}
 }
 
 // RecvMsg logs messages recieved over a GRPC stream
@@ -108,6 +110,9 @@ func (c *LoggingClientStream) RecvMsg(m interface{}) error {
 // SendMsg logs messages sent out over a GRPC stream
 func (c *LoggingClientStream) SendMsg(m interface{}) error {
 	request := fmt.Sprintf("%s [SEND]", c.requestType)
+	if c.logger != nil {
+		c.logger.LogAPIAction(c.method)
+	}
 	if c.trace {
 		newRequestLogger().
 			requestType(request).
