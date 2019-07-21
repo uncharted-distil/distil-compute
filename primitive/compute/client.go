@@ -91,14 +91,14 @@ type SearchSolutionHandler func(*pipeline.GetSearchSolutionsResultsResponse)
 // NewClient creates a new pipline request dispatcher instance. This will establish
 // the connection to the solution server or return an error on fail
 func NewClient(serverAddr string, trace bool, userAgent string,
-	pullTimeout time.Duration, pullMax int, skipPreprocessing bool) (*Client, error) {
+	pullTimeout time.Duration, pullMax int, skipPreprocessing bool, logger middleware.MethodLogger) (*Client, error) {
 	log.Infof("connecting to ta2 at %s", serverAddr)
 
 	conn, err := grpc.Dial(
 		serverAddr,
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
-		grpc.WithUnaryInterceptor(middleware.GenerateUnaryClientInterceptor(trace)),
+		grpc.WithUnaryInterceptor(middleware.GenerateUnaryClientInterceptor(trace, logger)),
 		grpc.WithStreamInterceptor(middleware.GenerateStreamClientInterceptor(trace)),
 	)
 	if err != nil {
@@ -135,9 +135,10 @@ func NewClient(serverAddr string, trace bool, userAgent string,
 
 // NewClientWithRunner creates a new pipline request dispatcher instance. This will establish
 // the connection to the solution server or return an error on fail
-func NewClientWithRunner(serverAddr string, runnerAddr string, trace bool, userAgent string, pullTimeout time.Duration, pullMax int, skipPreprocessing bool) (*Client, error) {
+func NewClientWithRunner(serverAddr string, runnerAddr string, trace bool, userAgent string,
+	pullTimeout time.Duration, pullMax int, skipPreprocessing bool, logger middleware.MethodLogger) (*Client, error) {
 
-	client, err := NewClient(serverAddr, trace, userAgent, pullTimeout, pullMax, skipPreprocessing)
+	client, err := NewClient(serverAddr, trace, userAgent, pullTimeout, pullMax, skipPreprocessing, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +149,7 @@ func NewClientWithRunner(serverAddr string, runnerAddr string, trace bool, userA
 		runnerAddr,
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
-		grpc.WithUnaryInterceptor(middleware.GenerateUnaryClientInterceptor(trace)),
+		grpc.WithUnaryInterceptor(middleware.GenerateUnaryClientInterceptor(trace, logger)),
 		grpc.WithStreamInterceptor(middleware.GenerateStreamClientInterceptor(trace)),
 	)
 	if err != nil {

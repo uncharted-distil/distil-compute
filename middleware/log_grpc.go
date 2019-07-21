@@ -25,9 +25,18 @@ import (
 	"google.golang.org/grpc"
 )
 
+// MethodLogger logs GRPC method calls.
+type MethodLogger interface {
+	LogAPIAction(method string)
+}
+
 // GenerateUnaryClientInterceptor creates an interceptor function that will log unary grpc calls.
-func GenerateUnaryClientInterceptor(trace bool) grpc.UnaryClientInterceptor {
+func GenerateUnaryClientInterceptor(trace bool, logger MethodLogger) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+		if logger != nil {
+			logger.LogAPIAction(method)
+		}
+
 		startTime := time.Now()
 		newRequestLogger().
 			requestType("GRPC.UNARY [SEND]").
