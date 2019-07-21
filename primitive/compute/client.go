@@ -99,7 +99,7 @@ func NewClient(serverAddr string, trace bool, userAgent string,
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
 		grpc.WithUnaryInterceptor(middleware.GenerateUnaryClientInterceptor(trace, logger)),
-		grpc.WithStreamInterceptor(middleware.GenerateStreamClientInterceptor(trace)),
+		grpc.WithStreamInterceptor(middleware.GenerateStreamClientInterceptor(trace, logger)),
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to connect to %s", serverAddr)
@@ -150,7 +150,7 @@ func NewClientWithRunner(serverAddr string, runnerAddr string, trace bool, userA
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
 		grpc.WithUnaryInterceptor(middleware.GenerateUnaryClientInterceptor(trace, logger)),
-		grpc.WithStreamInterceptor(middleware.GenerateStreamClientInterceptor(trace)),
+		grpc.WithStreamInterceptor(middleware.GenerateStreamClientInterceptor(trace, logger)),
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to connect to %s", runnerAddr)
