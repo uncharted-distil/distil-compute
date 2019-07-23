@@ -184,6 +184,13 @@ type SuggestedType struct {
 	Provenance  string  `json:"provenance"`
 }
 
+// DatasetOrigin represents the originating information for a dataset
+type DatasetOrigin struct {
+	SearchResult  string `json:"searchResult"`
+	Provenance    string `json:"provenance"`
+	SourceDataset string `json:"sourceDataset"`
+}
+
 // Metadata represents a collection of dataset descriptions.
 type Metadata struct {
 	ID               string
@@ -202,6 +209,7 @@ type Metadata struct {
 	SchemaSource     string
 	Redacted         bool
 	DatasetFolder    string
+	DatasetOrigins   []*DatasetOrigin
 	SearchResult     string
 	SearchProvenance string
 	SourceDataset    string
