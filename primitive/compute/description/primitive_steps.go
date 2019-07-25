@@ -16,9 +16,6 @@
 package description
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/uncharted-distil/distil-compute/pipeline"
 )
 
@@ -176,18 +173,18 @@ func NewCrocStep(inputs map[string]DataRef, outputMethods []string, targetColumn
 
 // NewDatamartDownloadStep creates a primitive call that downloads a dataset
 // from a datamart.
-func NewDatamartDownloadStep(inputs map[string]DataRef, outputMethods []string, searchResult string, systemIdentifier string, dataset string) *StepData {
+func NewDatamartDownloadStep(inputs map[string]DataRef, outputMethods []string, searchResult string, systemIdentifier string) *StepData {
 	// supplied_id and supplied_resource_id need to be part of search result.
 	//   supplied_id: dataset id of the linked dataset
 	//   supplied_resource_id: resource id of the dataset
 	// searchResult is a json struct so ends with '}'
 	// simply update that search result to fit in the required params
-	searchResult = strings.TrimSpace(searchResult)
-	searchResult = fmt.Sprintf(`%s, "supplied_id": "%s", "supplied_resource_id": "%s"}`,
-		searchResult[:len(searchResult)-1],
-		dataset,
-		defaultResource,
-	)
+	//searchResult = strings.TrimSpace(searchResult)
+	//searchResult = fmt.Sprintf(`%s, "supplied_id": "%s", "supplied_resource_id": "%s"}`,
+	//	searchResult[:len(searchResult)-1],
+	//	dataset,
+	//	defaultResource,
+	//)
 
 	return NewStepData(
 		&pipeline.Primitive{
@@ -208,7 +205,7 @@ func NewDatamartDownloadStep(inputs map[string]DataRef, outputMethods []string, 
 
 // NewDatamartAugmentStep creates a primitive call that augments a dataset
 // with a datamart dataset.
-func NewDatamartAugmentStep(inputs map[string]DataRef, outputMethods []string, searchResult string, systemIdentifier string, dataset string) *StepData {
+func NewDatamartAugmentStep(inputs map[string]DataRef, outputMethods []string, searchResult string, systemIdentifier string) *StepData {
 	// supplied_id and supplied_resource_id need to be part of search result.
 	//   supplied_id: dataset id of the linked dataset
 	//   supplied_resource_id: resource id of the dataset

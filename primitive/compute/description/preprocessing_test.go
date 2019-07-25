@@ -547,7 +547,7 @@ func TestCreateTimeseriesFormatterPipeline(t *testing.T) {
 }
 
 func TestCreateDatamartDownloadPipeline(t *testing.T) {
-	pipeline, err := CreateDatamartDownloadPipeline("download_test", "test download pipeline", searchResult, "NYU", "DA_ny_taxi_demand_dataset_TRAIN")
+	pipeline, err := CreateDatamartDownloadPipeline("download_test", "test download pipeline", searchResult, "NYU")
 	assert.NoError(t, err)
 
 	data, err := proto.Marshal(pipeline)
@@ -559,7 +559,7 @@ func TestCreateDatamartDownloadPipeline(t *testing.T) {
 }
 
 func TestCreateDatamartAugmentPipeline(t *testing.T) {
-	pipeline, err := CreateDatamartAugmentPipeline("augment_test", "test augment pipeline", searchResult, "NYU", "DA_ny_taxi_demand_dataset_TRAIN")
+	pipeline, err := CreateDatamartAugmentPipeline("augment_test", "test augment pipeline", searchResult, "NYU")
 	assert.NoError(t, err)
 
 	data, err := proto.Marshal(pipeline)

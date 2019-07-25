@@ -46,7 +46,7 @@ type UserDatasetAugmentation struct {
 // CreateUserDatasetPipeline creates a pipeline description to capture user feature selection and
 // semantic type information.
 func CreateUserDatasetPipeline(name string, description string, datasetDescription *UserDatasetDescription,
-	augmentation *UserDatasetAugmentation) (*pipeline.PipelineDescription, error) {
+	augmentations []*UserDatasetAugmentation) (*pipeline.PipelineDescription, error) {
 
 	offset := 0
 
@@ -77,16 +77,17 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 	// need to track the initial dataref and set the offset properly
 	var dataRef DataRef
 	dataRef = &PipelineDataRef{0}
-	if augmentation != nil {
-		steps = append(steps, NewDatamartAugmentStep(
-			map[string]DataRef{"inputs": dataRef},
-			[]string{"produce"},
-			augmentation.SearchResult,
-			augmentation.SystemID,
-			augmentation.BaseDatasetID,
-		))
-		dataRef = &StepDataRef{offset, "produce"}
-		offset++
+	if augmentations != nil {
+		for i := 0; i < len(augmentations); i++ {
+			steps = append(steps, NewDatamartAugmentStep(
+				map[string]DataRef{"inputs": dataRef},
+				[]string{"produce"},
+				augmentations[i].SearchResult,
+				augmentations[i].SystemID,
+			))
+			dataRef = &StepDataRef{offset, "produce"}
+			offset++
+		}
 	}
 
 	if isTimeseries {
@@ -127,7 +128,7 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 
 	// If neither have any content, we'll skip the template altogether.
 	if len(updateSemanticTypes) == 0 && removeFeatures == nil &&
-		len(filterData) == 0 && augmentation == nil {
+		len(filterData) == 0 && augmentations == nil {
 		return nil, nil
 	}
 
@@ -671,12 +672,12 @@ func CreateTimeseriesFormatterPipeline(name string, description string, resource
 }
 
 // CreateDatamartDownloadPipeline creates a pipeline to download data from a datamart.
-func CreateDatamartDownloadPipeline(name string, description string, searchResult string, systemIdentifier string, dataset string) (*pipeline.PipelineDescription, error) {
+func CreateDatamartDownloadPipeline(name string, description string, searchResult string, systemIdentifier string) (*pipeline.PipelineDescription, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{1, "produce"}}
 
 	steps := []Step{
-		NewDatamartDownloadStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, searchResult, systemIdentifier, dataset),
+		NewDatamartDownloadStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, searchResult, systemIdentifier),
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 	}
 
@@ -688,12 +689,12 @@ func CreateDatamartDownloadPipeline(name string, description string, searchResul
 }
 
 // CreateDatamartAugmentPipeline creates a pipeline to augment data with datamart data.
-func CreateDatamartAugmentPipeline(name string, description string, searchResult string, systemIdentifier string, dataset string) (*pipeline.PipelineDescription, error) {
+func CreateDatamartAugmentPipeline(name string, description string, searchResult string, systemIdentifier string) (*pipeline.PipelineDescription, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{1, "produce"}}
 
 	steps := []Step{
-		NewDatamartAugmentStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, searchResult, systemIdentifier, dataset),
+		NewDatamartAugmentStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, searchResult, systemIdentifier),
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 	}
 
