@@ -126,7 +126,8 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 	offset += len(filterData)
 
 	// If neither have any content, we'll skip the template altogether.
-	if len(updateSemanticTypes) == 0 && removeFeatures == nil && len(filterData) == 0 {
+	if len(updateSemanticTypes) == 0 && removeFeatures == nil &&
+		len(filterData) == 0 && augmentation == nil {
 		return nil, nil
 	}
 
