@@ -105,8 +105,6 @@ func NewClient(serverAddr string, trace bool, userAgent string,
 		return nil, errors.Wrapf(err, "failed to connect to %s", serverAddr)
 	}
 
-	log.Infof("connected to %s", serverAddr)
-
 	client := Client{
 		client:            pipeline.NewCoreClient(conn),
 		conn:              conn,
@@ -114,20 +112,6 @@ func NewClient(serverAddr string, trace bool, userAgent string,
 		PullTimeout:       pullTimeout,
 		PullMax:           pullMax,
 		SkipPreprocessing: skipPreprocessing,
-	}
-
-	// check for basic ta2 connectivity
-	helloResponse, err := client.client.Hello(context.Background(), &pipeline.HelloRequest{})
-	if err != nil {
-		return nil, err
-	}
-	log.Infof("ta2 user agent: %s", helloResponse.GetUserAgent())
-	log.Infof("ta2 API version: %s", helloResponse.GetVersion())
-	log.Infof("ta2 Allowed value types: %+v", helloResponse.GetAllowedValueTypes())
-	log.Infof("ta2 extensions: %+v", helloResponse.GetSupportedExtensions())
-
-	if !strings.EqualFold(GetAPIVersion(), helloResponse.GetVersion()) {
-		log.Warnf("ta2 API version '%s' does not match expected version '%s", helloResponse.GetVersion(), GetAPIVersion())
 	}
 
 	return &client, nil
@@ -188,6 +172,27 @@ func NewRunner(runnerAddr string, trace bool, userAgent string, pullTimeout time
 
 	client.runner = runner
 	return client, nil
+}
+
+// Hello does the hello message exchange to check for basic connectivity.
+func (c *Client) Hello() error {
+	// check for basic ta2 connectivity
+	helloResponse, err := c.client.Hello(context.Background(), &pipeline.HelloRequest{})
+	if err != nil {
+		return err
+	}
+	log.Infof("ta2 user agent: %s", helloResponse.GetUserAgent())
+	log.Infof("ta2 API version: %s", helloResponse.GetVersion())
+	log.Infof("ta2 Allowed value types: %+v", helloResponse.GetAllowedValueTypes())
+	log.Infof("ta2 extensions: %+v", helloResponse.GetSupportedExtensions())
+
+	if !strings.EqualFold(GetAPIVersion(), helloResponse.GetVersion()) {
+		log.Warnf("ta2 API version '%s' does not match expected version '%s", helloResponse.GetVersion(), GetAPIVersion())
+	}
+
+	log.Infof("connected to %s", c.conn.Target())
+
+	return nil
 }
 
 // Close the connection to the solution service
