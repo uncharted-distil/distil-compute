@@ -535,7 +535,7 @@ func CreateGoatForwardPipeline(name string, description string, placeCol *model.
 	steps := []Step{
 		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-		NewGoatForwardStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, placeCol.Index),
+		NewGoatForwardStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, placeCol.Index),
 	}
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
 
@@ -553,7 +553,7 @@ func CreateGoatReversePipeline(name string, description string, lonSource *model
 	steps := []Step{
 		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-		NewGoatReverseStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, lonSource.Index, latSource.Index),
+		NewGoatReverseStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, lonSource.Index, latSource.Index),
 	}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
