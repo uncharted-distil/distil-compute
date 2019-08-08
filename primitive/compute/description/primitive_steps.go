@@ -578,9 +578,9 @@ func NewTimeSeriesLoaderStep(inputs map[string]DataRef, outputMethods []string, 
 // containing a place name or address is passed in, and the primitive will
 // return a DataFrame containing the lat/lon coords of the place.  If location could
 // not be found, the row in the data frame will be empty.
-func NewGoatForwardStep(inputs map[string]DataRef, outputMethods []string, placeCol string) *StepData {
+func NewGoatForwardStep(inputs map[string]DataRef, outputMethods []string, placeColIndex int) *StepData {
 	args := map[string]interface{}{
-		"target_columns": []string{placeCol},
+		"target_columns": []int{placeColIndex},
 	}
 	return NewStepData(
 		&pipeline.Primitive{
@@ -600,7 +600,7 @@ func NewGoatForwardStep(inputs map[string]DataRef, outputMethods []string, place
 // containing lat and lon values are passed in, and the primitive will
 // return a DataFrame containing the name of the place, with an
 // empty value for coords that no meaningful place could be computed.
-func NewGoatReverseStep(inputs map[string]DataRef, outputMethods []string, lonCol string, latCol string) *StepData {
+func NewGoatReverseStep(inputs map[string]DataRef, outputMethods []string, lonCol int, latCol int) *StepData {
 	args := map[string]interface{}{
 		"lon_col_index": lonCol,
 		"lat_col_index": latCol,
