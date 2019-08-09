@@ -528,14 +528,14 @@ func CreateTargetRankingPipeline(name string, description string, target string,
 }
 
 // CreateGoatForwardPipeline creates a forward geocoding pipeline.
-func CreateGoatForwardPipeline(name string, description string, placeCol string) (*pipeline.PipelineDescription, error) {
+func CreateGoatForwardPipeline(name string, description string, placeCol *model.Variable) (*pipeline.PipelineDescription, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{2, "produce"}}
 
 	steps := []Step{
 		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-		NewGoatForwardStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, placeCol),
+		NewGoatForwardStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, placeCol.Index),
 	}
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
 
@@ -546,14 +546,14 @@ func CreateGoatForwardPipeline(name string, description string, placeCol string)
 }
 
 // CreateGoatReversePipeline creates a forward geocoding pipeline.
-func CreateGoatReversePipeline(name string, description string, lonSource string, latSource string) (*pipeline.PipelineDescription, error) {
+func CreateGoatReversePipeline(name string, description string, lonSource *model.Variable, latSource *model.Variable) (*pipeline.PipelineDescription, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{2, "produce"}}
 
 	steps := []Step{
 		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-		NewGoatReverseStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, lonSource, latSource),
+		NewGoatReverseStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, lonSource.Index, latSource.Index),
 	}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()

@@ -474,7 +474,11 @@ func TestCreateTargetRankingPipeline(t *testing.T) {
 }
 
 func TestCreateGoatForwardPipeline(t *testing.T) {
-	pipeline, err := CreateGoatForwardPipeline("goat_forward_test", "test goat forward geocoding pipeline", "region")
+	region := &model.Variable{
+		Name:  "region",
+		Index: 14,
+	}
+	pipeline, err := CreateGoatForwardPipeline("goat_forward_test", "test goat forward geocoding pipeline", region)
 	assert.NoError(t, err)
 
 	data, err := proto.Marshal(pipeline)
@@ -486,7 +490,15 @@ func TestCreateGoatForwardPipeline(t *testing.T) {
 }
 
 func TestCreateGoatReversePipeline(t *testing.T) {
-	pipeline, err := CreateGoatReversePipeline("goat_reverse_test", "test goat reverse geocoding pipeline", "lat", "lon")
+	lat := &model.Variable{
+		Name:  "lat",
+		Index: 20,
+	}
+	lon := &model.Variable{
+		Name:  "lon",
+		Index: 21,
+	}
+	pipeline, err := CreateGoatReversePipeline("goat_reverse_test", "test goat reverse geocoding pipeline", lat, lon)
 	assert.NoError(t, err)
 
 	data, err := proto.Marshal(pipeline)
