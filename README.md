@@ -2,7 +2,7 @@
 
 ![CircleCI](https://circleci.com/gh/uncharted-distil/distil-compute.svg?style=svg&circle-token=440a62840d79d910d1ad47db988efc0e83861ef3)
 [![Go Report Card](https://goreportcard.com/badge/github.com/uncharted-distil/distil-compute)](https://goreportcard.com/report/github.com/uncharted-distil/distil-compute)
-
+[![GolangCI](https://golangci.com/badges/github.com/uncharted-distil/distil-compute.svg)](https://golangci.com/r/github.com/uncharted-distil/distil-compute)
 ## Dependencies
 
 - [Go](https://golang.org/) programming language binaries with the `GOPATH` environment variable specified and `$GOPATH/bin` in your `PATH`.
