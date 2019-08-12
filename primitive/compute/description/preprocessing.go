@@ -24,8 +24,6 @@ import (
 	"github.com/uncharted-distil/distil-compute/pipeline"
 )
 
-const defaultResource = "learningData"
-
 // UserDatasetDescription contains the basic parameters needs to generate
 // the user dataset pipeline.
 type UserDatasetDescription struct {
@@ -500,9 +498,8 @@ func CreateTargetRankingPipeline(name string, description string, target string,
 	if err != nil {
 		return nil, err
 	}
-	for _, s := range updateSemanticTypeStep {
-		steps = append(steps, s)
-	}
+
+	steps = append(steps, updateSemanticTypeStep...)
 
 	offset += len(updateSemanticTypeStep)
 	steps = append(steps,

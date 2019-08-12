@@ -72,7 +72,7 @@ func (p *PipelineBuilder) Compile() (*pipeline.PipelineDescription, error) {
 	pipelineInputs := []*pipeline.PipelineDescriptionInput{}
 	for _, input := range p.inputs {
 		pipelineInputs = append(pipelineInputs, &pipeline.PipelineDescriptionInput{
-			Name: fmt.Sprintf("%s", input),
+			Name: input,
 		})
 	}
 
@@ -81,7 +81,7 @@ func (p *PipelineBuilder) Compile() (*pipeline.PipelineDescription, error) {
 	for i, output := range p.outputs {
 		output := &pipeline.PipelineDescriptionOutput{
 			Name: fmt.Sprintf("%s %d", pipelineOutputsName, i),
-			Data: fmt.Sprintf("%s", output.RefString()),
+			Data: output.RefString(),
 		}
 		pipelineOutputs = append(pipelineOutputs, output)
 	}

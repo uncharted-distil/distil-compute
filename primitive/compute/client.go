@@ -35,7 +35,6 @@ import (
 const (
 	defaultResourceID       = "learningData"
 	defaultExposedOutputKey = "outputs.0"
-	trainTestSplitThreshold = 0.9
 	// SolutionPendingStatus represents that the solution request has been acknoledged by not yet sent to the API
 	SolutionPendingStatus = "SOLUTION_PENDING"
 	// SolutionRunningStatus represents that the solution request has been sent to the API.
