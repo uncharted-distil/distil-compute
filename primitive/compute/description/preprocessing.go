@@ -498,9 +498,8 @@ func CreateTargetRankingPipeline(name string, description string, target string,
 	if err != nil {
 		return nil, err
 	}
-	for _, s := range updateSemanticTypeStep {
-		steps = append(steps, s)
-	}
+
+	steps = append(steps, updateSemanticTypeStep...)
 
 	offset += len(updateSemanticTypeStep)
 	steps = append(steps,

@@ -176,8 +176,10 @@ func TestRecompileFailure(t *testing.T) {
 	builder := NewPipelineBuilder("test", "test pipeline", inputs, outputs, pipelineSteps)
 
 	desc, err := builder.Compile()
-	desc, err = builder.Compile()
+	assert.NotNil(t, desc)
+	assert.NoError(t, err)
 
+	desc, err = builder.Compile()
 	assert.Nil(t, desc)
 	assert.Error(t, err)
 }

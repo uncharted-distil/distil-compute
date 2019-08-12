@@ -287,7 +287,6 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 	assert.Equal(t, []int64{1, 3}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
 	assert.Equal(t, []string{"http://schema.org/Integer"}, ConvertToStringArray(hyperParams["semantic_types"].GetValue().GetData().GetRaw().GetList()))
 
-	hyperParams = pipeline.GetSteps()[6].GetPrimitive().GetHyperparams()
 	assert.Equal(t, int32(5), pipeline.GetSteps()[6].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
 	inputs = pipeline.GetSteps()[6].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
 	assert.Equal(t, "steps.4.produce", inputs)
@@ -298,7 +297,6 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 	assert.Equal(t, []string{"https://metadata.datadrivendiscovery.org/types/CategoricalData"},
 		ConvertToStringArray(hyperParams["semantic_types"].GetValue().GetData().GetRaw().GetList()))
 
-	hyperParams = pipeline.GetSteps()[8].GetPrimitive().GetHyperparams()
 	assert.Equal(t, int32(7), pipeline.GetSteps()[8].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
 	inputs = pipeline.GetSteps()[8].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
 	assert.Equal(t, "steps.6.produce", inputs)
@@ -307,7 +305,6 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 	hyperParams = pipeline.GetSteps()[9].GetPrimitive().GetHyperparams()
 	assert.Equal(t, []int64{2}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
 
-	hyperParams = pipeline.GetSteps()[10].GetPrimitive().GetHyperparams()
 	assert.Equal(t, int32(9), pipeline.GetSteps()[10].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
 	inputs = pipeline.GetSteps()[10].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
 	assert.Equal(t, "steps.8.produce", inputs)
