@@ -25,9 +25,7 @@ import (
 
 const (
 	stepInputsKey       = "inputs"
-	pipelineInputsKey   = "inputs"
 	stepKey             = "steps"
-	pipelineInputsName  = "input"
 	pipelineOutputsName = "outputs"
 )
 

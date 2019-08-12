@@ -24,8 +24,6 @@ import (
 	"github.com/uncharted-distil/distil-compute/pipeline"
 )
 
-const defaultResource = "learningData"
-
 // UserDatasetDescription contains the basic parameters needs to generate
 // the user dataset pipeline.
 type UserDatasetDescription struct {
