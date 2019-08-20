@@ -71,7 +71,7 @@ const (
 	// TimeSeriesType is the schema type for timeseries values
 	TimeSeriesType = "timeseries"
 	// TimeSeriesType is the schema type for timeseries values
-	GeoCoordinateType = "geo"
+	GeoCoordinateType = "geocoordinate"
 	// TimestampType is the schema type for timestamp values
 	TimestampType = "timestamp"
 	// UnknownType is the schema type for unknown values
