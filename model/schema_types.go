@@ -70,7 +70,7 @@ const (
 	ImageType = "image"
 	// TimeSeriesType is the schema type for timeseries values
 	TimeSeriesType = "timeseries"
-	// TimeSeriesType is the schema type for timeseries values
+	// GeoCoordinateType is the schema type for timeseries values
 	GeoCoordinateType = "geocoordinate"
 	// TimestampType is the schema type for timestamp values
 	TimestampType = "timestamp"
