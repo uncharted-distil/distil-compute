@@ -96,7 +96,7 @@ var (
 	}
 	defaultTaskMetricMap = map[string]string{
 		"classification":               "f1Macro",
-		"regression":                   "rSquared",
+		"regression":                   "meanSquaredError",
 		"clustering":                   "normalizedMutualInformation",
 		"linkPrediction":               "accuracy",
 		"vertexNomination":             "accuracy",
