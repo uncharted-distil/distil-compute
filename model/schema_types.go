@@ -70,6 +70,8 @@ const (
 	ImageType = "image"
 	// TimeSeriesType is the schema type for timeseries values
 	TimeSeriesType = "timeseries"
+	// GeoCoordinateType is the schema type for timeseries values
+	GeoCoordinateType = "geocoordinate"
 	// TimestampType is the schema type for timestamp values
 	TimestampType = "timestamp"
 	// UnknownType is the schema type for unknown values
@@ -358,6 +360,12 @@ func IsImage(typ string) bool {
 // of analysis.
 func IsTimeSeries(typ string) bool {
 	return typ == TimeSeriesType
+}
+
+// IsGeoCoordinate indicates whether or not a schema type is a geo coordinate
+// for the purposes of analysis.
+func IsGeoCoordinate(typ string) bool {
+	return typ == GeoCoordinateType
 }
 
 // IsTimestamp indicates whether or not a schema type is a timestamp for the purposes
