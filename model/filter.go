@@ -94,6 +94,17 @@ func NewNumericalFilter(key string, mode string, min float64, max float64) *Filt
 	}
 }
 
+// NewDatetimeFilter instantiates a datetime filter.
+func NewDatetimeFilter(key string, mode string, min float64, max float64) *Filter {
+	return &Filter{
+		Key:  key,
+		Type: DatetimeFilter,
+		Mode: mode,
+		Min:  &min,
+		Max:  &max,
+	}
+}
+
 // NewBivariateFilter instantiates a numerical filter.
 func NewBivariateFilter(key string, mode string, minX float64, maxX float64, minY float64, maxY float64) *Filter {
 	return &Filter{
