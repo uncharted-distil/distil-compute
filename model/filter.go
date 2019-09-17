@@ -30,6 +30,8 @@ const (
 	NumericalFilter = "numerical"
 	// BivariateFilter represents a numerical filter type.
 	BivariateFilter = "bivariate"
+	// DatetimeFilter represents a datetime filter type.
+	DatetimeFilter = "datetime"
 	// FeatureFilter represents a feature filter type.
 	FeatureFilter = "feature"
 	// TextFilter represents a text filter type.
