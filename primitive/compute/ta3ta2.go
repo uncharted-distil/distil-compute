@@ -30,8 +30,51 @@ import (
 const (
 	unknownAPIVersion = "unknown"
 
-	// TaskTypeTimeseries represents timeseries forcasting
-	TaskTypeTimeseries = "timeSeriesForecasting"
+	// Task and sub-task types taken from the D3M LL problem schema - these are what is used internally within the
+	// application at the server and client level to capture the model building task type.
+	// For communication with TA2, these need to be translated via the `ConvertXXXFromTA3ToTA2` methods below.
+
+	// TimeseriesForecastingTask represents timeseries forcasting
+	TimeseriesForecastingTask = "timeSeriesForecasting"
+	// ClassificationTask represents a classification task on image, timeseries or basic tabular data
+	ClassificationTask = "classification"
+	// RegressionTask represents a regression task on image, timeseries or basic tabular data
+	RegressionTask = "regression"
+	// ClusteringTask represents an unsupervised clustering task on image, timeseries or basic tabular data
+	ClusteringTask = "clustering"
+	// LinkPredictionTask represents a link prediction task on graph data
+	LinkPredictionTask = "linkPrediction"
+	// VertexNominationTask represents a vertex nomination task on graph data
+	VertexNominationTask = "vertexNomination"
+	// CommunityDetectionTask represents an unsupervised community detectiontask on on graph data
+	CommunityDetectionTask = "communityDetection"
+	// GraphClusteringTask represents an unsupervised clustering task on graph data
+	GraphClusteringTask = "graphClustering"
+	// GraphMatchingTask represents an unsupervised matching task on graph data
+	GraphMatchingTask = "graphMatching"
+	// CollaborativeFilteringTask represents a collaborative filtering recommendation task on basic tabular data
+	CollaborativeFilteringTask = "collaborativeFiltering"
+	// ObjectDetectionTask represents an object detection task on image data
+	ObjectDetectionTask = "objectDetection"
+	// SemiSupervisedClassificationTask represents a semi-supervised classification task on tabular data
+	SemiSupervisedClassificationTask = "semiSupervisedClassification"
+
+	// NoneSubTask represents the absence of a subtask
+	NoneSubTask = "none"
+	// BinarySubTask represents task involving a single binary value for each prediction
+	BinarySubTask = "binary"
+	// MultiClassSubTask represents a task involving a multi class value for each prediction
+	MultiClassSubTask = "multiClass"
+	// MultiLabelSubTask represents a task involving multiple lables for each each prediction
+	MultiLabelSubTask = "multiLabel"
+	// UnivariateSubTask represents a task involving predictions on a single variable
+	UnivariateSubTask = "univariate"
+	// MultivariateSubTask represents a task involving predictions on multiple variables
+	MultivariateSubTask = "multivariate"
+	// OverlappingSubTask represents a task involving overlapping predictions
+	OverlappingSubTask = "overlapping"
+	// NonOverlappingSubTask represents a task involving overlapping predictions
+	NonOverlappingSubTask = "nonOverlapping"
 )
 
 var (
@@ -58,55 +101,55 @@ var (
 		"objectDetectionAP":           "OBJECT_DETECTION_AVERAGE_PRECISION",
 	}
 	problemTaskMap = map[string]string{
-		"classification":               "CLASSIFICATION",
-		"regression":                   "REGRESSION",
-		"clustering":                   "CLUSTERING",
-		"linkPrediction":               "LINK_PREDICTION",
-		"vertexNomination":             "VERTEX_NOMINATION",
-		"communityDetection":           "COMMUNITY_DETECTION",
-		"graphClustering":              "GRAPH_CLUSTERING",
-		"graphMatching":                "GRAPH_MATCHING",
-		"timeSeriesForecasting":        "TIME_SERIES_FORECASTING",
-		"collaborativeFiltering":       "COLLABORATIVE_FILTERING",
-		"objectDetection":              "OBJECT_DETECTION",
-		"semiSupervisedClassification": "SEMISUPERVISED_CLASSIFICATION",
+		ClassificationTask:               "CLASSIFICATION",
+		RegressionTask:                   "REGRESSION",
+		ClusteringTask:                   "CLUSTERING",
+		LinkPredictionTask:               "LINK_PREDICTION",
+		VertexNominationTask:             "VERTEX_NOMINATION",
+		CommunityDetectionTask:           "COMMUNITY_DETECTION",
+		GraphClusteringTask:              "GRAPH_CLUSTERING",
+		GraphMatchingTask:                "GRAPH_MATCHING",
+		TimeseriesForecastingTask:        "TIME_SERIES_FORECASTING",
+		CollaborativeFilteringTask:       "COLLABORATIVE_FILTERING",
+		ObjectDetectionTask:              "OBJECT_DETECTION",
+		SemiSupervisedClassificationTask: "SEMISUPERVISED_CLASSIFICATION",
 	}
 	problemTaskSubMap = map[string]string{
-		"none":           "NONE",
-		"binary":         "BINARY",
-		"multiClass":     "MULTICLASS",
-		"multiLabel":     "MULTILABEL",
-		"univariate":     "UNIVARIATE",
-		"multivariate":   "MULTIVARIATE",
-		"overlapping":    "OVERLAPPING",
-		"nonOverlapping": "NONOVERLAPPING",
+		NoneSubTask:           "NONE",
+		BinarySubTask:         "BINARY",
+		MultiClassSubTask:     "MULTICLASS",
+		MultiLabelSubTask:     "MULTILABEL",
+		UnivariateSubTask:     "UNIVARIATE",
+		MultivariateSubTask:   "MULTIVARIATE",
+		OverlappingSubTask:    "OVERLAPPING",
+		NonOverlappingSubTask: "NONOVERLAPPING",
 	}
 	defaultProblemSubTaskMap = map[string]string{
-		"classification":               "multiClass",
-		"regression":                   "univariate",
-		"clustering":                   "none",
-		"vertexNomination":             "none",
-		"communityDetection":           "none",
-		"graphClustering":              "none",
-		"graphMatching":                "none",
-		"timeSeriesForecasting":        "none",
-		"collaborativeFiltering":       "none",
-		"objectDetection":              "overlapping",
-		"semiSupervisedClassification": "multiClass",
+		ClassificationTask:               MultiClassSubTask,
+		RegressionTask:                   UnivariateSubTask,
+		ClusteringTask:                   NoneSubTask,
+		VertexNominationTask:             NoneSubTask,
+		CommunityDetectionTask:           NoneSubTask,
+		GraphClusteringTask:              NoneSubTask,
+		GraphMatchingTask:                NoneSubTask,
+		TimeseriesForecastingTask:        NoneSubTask,
+		CollaborativeFilteringTask:       NoneSubTask,
+		ObjectDetectionTask:              OverlappingSubTask,
+		SemiSupervisedClassificationTask: MultiClassSubTask,
 	}
 	defaultTaskMetricMap = map[string]string{
-		"classification":               "f1Macro",
-		"regression":                   "meanSquaredError",
-		"clustering":                   "normalizedMutualInformation",
-		"linkPrediction":               "accuracy",
-		"vertexNomination":             "accuracy",
-		"communityDetection":           "accuracy",
-		"graphClustering":              "normalizedMutualInformation",
-		"graphMatching":                "accuracy",
-		"timeSeriesForecasting":        "rSquared",
-		"collaborativeFiltering":       "rSquared",
-		"objectDetection":              "objectDetectionAP",
-		"semiSupervisedClassification": "f1Macro",
+		ClassificationTask:               "f1Macro",
+		RegressionTask:                   "meanSquaredError",
+		ClusteringTask:                   "normalizedMutualInformation",
+		LinkPredictionTask:               "accuracy",
+		VertexNominationTask:             "accuracy",
+		CommunityDetectionTask:           "accuracy",
+		GraphClusteringTask:              "normalizedMutualInformation",
+		GraphMatchingTask:                "accuracy",
+		TimeseriesForecastingTask:        "rSquared",
+		CollaborativeFilteringTask:       "rSquared",
+		ObjectDetectionTask:              "objectDetectionAP",
+		SemiSupervisedClassificationTask: "f1Macro",
 	}
 	metricScoreMultiplier = map[string]float64{
 		"ACCURACY":                           1,
