@@ -252,6 +252,26 @@ func NewDatasetToDataframeStep(inputs map[string]DataRef, outputMethods []string
 	)
 }
 
+// NewGroupingFieldComposeStep creates a primitive call that joins suggested grouping keys.
+func NewGroupingFieldComposeStep(inputs map[string]DataRef, outputMethods []string, joinChar string, outputName string) *StepData {
+
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "59db88b9-dd81-4e50-8f43-8f2af959560b",
+			Version:    "0.1.0",
+			Name:       "Grouping Field Compose",
+			PythonPath: "d3m.primitives.data_transformation.grouping_field_compose.Common",
+			Digest:     "dea9e41d4dc0204d963ee01617416a6c5165c008ac717c09e59703dcee5d6cfd",
+		},
+		outputMethods,
+		map[string]interface{}{
+			"join_char":   joinChar,
+			"output_name": outputName,
+		},
+		inputs,
+	)
+}
+
 // NewHorizontalConcatStep creates a primitive call that concats two data frames.
 func NewHorizontalConcatStep(inputs map[string]DataRef, outputMethods []string, useIndex bool, removeSecondIndex bool) *StepData {
 
