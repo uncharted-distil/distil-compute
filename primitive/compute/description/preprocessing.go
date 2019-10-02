@@ -100,7 +100,7 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 		steps = append(steps, NewHorizontalConcatStep(map[string]DataRef{"left": &StepDataRef{offset, "produce"}, "right": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, false, false))
 		steps = append(steps, NewDataFrameFlattenStep(map[string]DataRef{"inputs": &StepDataRef{offset + 3, "produce"}}, []string{"produce"}))
 		steps = append(steps, NewRemoveDuplicateColumnsStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}))
-		steps = append(steps, NewGroupingFieldComposeStep(map[string]DataRef{"inputs": &StepDataRef{offset + 5, "produce"}}, []string{"produce"}, "-", "__grouping"))
+		steps = append(steps, NewGroupingFieldComposeStep(map[string]DataRef{"inputs": &StepDataRef{offset + 5, "produce"}}, []string{"produce"}, nil, "-", "__grouping"))
 		offset += 6
 	} else {
 		steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}))

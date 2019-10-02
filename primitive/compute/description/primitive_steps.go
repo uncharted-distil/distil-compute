@@ -253,7 +253,7 @@ func NewDatasetToDataframeStep(inputs map[string]DataRef, outputMethods []string
 }
 
 // NewGroupingFieldComposeStep creates a primitive call that joins suggested grouping keys.
-func NewGroupingFieldComposeStep(inputs map[string]DataRef, outputMethods []string, joinChar string, outputName string) *StepData {
+func NewGroupingFieldComposeStep(inputs map[string]DataRef, outputMethods []string, colIndices []int, joinChar string, outputName string) *StepData {
 
 	return NewStepData(
 		&pipeline.Primitive{
@@ -265,6 +265,7 @@ func NewGroupingFieldComposeStep(inputs map[string]DataRef, outputMethods []stri
 		},
 		outputMethods,
 		map[string]interface{}{
+			"columns":     colIndices,
 			"join_char":   joinChar,
 			"output_name": outputName,
 		},

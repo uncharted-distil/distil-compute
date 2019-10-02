@@ -121,13 +121,13 @@ func CreateDataCleaningPipeline(name string, description string) (*pipeline.Pipe
 }
 
 // CreateGroupingFieldComposePipeline creates a pipeline to create a grouping key field for a dataset.
-func CreateGroupingFieldComposePipeline(name string, description string, joinChar string, outputName string) (*pipeline.PipelineDescription, error) {
+func CreateGroupingFieldComposePipeline(name string, description string, colIndices []int, joinChar string, outputName string) (*pipeline.PipelineDescription, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{1, "produce"}}
 
 	steps := []Step{
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewGroupingFieldComposeStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, joinChar, outputName),
+		NewGroupingFieldComposeStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, colIndices, joinChar, outputName),
 	}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
