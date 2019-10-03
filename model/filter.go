@@ -30,6 +30,8 @@ const (
 	NumericalFilter = "numerical"
 	// BivariateFilter represents a numerical filter type.
 	BivariateFilter = "bivariate"
+	// DatetimeFilter represents a datetime filter type.
+	DatetimeFilter = "datetime"
 	// FeatureFilter represents a feature filter type.
 	FeatureFilter = "feature"
 	// TextFilter represents a text filter type.
@@ -86,6 +88,17 @@ func NewNumericalFilter(key string, mode string, min float64, max float64) *Filt
 	return &Filter{
 		Key:  key,
 		Type: NumericalFilter,
+		Mode: mode,
+		Min:  &min,
+		Max:  &max,
+	}
+}
+
+// NewDatetimeFilter instantiates a datetime filter.
+func NewDatetimeFilter(key string, mode string, min float64, max float64) *Filter {
+	return &Filter{
+		Key:  key,
+		Type: DatetimeFilter,
 		Mode: mode,
 		Min:  &min,
 		Max:  &max,
