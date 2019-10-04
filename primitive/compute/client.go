@@ -436,18 +436,13 @@ func (c *Client) ExportSolution(ctx context.Context, solutionID string) error {
 }
 
 // ExecutePipeline executes a pre-specified pipeline.
-func (c *Client) ExecutePipeline(ctx context.Context, datasetURIs []string, pipelineDesc *pipeline.PipelineDescription, useRunner bool) (*pipeline.PipelineExecuteResponse, error) {
+func (c *Client) ExecutePipeline(ctx context.Context, datasetURIs []string, pipelineDesc *pipeline.PipelineDescription) (*pipeline.PipelineExecuteResponse, error) {
 	in := &pipeline.PipelineExecuteRequest{
 		PipelineDescription: pipelineDesc,
 		Inputs:              createInputValues(datasetURIs),
 	}
 	out := new(pipeline.PipelineExecuteResponse)
-	var err error
-	if useRunner {
-		err = c.runner.Invoke(ctx, "/Executor/ExecutePipeline", in, out)
-	} else {
-		err = c.conn.Invoke(ctx, "/Executor/ExecutePipeline", in, out)
-	}
+	err := c.runner.Invoke(ctx, "/Executor/ExecutePipeline", in, out)
 	if err != nil {
 		return nil, err
 	}
