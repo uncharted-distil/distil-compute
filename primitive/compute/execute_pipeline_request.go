@@ -42,12 +42,11 @@ type ExecPipelineStatusListener func(status ExecPipelineStatus)
 // ExecPipelineRequest defines a request that will execute a fully specified pipline
 // on a TA2 system.
 type ExecPipelineRequest struct {
-	datasetURIs         []string
-	pipelineDesc        *pipeline.PipelineDescription
-	wg                  *sync.WaitGroup
-	statusChannel       chan ExecPipelineStatus
-	finished            chan error
-	sourceSearchRequest *pipeline.SearchSolutionsRequest
+	datasetURIs   []string
+	pipelineDesc  *pipeline.PipelineDescription
+	wg            *sync.WaitGroup
+	statusChannel chan ExecPipelineStatus
+	finished      chan error
 }
 
 // NewExecPipelineRequest creates a new request that will run the supplied dataset through
