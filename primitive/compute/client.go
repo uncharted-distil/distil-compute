@@ -89,7 +89,7 @@ type SearchSolutionHandler func(*pipeline.GetSearchSolutionsResultsResponse)
 
 // NewClient creates a new pipline request dispatcher instance. This will establish
 // the connection to the solution server or return an error on fail
-func NewClient(serverAddr string, trace bool, userAgent string,
+func NewClient(serverAddr string, trace bool, userAgent string, label string,
 	pullTimeout time.Duration, pullMax int, skipPreprocessing bool, logger middleware.MethodLogger) (*Client, error) {
 	log.Infof("connecting to ta2 at %s", serverAddr)
 
@@ -97,7 +97,7 @@ func NewClient(serverAddr string, trace bool, userAgent string,
 		serverAddr,
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
-		grpc.WithUnaryInterceptor(middleware.GenerateUnaryClientInterceptor(trace, logger)),
+		grpc.WithUnaryInterceptor(middleware.GenerateUnaryClientInterceptor(label, trace, logger)),
 		grpc.WithStreamInterceptor(middleware.GenerateStreamClientInterceptor(trace, logger)),
 	)
 	if err != nil {
@@ -121,7 +121,7 @@ func NewClient(serverAddr string, trace bool, userAgent string,
 func NewClientWithRunner(serverAddr string, runnerAddr string, trace bool, userAgent string,
 	pullTimeout time.Duration, pullMax int, skipPreprocessing bool, logger middleware.MethodLogger) (*Client, error) {
 
-	client, err := NewClient(serverAddr, trace, userAgent, pullTimeout, pullMax, skipPreprocessing, logger)
+	client, err := NewClient(serverAddr, trace, userAgent, "TA2", pullTimeout, pullMax, skipPreprocessing, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func NewClientWithRunner(serverAddr string, runnerAddr string, trace bool, userA
 		runnerAddr,
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
-		grpc.WithUnaryInterceptor(middleware.GenerateUnaryClientInterceptor(trace, logger)),
+		grpc.WithUnaryInterceptor(middleware.GenerateUnaryClientInterceptor("RUNNER", trace, logger)),
 		grpc.WithStreamInterceptor(middleware.GenerateStreamClientInterceptor(trace, logger)),
 	)
 	if err != nil {
@@ -352,6 +352,19 @@ func (c *Client) GenerateSolutionFit(ctx context.Context, solutionID string, dat
 	return solutionResultResponses, nil
 }
 
+// GetSolutionDescription gets the solution description via API call.
+func (c *Client) GetSolutionDescription(ctx context.Context, solutionID string) (*pipeline.DescribeSolutionResponse, error) {
+	req := &pipeline.DescribeSolutionRequest{
+		SolutionId: solutionID,
+	}
+	desc, err := c.client.DescribeSolution(ctx, req)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to open solution produce result stream")
+	}
+
+	return desc, nil
+}
+
 // GeneratePredictions generates predictions.
 func (c *Client) GeneratePredictions(ctx context.Context, request *pipeline.ProduceSolutionRequest) ([]*pipeline.GetProduceSolutionResultsResponse, error) {
 
@@ -433,6 +446,7 @@ func (c *Client) ExecutePipeline(ctx context.Context, datasetURIs []string, pipe
 	if err != nil {
 		return nil, err
 	}
+
 	return out, nil
 }
 

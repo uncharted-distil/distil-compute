@@ -79,17 +79,21 @@ func (e *ExecPipelineRequest) Listen(listener ExecPipelineStatusListener) error 
 }
 
 // Dispatch dispatches a pipeline execute request for processing by TA2
-func (e *ExecPipelineRequest) Dispatch(client *Client) error {
+func (e *ExecPipelineRequest) Dispatch(client *Client, templateRequest *pipeline.SearchSolutionsRequest) error {
+	if templateRequest == nil {
+		templateRequest = &pipeline.SearchSolutionsRequest{
+			Version:   GetAPIVersion(),
+			UserAgent: client.UserAgent,
+			Template:  e.pipelineDesc,
+			AllowedValueTypes: []pipeline.ValueType{
+				pipeline.ValueType_CSV_URI,
+			},
+			Inputs: createInputValues(e.datasetURIs),
+		}
+	}
 
-	requestID, err := client.StartSearch(context.Background(), &pipeline.SearchSolutionsRequest{
-		Version:   GetAPIVersion(),
-		UserAgent: client.UserAgent,
-		Template:  e.pipelineDesc,
-		AllowedValueTypes: []pipeline.ValueType{
-			pipeline.ValueType_CSV_URI,
-		},
-		Inputs: createInputValues(e.datasetURIs),
-	})
+	templateRequest.Template = e.pipelineDesc
+	requestID, err := client.StartSearch(context.Background(), templateRequest)
 	if err != nil {
 		return err
 	}
