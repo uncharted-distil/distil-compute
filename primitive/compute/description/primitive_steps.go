@@ -543,37 +543,6 @@ func NewNumericRangeFilterStep(inputs map[string]DataRef, outputMethods []string
 	)
 }
 
-// NewTimeSeriesLoaderStep creates a primitive step that reads time series values using a dataframe
-// containing a file URI column.  The file URIs are expected to point to CSV files, with the
-// supplied time and value indices pointing the columns in the CSV that form the series data.
-// The result is a new dataframe that stores the timetamps as the column headers,
-// and the accompanying values for each file as a row.  Note that the file index column is negative,
-// the primitive will use the first CSV file name column if finds.
-func NewTimeSeriesLoaderStep(inputs map[string]DataRef, outputMethods []string, fileColIndex int, timeColIndex int, valueColIndex int) *StepData {
-	// exclude the file col index val ue in the case of a negative index so that the
-	// primitive will infer the colum
-	args := map[string]interface{}{
-		"time_col_index":  timeColIndex,
-		"value_col_index": valueColIndex,
-	}
-	if fileColIndex >= 0 {
-		args["file_col_index"] = fileColIndex
-	}
-
-	return NewStepData(
-		&pipeline.Primitive{
-			Id:         "1689aafa-16dc-4c55-8ad4-76cadcf46086",
-			Version:    "0.1.0",
-			Name:       "Time series loader",
-			PythonPath: "d3m.primitives.distil.TimeSeriesLoader",
-			Digest:     "",
-		},
-		outputMethods,
-		args,
-		inputs,
-	)
-}
-
 // NewGoatForwardStep creates a GOAT forward geocoding primitive.  A string column
 // containing a place name or address is passed in, and the primitive will
 // return a DataFrame containing the lat/lon coords of the place.  If location could
@@ -661,18 +630,21 @@ func NewDSBoxJoinStep(inputs map[string]DataRef, outputMethods []string, leftCol
 
 // NewTimeseriesFormatterStep creates a step that will format a time series
 // to the long form. The input dataset must be structured using resource
-// files for time series data.
+// files for time series data.  If mainResID is empty the primitive will attempt
+// to infer the main resource.  If fileColIndex < 0, the file column will also
+// be inferred.
 func NewTimeseriesFormatterStep(inputs map[string]DataRef, outputMethods []string, mainResID string, fileColIndex int) *StepData {
-	args := map[string]interface{}{
-		"main_resource_index": mainResID,
+	args := map[string]interface{}{}
+	if mainResID != "" {
+		args["main_resource_id"] = mainResID
 	}
 	if fileColIndex >= 0 {
 		args["file_col_index"] = fileColIndex
 	}
 	return NewStepData(
 		&pipeline.Primitive{
-			Id:         "24b09066-836f-4b8f-9773-8c86a5eee26c",
-			Version:    "0.2.0",
+			Id:         "1c4aed23-f3d3-4e6b-9710-009a9bc9b694",
+			Version:    "0.3.0",
 			Name:       "Time series formatter",
 			PythonPath: "d3m.primitives.data_preprocessing.timeseries_formatter.DistilTimeSeriesFormatter",
 			Digest:     "",
