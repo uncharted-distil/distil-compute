@@ -63,16 +63,16 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 	for _, v := range datasetDescription.AllFeatures {
 		if v.Grouping != nil && model.IsTimeSeries(v.Grouping.Type) {
 			isTimeseries = true
+
+			// we need to udpate the selected set to include members of the grouped variable
+			delete(selectedSet, strings.ToLower(v.Name))
+			for _, subID := range v.Grouping.SubIDs {
+				selectedSet[strings.ToLower(subID)] = true
+			}
+			selectedSet[strings.ToLower(v.Grouping.Properties.XCol)] = true
+			selectedSet[strings.ToLower(v.Grouping.Properties.YCol)] = true
 			break
 		}
-	}
-
-	// TODO: CSV reader is currently not working correctly, so we need to disable the timeseries
-	// prepend and use the data as-is.  This is sufficient for now as the NK classification primitives
-	// run off the unmodified dataset (although they can be configured to long form)
-	// prend for now
-	if isTimeseries {
-		return nil, nil
 	}
 
 	// augment the dataset if needed
@@ -94,14 +94,11 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 
 	if isTimeseries {
 		// need to read csv data, flatten then concat back to the original pipeline
-		steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}))
-		steps = append(steps, NewDatasetToDataframeStepWithResource(map[string]DataRef{"inputs": dataRef}, []string{"produce"}, "0"))
-		steps = append(steps, NewCSVReaderStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}))
-		steps = append(steps, NewHorizontalConcatStep(map[string]DataRef{"left": &StepDataRef{offset, "produce"}, "right": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, false, false))
-		steps = append(steps, NewDataFrameFlattenStep(map[string]DataRef{"inputs": &StepDataRef{offset + 3, "produce"}}, []string{"produce"}))
-		steps = append(steps, NewRemoveDuplicateColumnsStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}))
-		steps = append(steps, NewGroupingFieldComposeStep(map[string]DataRef{"inputs": &StepDataRef{offset + 5, "produce"}}, []string{"produce"}, nil, "-", "__grouping"))
-		offset += 6
+		steps = append(steps, NewTimeseriesFormatterStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}, "", -1))
+		steps = append(steps, NewColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType}))
+		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, ""))
+		steps = append(steps, NewGroupingFieldComposeStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, nil, "-", "__grouping"))
+		offset += 4
 	} else {
 		steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}))
 		steps = append(steps, NewColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType}))

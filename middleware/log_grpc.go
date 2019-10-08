@@ -31,7 +31,7 @@ type MethodLogger interface {
 }
 
 // GenerateUnaryClientInterceptor creates an interceptor function that will log unary grpc calls.
-func GenerateUnaryClientInterceptor(trace bool, logger MethodLogger) grpc.UnaryClientInterceptor {
+func GenerateUnaryClientInterceptor(label string, trace bool, logger MethodLogger) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		if logger != nil {
 			logger.LogAPIAction(method)
@@ -39,7 +39,7 @@ func GenerateUnaryClientInterceptor(trace bool, logger MethodLogger) grpc.UnaryC
 
 		startTime := time.Now()
 		newRequestLogger().
-			requestType("GRPC.UNARY [SEND]").
+			requestType(fmt.Sprintf("%s GRPC.UNARY [SEND]", label)).
 			request(method).
 			message(req.(proto.Message)).
 			log(true)
@@ -49,7 +49,7 @@ func GenerateUnaryClientInterceptor(trace bool, logger MethodLogger) grpc.UnaryC
 		}
 		dt := time.Since(startTime)
 		newRequestLogger().
-			requestType("GRPC.UNARY [RECV]").
+			requestType(fmt.Sprintf("%s GRPC.UNARY [RECV]", label)).
 			request(method).
 			message(reply.(proto.Message)).
 			duration(dt).
