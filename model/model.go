@@ -89,6 +89,8 @@ const (
 	VarTypeField = "colType"
 	// VarOriginalTypeField is the field name for the orginal variable type.
 	VarOriginalTypeField = "colOriginalType"
+	// VarDescriptionField is the field name for the variable description.
+	VarDescriptionField = "colDescription"
 	// VarImportanceField is the field name for the variable importnace.
 	VarImportanceField = "importance"
 	// VarSuggestedTypesField is the field name for the suggested variable types.
