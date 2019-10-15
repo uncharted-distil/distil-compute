@@ -151,6 +151,7 @@ type Grouping struct {
 type Variable struct {
 	Name             string                 `json:"colName"`
 	Type             string                 `json:"colType,omitempty"`
+	Description      string                 `json:"colDescription,omitempty"`
 	OriginalType     string                 `json:"colOriginalType,omitempty"`
 	SelectedRole     string                 `json:"selectedRole,omitempty"`
 	Role             []string               `json:"role,omitempty"`
@@ -287,7 +288,7 @@ func ensureUniqueName(name string, existingVariables []*Variable) string {
 }
 
 // NewVariable creates a new variable.
-func NewVariable(index int, name, displayName, originalName, typ, originalType string, role []string, distilRole string, refersTo map[string]interface{}, existingVariables []*Variable, normalizeName bool) *Variable {
+func NewVariable(index int, name, displayName, originalName, typ, originalType, description string, role []string, distilRole string, refersTo map[string]interface{}, existingVariables []*Variable, normalizeName bool) *Variable {
 	normalized := name
 	if normalizeName {
 		// normalize name
@@ -316,6 +317,7 @@ func NewVariable(index int, name, displayName, originalName, typ, originalType s
 		Name:             normalized,
 		Index:            index,
 		Type:             typ,
+		Description:      description,
 		OriginalType:     originalType,
 		Role:             role,
 		SelectedRole:     selectedRole,
@@ -333,8 +335,8 @@ func (dr *DataResource) CanBeFeaturized() bool {
 }
 
 // AddVariable creates and add a new variable to the data resource.
-func (dr *DataResource) AddVariable(name string, originalName string, typ string, role []string, distilRole string) {
-	v := NewVariable(len(dr.Variables), name, "", originalName, typ, typ, role, distilRole, nil, dr.Variables, false)
+func (dr *DataResource) AddVariable(name string, originalName string, typ string, description string, role []string, distilRole string) {
+	v := NewVariable(len(dr.Variables), name, "", originalName, typ, typ, description, role, distilRole, nil, dr.Variables, false)
 	dr.Variables = append(dr.Variables, v)
 }
 
