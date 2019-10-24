@@ -62,24 +62,24 @@ type DataRef interface {
 // StepDataRef provides an input reference that points a step in the pipline, and its associated
 // output method name.
 type StepDataRef struct {
-	stepNum int
-	output  string
+	StepNum int
+	Output  string
 }
 
 // RefString creates a string representation of a StepDataRef.
 func (i *StepDataRef) RefString() string {
-	return fmt.Sprintf("%s.%d.%s", stepKey, i.stepNum, i.output)
+	return fmt.Sprintf("%s.%d.%s", stepKey, i.StepNum, i.Output)
 }
 
 // PipelineDataRef points to an input of the pipeline itself (typically a dataset) instead of the output
 // of another primitive.
 type PipelineDataRef struct {
-	inputNum int
+	InputNum int
 }
 
 // RefString creates a string representation of a PipelineDataRef.
 func (p *PipelineDataRef) RefString() string {
-	return fmt.Sprintf("%s.%d", stepInputsKey, p.inputNum)
+	return fmt.Sprintf("%s.%d", stepInputsKey, p.InputNum)
 }
 
 // NewStepData creates a pipeline step instance from the required field subset.  Hyperparameters, Arguments and
