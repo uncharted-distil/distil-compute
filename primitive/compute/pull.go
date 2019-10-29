@@ -52,7 +52,7 @@ func PullFromAPI(maxPulls int, timeout time.Duration, pull PullFunc) error {
 			}
 			count++
 			if count > maxPulls {
-				return errors.Errorf("max pull count reached")
+				return nil
 			}
 
 		case <-timer.C:

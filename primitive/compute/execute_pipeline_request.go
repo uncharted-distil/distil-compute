@@ -42,28 +42,39 @@ type ExecPipelineStatusListener func(status ExecPipelineStatus)
 // ExecPipelineRequest defines a request that will execute a fully specified pipline
 // on a TA2 system.
 type ExecPipelineRequest struct {
-	datasetURIs   []string
-	pipelineDesc  *pipeline.PipelineDescription
-	wg            *sync.WaitGroup
-	statusChannel chan ExecPipelineStatus
-	finished      chan error
+	datasetURIs        []string
+	datasetURIsProduce []string
+	pipelineDesc       *pipeline.PipelineDescription
+	wg                 *sync.WaitGroup
+	statusChannel      chan ExecPipelineStatus
+	finished           chan error
 }
 
 // NewExecPipelineRequest creates a new request that will run the supplied dataset through
 // the pipeline description.
-func NewExecPipelineRequest(datasetURIs []string, pipelineDesc *pipeline.PipelineDescription) *ExecPipelineRequest {
+func NewExecPipelineRequest(datasetURIs []string, datasetURIsProduce []string, pipelineDesc *pipeline.PipelineDescription) *ExecPipelineRequest {
 
 	uris := []string{}
 	for _, uri := range datasetURIs {
 		uris = append(uris, buildSchemaFileURI(uri))
 	}
 
+	urisProduce := []string{}
+	if len(datasetURIsProduce) > 0 {
+		for _, uri := range datasetURIsProduce {
+			urisProduce = append(urisProduce, buildSchemaFileURI(uri))
+		}
+	} else {
+		urisProduce = uris
+	}
+
 	return &ExecPipelineRequest{
-		datasetURIs:   uris,
-		pipelineDesc:  pipelineDesc,
-		wg:            &sync.WaitGroup{},
-		finished:      make(chan error),
-		statusChannel: make(chan ExecPipelineStatus, 1),
+		datasetURIs:        uris,
+		datasetURIsProduce: urisProduce,
+		pipelineDesc:       pipelineDesc,
+		wg:                 &sync.WaitGroup{},
+		finished:           make(chan error),
+		statusChannel:      make(chan ExecPipelineStatus, 1),
 	}
 }
 
@@ -199,7 +210,7 @@ func (e *ExecPipelineRequest) createProduceSolutionRequest(datasetURIs []string,
 
 func (e *ExecPipelineRequest) dispatchProduce(statusChan chan ExecPipelineStatus, client *Client, requestID string, fittedSolutionID string) {
 	// generate predictions
-	produceRequest := e.createProduceSolutionRequest(e.datasetURIs, fittedSolutionID)
+	produceRequest := e.createProduceSolutionRequest(e.datasetURIsProduce, fittedSolutionID)
 
 	// run produce - this blocks until all responses are returned
 	responses, err := client.GeneratePredictions(context.Background(), produceRequest)

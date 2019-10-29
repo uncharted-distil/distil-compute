@@ -446,6 +446,27 @@ func NewDataFrameFlattenStep(inputs map[string]DataRef, outputMethods []string) 
 	)
 }
 
+// NewConstructPredictionStep maps the dataframe index to d3m index.
+func NewConstructPredictionStep(inputs map[string]DataRef, outputMethods []string, reference DataRef) *StepData {
+	args := map[string]DataRef{"reference": reference}
+	for k, c := range inputs {
+		args[k] = c
+	}
+
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "8d38b340-f83f-4877-baaa-162f8e551736",
+			Version:    "0.3.0",
+			Name:       "Construct pipeline predictions output",
+			PythonPath: "d3m.primitives.data_transformation.construct_predictions.Common",
+			Digest:     "96382129c2d9e87a2c0ab0b477b410947e5644d4dfae24e905d16a72d32dc41b",
+		},
+		outputMethods,
+		nil,
+		args,
+	)
+}
+
 // NewColumnParserStep takes obj/string columns in a dataframe and parses them into their
 // associated raw python types based on the attached d3m metadata.
 func NewColumnParserStep(inputs map[string]DataRef, outputMethods []string, types []string) *StepData {
