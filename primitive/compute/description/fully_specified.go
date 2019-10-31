@@ -127,7 +127,7 @@ func CreateGroupingFieldComposePipeline(name string, description string, colIndi
 
 	steps := []Step{
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewGroupingFieldComposeStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, colIndices, joinChar, outputName),
+		NewGroupingFieldComposeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, colIndices, joinChar, outputName),
 	}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()

@@ -60,15 +60,20 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 
 	// determine if this is a timeseries dataset
 	isTimeseries := false
+	groupingIndices := make([]int, 0)
 	for _, v := range datasetDescription.AllFeatures {
 		if v.Grouping != nil && model.IsTimeSeries(v.Grouping.Type) {
 			isTimeseries = true
+			groupingSet := map[string]bool{}
 
 			// we need to udpate the selected set to include members of the grouped variable
 			delete(selectedSet, strings.ToLower(v.Name))
 			for _, subID := range v.Grouping.SubIDs {
 				selectedSet[strings.ToLower(subID)] = true
+				groupingSet[strings.ToLower(subID)] = true
 			}
+
+			groupingIndices = listColumns(datasetDescription.AllFeatures, groupingSet)
 			selectedSet[strings.ToLower(v.Grouping.Properties.XCol)] = true
 			selectedSet[strings.ToLower(v.Grouping.Properties.YCol)] = true
 			break
@@ -97,7 +102,7 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 		steps = append(steps, NewTimeseriesFormatterStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}, "", -1))
 		steps = append(steps, NewColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType}))
 		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, ""))
-		steps = append(steps, NewGroupingFieldComposeStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, nil, "-", "__grouping"))
+		steps = append(steps, NewGroupingFieldComposeStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, groupingIndices, "-", "__grouping"))
 		offset += 4
 	} else {
 		steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}))
@@ -333,6 +338,17 @@ func mapColumns(allFeatures []*model.Variable, selectedSet map[string]bool) map[
 		if selectedSet[strings.ToLower(f.Name)] {
 			colIndices[f.Name] = index
 			index = index + 1
+		}
+	}
+
+	return colIndices
+}
+
+func listColumns(allFeatures []*model.Variable, selectedSet map[string]bool) []int {
+	colIndices := make([]int, 0)
+	for i := 0; i < len(allFeatures); i++ {
+		if selectedSet[strings.ToLower(allFeatures[i].Name)] {
+			colIndices = append(colIndices, allFeatures[i].Index)
 		}
 	}
 
