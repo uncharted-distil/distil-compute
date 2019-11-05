@@ -251,7 +251,7 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 	pipeline, err := CreateUserDatasetPipeline("test_user_pipeline", "a test user pipeline",
 		&UserDatasetDescription{
 			AllFeatures:      variables,
-			TargetFeature:    "test_target",
+			TargetFeature:    &model.Variable{Name: "test_target"},
 			SelectedFeatures: []string{"test_var_0", "test_var_1", "test_var_3"},
 			Filters:          nil,
 		},
@@ -331,7 +331,7 @@ func TestCreateUserDatasetPipelineMappingError(t *testing.T) {
 	_, err := CreateUserDatasetPipeline("test_user_pipeline", "a test user pipeline",
 		&UserDatasetDescription{
 			AllFeatures:      variables,
-			TargetFeature:    "test_target",
+			TargetFeature:    &model.Variable{Name: "test_target"},
 			SelectedFeatures: []string{"test_var_0"},
 			Filters:          nil,
 		}, nil)
@@ -352,7 +352,7 @@ func TestCreateUserDatasetEmpty(t *testing.T) {
 	pipeline, err := CreateUserDatasetPipeline("test_user_pipeline", "a test user pipeline",
 		&UserDatasetDescription{
 			AllFeatures:      variables,
-			TargetFeature:    "test_target",
+			TargetFeature:    &model.Variable{Name: "test_target"},
 			SelectedFeatures: []string{"test_var_0"},
 			Filters:          nil,
 		}, nil)

@@ -28,7 +28,7 @@ import (
 // the user dataset pipeline.
 type UserDatasetDescription struct {
 	AllFeatures      []*model.Variable
-	TargetFeature    string
+	TargetFeature    *model.Variable
 	SelectedFeatures []string
 	Filters          []*model.Filter
 }
@@ -61,23 +61,19 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 	// determine if this is a timeseries dataset
 	isTimeseries := false
 	groupingIndices := make([]int, 0)
-	for _, v := range datasetDescription.AllFeatures {
-		if v.Grouping != nil && model.IsTimeSeries(v.Grouping.Type) {
-			isTimeseries = true
-			groupingSet := map[string]bool{}
+	if model.IsTimeSeries(datasetDescription.TargetFeature.Type) {
+		isTimeseries = true
+		groupingSet := map[string]bool{}
 
-			// we need to udpate the selected set to include members of the grouped variable
-			delete(selectedSet, strings.ToLower(v.Name))
-			for _, subID := range v.Grouping.SubIDs {
-				selectedSet[strings.ToLower(subID)] = true
-				groupingSet[strings.ToLower(subID)] = true
-			}
-
-			groupingIndices = listColumns(datasetDescription.AllFeatures, groupingSet)
-			selectedSet[strings.ToLower(v.Grouping.Properties.XCol)] = true
-			selectedSet[strings.ToLower(v.Grouping.Properties.YCol)] = true
-			break
+		// we need to udpate the selected set to include members of the grouped variable
+		for _, subID := range datasetDescription.TargetFeature.Grouping.SubIDs {
+			selectedSet[strings.ToLower(subID)] = true
+			groupingSet[strings.ToLower(subID)] = true
 		}
+
+		groupingIndices = listColumns(datasetDescription.AllFeatures, groupingSet)
+		selectedSet[strings.ToLower(datasetDescription.TargetFeature.Grouping.Properties.XCol)] = true
+		selectedSet[strings.ToLower(datasetDescription.TargetFeature.Grouping.Properties.YCol)] = true
 	}
 
 	// augment the dataset if needed
@@ -133,7 +129,7 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 
 	// If neither have any content, we'll skip the template altogether.
 	if len(updateSemanticTypes) == 0 && removeFeatures == nil &&
-		len(filterData) == 0 && augmentations == nil {
+		len(filterData) == 0 && augmentations == nil && !isTimeseries {
 		return nil, nil
 	}
 
