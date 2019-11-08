@@ -28,7 +28,7 @@ import (
 // the user dataset pipeline.
 type UserDatasetDescription struct {
 	AllFeatures      []*model.Variable
-	TargetFeature    string
+	TargetFeature    *model.Variable
 	SelectedFeatures []string
 	Filters          []*model.Filter
 }
@@ -60,19 +60,21 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 
 	// determine if this is a timeseries dataset
 	isTimeseries := false
-	for _, v := range datasetDescription.AllFeatures {
-		if v.Grouping != nil && model.IsTimeSeries(v.Grouping.Type) {
-			isTimeseries = true
+	groupingIndices := make([]int, 0)
+	timeseriesGrouping := getTimeseriesGrouping(datasetDescription)
+	if timeseriesGrouping != nil {
+		isTimeseries = true
+		groupingSet := map[string]bool{}
 
-			// we need to udpate the selected set to include members of the grouped variable
-			delete(selectedSet, strings.ToLower(v.Name))
-			for _, subID := range v.Grouping.SubIDs {
-				selectedSet[strings.ToLower(subID)] = true
-			}
-			selectedSet[strings.ToLower(v.Grouping.Properties.XCol)] = true
-			selectedSet[strings.ToLower(v.Grouping.Properties.YCol)] = true
-			break
+		// we need to udpate the selected set to include members of the grouped variable
+		for _, subID := range timeseriesGrouping.SubIDs {
+			selectedSet[strings.ToLower(subID)] = true
+			groupingSet[strings.ToLower(subID)] = true
 		}
+
+		groupingIndices = listColumns(datasetDescription.AllFeatures, groupingSet)
+		selectedSet[strings.ToLower(timeseriesGrouping.Properties.XCol)] = true
+		selectedSet[strings.ToLower(timeseriesGrouping.Properties.YCol)] = true
 	}
 
 	// augment the dataset if needed
@@ -97,7 +99,9 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 		steps = append(steps, NewTimeseriesFormatterStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}, "", -1))
 		steps = append(steps, NewColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType}))
 		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, ""))
-		offset += 3
+		steps = append(steps, NewGroupingFieldComposeStep(nil, nil, groupingIndices, "-", "__grouping"))
+		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, offset+3, ""))
+		offset += 5
 	} else {
 		steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}))
 		steps = append(steps, NewColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType}))
@@ -127,7 +131,7 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 
 	// If neither have any content, we'll skip the template altogether.
 	if len(updateSemanticTypes) == 0 && removeFeatures == nil &&
-		len(filterData) == 0 && augmentations == nil {
+		len(filterData) == 0 && augmentations == nil && !isTimeseries {
 		return nil, nil
 	}
 
@@ -144,6 +148,19 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 	}
 
 	return pip, nil
+}
+
+func getTimeseriesGrouping(datasetDescription *UserDatasetDescription) *model.Grouping {
+	if model.IsTimeSeries(datasetDescription.TargetFeature.Type) {
+		return datasetDescription.TargetFeature.Grouping
+	}
+	for _, v := range datasetDescription.AllFeatures {
+		if v.Grouping != nil && model.IsTimeSeries(v.Grouping.Type) {
+			return v.Grouping
+		}
+	}
+
+	return nil
 }
 
 func createRemoveFeatures(allFeatures []*model.Variable, selectedSet map[string]bool, offset int) []Step {
@@ -305,262 +322,6 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int, off
 	return filterSteps
 }
 
-// CreateSlothPipeline creates a pipeline to peform timeseries clustering on a dataset.
-func CreateSlothPipeline(name string, description string, timeColumn string, valueColumn string,
-	timeSeriesFeatures []*model.Variable) (*pipeline.PipelineDescription, error) {
-
-	// timeIdx, err := getIndex(timeSeriesFeatures, timeColumn)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// valueIdx, err := getIndex(timeSeriesFeatures, valueColumn)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{1, "produce"}}
-
-	steps := []Step{
-		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		// Sloth now includes the the time series loader in the primitive itself.
-		// This is not a long term solution and will need updating.  The updated
-		// primitive doesn't accept the time and value indices as args, so they
-		// are currently unused.
-		// step2 := NewPipelineNode(NewTimeSeriesLoaderStep(-1, timeIdx, valueIdx))
-		NewSlothStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-	}
-
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
-// CreateDukePipeline creates a pipeline to peform image featurization on a dataset.
-func CreateDukePipeline(name string, description string) (*pipeline.PipelineDescription, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{1, "produce"}}
-
-	steps := []Step{
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewDukeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-	}
-
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
-// CreateSimonPipeline creates a pipeline to run semantic type inference on a dataset's
-// columns.
-func CreateSimonPipeline(name string, description string) (*pipeline.PipelineDescription, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{1, "produce_metafeatures"}}
-
-	steps := []Step{
-		NewDatasetToDataframeStep(
-			map[string]DataRef{"inputs": &PipelineDataRef{0}},
-			[]string{"produce"},
-		),
-		NewSimonStep(
-			map[string]DataRef{"inputs": &StepDataRef{0, "produce"}},
-			[]string{"produce_metafeatures"}),
-	}
-
-	// produce metafeatures
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
-// CreateDataCleaningPipeline creates a pipeline to run data cleaning on a dataset.
-func CreateDataCleaningPipeline(name string, description string) (*pipeline.PipelineDescription, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{2, "produce"}}
-
-	steps := []Step{
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewColumnParserStep(
-			map[string]DataRef{"inputs": &StepDataRef{0, "produce"}},
-			[]string{"produce"},
-			[]string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType},
-		),
-		NewDataCleaningStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}),
-	}
-
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
-// CreateCrocPipeline creates a pipeline to run image featurization on a dataset.
-func CreateCrocPipeline(name string, description string, targetColumns []string, outputLabels []string) (*pipeline.PipelineDescription, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{2, "produce"}}
-
-	steps := []Step{
-		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-		NewCrocStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, targetColumns, outputLabels),
-	}
-
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
-// CreateUnicornPipeline creates a pipeline to run image clustering on a dataset.
-func CreateUnicornPipeline(name string, description string, targetColumns []string, outputLabels []string) (*pipeline.PipelineDescription, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{2, "produce"}}
-
-	steps := []Step{
-		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-		NewUnicornStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, targetColumns, outputLabels),
-	}
-
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
-// CreatePCAFeaturesPipeline creates a pipeline to run feature ranking on an input dataset.
-func CreatePCAFeaturesPipeline(name string, description string) (*pipeline.PipelineDescription, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{1, "produce_metafeatures"}}
-
-	steps := []Step{
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewPCAFeaturesStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce_metafeatures"}),
-	}
-
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
-// CreateDenormalizePipeline creates a pipeline to run the denormalize primitive on an input dataset.
-func CreateDenormalizePipeline(name string, description string) (*pipeline.PipelineDescription, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{1, "produce"}}
-
-	steps := []Step{
-		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-	}
-
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
-// CreateTargetRankingPipeline creates a pipeline to run feature ranking on an input dataset.
-func CreateTargetRankingPipeline(name string, description string, target string, features []*model.Variable) (*pipeline.PipelineDescription, error) {
-
-	// compute index associated with column name
-	targetIdx := -1
-	for _, f := range features {
-		if strings.EqualFold(target, f.Name) {
-			targetIdx = f.Index
-			break
-		}
-	}
-	if targetIdx < 0 {
-		return nil, errors.Errorf("can't find var '%s'", name)
-	}
-
-	offset := 0
-	steps := []Step{
-		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-	}
-	offset++
-
-	// ranking is dependent on user updated semantic types, so we need to make sure we apply
-	// those to the original data
-	updateSemanticTypeStep, err := createUpdateSemanticTypes(features, map[string]bool{}, offset)
-	if err != nil {
-		return nil, err
-	}
-
-	steps = append(steps, updateSemanticTypeStep...)
-
-	offset += len(updateSemanticTypeStep)
-	steps = append(steps,
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}),
-		NewColumnParserStep(
-			map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}},
-			[]string{"produce"},
-			// inlcude categorical because the parser will hash all the values into ints, which the MIRanking primitive can handle
-			[]string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType, model.TA2CategoricalType},
-		),
-		NewTargetRankingStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}, targetIdx),
-	)
-	offset += 3
-
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{offset - 1, "produce"}}
-
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
-// CreateGoatForwardPipeline creates a forward geocoding pipeline.
-func CreateGoatForwardPipeline(name string, description string, placeCol *model.Variable) (*pipeline.PipelineDescription, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{2, "produce"}}
-
-	steps := []Step{
-		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-		NewGoatForwardStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, placeCol.Index),
-	}
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
-// CreateGoatReversePipeline creates a forward geocoding pipeline.
-func CreateGoatReversePipeline(name string, description string, lonSource *model.Variable, latSource *model.Variable) (*pipeline.PipelineDescription, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{2, "produce"}}
-
-	steps := []Step{
-		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-		NewGoatReverseStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, lonSource.Index, latSource.Index),
-	}
-
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
 func getSemanticTypeUpdates(v *model.Variable, inputIndex int, offset int) []Step {
 	addType := model.MapTA2Type(v.Type)
 	removeType := model.MapTA2Type(v.OriginalType)
@@ -581,128 +342,6 @@ func getSemanticTypeUpdates(v *model.Variable, inputIndex int, offset int) []Ste
 	}
 }
 
-// CreateJoinPipeline creates a pipeline that joins two input datasets using a caller supplied column.
-// Accuracy is a normalized value that controls how exact the join has to be.
-func CreateJoinPipeline(name string, description string, leftJoinCol *model.Variable, rightJoinCol *model.Variable, accuracy float32) (*pipeline.PipelineDescription, error) {
-	steps := make([]Step, 0)
-	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
-	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}))
-	offset := 2
-	offsetLeft := 0
-	offsetRight := 1
-
-	// update semantic types as needed
-	if leftJoinCol.Type != leftJoinCol.OriginalType {
-		stepsRetype := getSemanticTypeUpdates(leftJoinCol, 0, offset)
-		steps = append(steps, stepsRetype...)
-		offset += len(stepsRetype)
-		offsetLeft = offset - 1
-	}
-	if rightJoinCol.Type != rightJoinCol.OriginalType {
-		stepsRetype := getSemanticTypeUpdates(rightJoinCol, 1, offset)
-		steps = append(steps, stepsRetype...)
-		offset += len(stepsRetype)
-		offsetRight = offset - 1
-	}
-
-	// merge two intput streams via a single join call
-	steps = append(steps, NewJoinStep(
-		map[string]DataRef{"left": &StepDataRef{offsetLeft, "produce"}, "right": &StepDataRef{offsetRight, "produce"}},
-		[]string{"produce"},
-		leftJoinCol.DisplayName, rightJoinCol.DisplayName, accuracy,
-	))
-	steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
-
-	// compute column indices
-	inputs := []string{"left", "right"}
-	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
-
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
-// CreateDSBoxJoinPipeline creates a pipeline that joins two input datasets
-// using caller supplied columns.
-func CreateDSBoxJoinPipeline(name string, description string, leftJoinCols []string, rightJoinCols []string, accuracy float32) (*pipeline.PipelineDescription, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{2, "produce"}}
-
-	// instantiate the pipeline - this merges two intput streams via a single join call
-	steps := []Step{
-		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}),
-		NewDSBoxJoinStep(
-			map[string]DataRef{"inputs": &StepDataRef{1, "produce"}},
-			[]string{"produce"},
-			leftJoinCols, rightJoinCols, accuracy),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
-	}
-
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
-// CreateTimeseriesFormatterPipeline creates a time series formatter pipeline.
-func CreateTimeseriesFormatterPipeline(name string, description string, resourceId string) (*pipeline.PipelineDescription, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{5, "produce"}}
-
-	steps := []Step{
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewDatasetToDataframeStepWithResource(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, resourceId),
-		NewCSVReaderStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}),
-		NewHorizontalConcatStep(map[string]DataRef{"left": &StepDataRef{0, "produce"}, "right": &StepDataRef{2, "produce"}}, []string{"produce"}, false, false),
-		NewDataFrameFlattenStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
-		NewRemoveDuplicateColumnsStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
-	}
-
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
-// CreateDatamartDownloadPipeline creates a pipeline to download data from a datamart.
-func CreateDatamartDownloadPipeline(name string, description string, searchResult string, systemIdentifier string) (*pipeline.PipelineDescription, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{1, "produce"}}
-
-	steps := []Step{
-		NewDatamartDownloadStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, searchResult, systemIdentifier),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-	}
-
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
-// CreateDatamartAugmentPipeline creates a pipeline to augment data with datamart data.
-func CreateDatamartAugmentPipeline(name string, description string, searchResult string, systemIdentifier string) (*pipeline.PipelineDescription, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{1, "produce"}}
-
-	steps := []Step{
-		NewDatamartAugmentStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, searchResult, systemIdentifier),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-	}
-
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
 func mapColumns(allFeatures []*model.Variable, selectedSet map[string]bool) map[string]int {
 	colIndices := make(map[string]int)
 	index := 0
@@ -710,6 +349,17 @@ func mapColumns(allFeatures []*model.Variable, selectedSet map[string]bool) map[
 		if selectedSet[strings.ToLower(f.Name)] {
 			colIndices[f.Name] = index
 			index = index + 1
+		}
+	}
+
+	return colIndices
+}
+
+func listColumns(allFeatures []*model.Variable, selectedSet map[string]bool) []int {
+	colIndices := make([]int, 0)
+	for i := 0; i < len(allFeatures); i++ {
+		if selectedSet[strings.ToLower(allFeatures[i].Name)] {
+			colIndices = append(colIndices, allFeatures[i].Index)
 		}
 	}
 
