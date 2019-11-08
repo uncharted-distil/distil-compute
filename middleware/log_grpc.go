@@ -27,14 +27,24 @@ import (
 
 // MethodLogger logs GRPC method calls.
 type MethodLogger interface {
-	LogAPIAction(method string)
+	LogAPIAction(method string, params map[string]string)
+}
+
+// SolutionMessage represents API messages that have a solution ID.
+type SolutionMessage interface {
+	GetSolutionId() string
 }
 
 // GenerateUnaryClientInterceptor creates an interceptor function that will log unary grpc calls.
 func GenerateUnaryClientInterceptor(label string, trace bool, logger MethodLogger) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		if logger != nil {
-			logger.LogAPIAction(method)
+			solutionID, ok := extractSolutionID(req)
+			params := make(map[string]string)
+			if ok {
+				params["solution-id"] = solutionID
+			}
+			logger.LogAPIAction(method, params)
 		}
 
 		startTime := time.Now()
@@ -111,7 +121,12 @@ func (c *LoggingClientStream) RecvMsg(m interface{}) error {
 func (c *LoggingClientStream) SendMsg(m interface{}) error {
 	request := fmt.Sprintf("%s [SEND]", c.requestType)
 	if c.logger != nil {
-		c.logger.LogAPIAction(c.method)
+		solutionID, ok := extractSolutionID(m)
+		params := make(map[string]string)
+		if ok {
+			params["solution-id"] = solutionID
+		}
+		c.logger.LogAPIAction(c.method, params)
 	}
 	if c.trace {
 		newRequestLogger().
@@ -126,4 +141,14 @@ func (c *LoggingClientStream) SendMsg(m interface{}) error {
 			log(true)
 	}
 	return c.ClientStream.SendMsg(m)
+}
+
+func extractSolutionID(message interface{}) (string, bool) {
+	solutionID := ""
+	solutionMessage, ok := message.(SolutionMessage)
+	if ok {
+		solutionID = solutionMessage.GetSolutionId()
+	}
+
+	return solutionID, ok
 }
