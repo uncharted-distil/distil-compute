@@ -61,19 +61,20 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 	// determine if this is a timeseries dataset
 	isTimeseries := false
 	groupingIndices := make([]int, 0)
-	if model.IsTimeSeries(datasetDescription.TargetFeature.Type) {
+	timeseriesGrouping := getTimeseriesGrouping(datasetDescription)
+	if timeseriesGrouping != nil {
 		isTimeseries = true
 		groupingSet := map[string]bool{}
 
 		// we need to udpate the selected set to include members of the grouped variable
-		for _, subID := range datasetDescription.TargetFeature.Grouping.SubIDs {
+		for _, subID := range timeseriesGrouping.SubIDs {
 			selectedSet[strings.ToLower(subID)] = true
 			groupingSet[strings.ToLower(subID)] = true
 		}
 
 		groupingIndices = listColumns(datasetDescription.AllFeatures, groupingSet)
-		selectedSet[strings.ToLower(datasetDescription.TargetFeature.Grouping.Properties.XCol)] = true
-		selectedSet[strings.ToLower(datasetDescription.TargetFeature.Grouping.Properties.YCol)] = true
+		selectedSet[strings.ToLower(timeseriesGrouping.Properties.XCol)] = true
+		selectedSet[strings.ToLower(timeseriesGrouping.Properties.YCol)] = true
 	}
 
 	// augment the dataset if needed
@@ -147,6 +148,19 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 	}
 
 	return pip, nil
+}
+
+func getTimeseriesGrouping(datasetDescription *UserDatasetDescription) *model.Grouping {
+	if model.IsTimeSeries(datasetDescription.TargetFeature.Type) {
+		return datasetDescription.TargetFeature.Grouping
+	}
+	for _, v := range datasetDescription.AllFeatures {
+		if v.Grouping != nil && model.IsTimeSeries(v.Grouping.Type) {
+			return v.Grouping
+		}
+	}
+
+	return nil
 }
 
 func createRemoveFeatures(allFeatures []*model.Variable, selectedSet map[string]bool, offset int) []Step {
