@@ -139,7 +139,7 @@ var (
 	}
 	defaultTaskMetricMap = map[string]string{
 		ClassificationTask:               "f1Macro",
-		RegressionTask:                   "meanSquaredError",
+		RegressionTask:                   "meanAbsoluteError",
 		ClusteringTask:                   "normalizedMutualInformation",
 		LinkPredictionTask:               "accuracy",
 		VertexNominationTask:             "accuracy",
