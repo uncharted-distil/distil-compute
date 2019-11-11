@@ -21,6 +21,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
+	"github.com/uncharted-distil/distil-compute/pipeline"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
@@ -35,15 +36,16 @@ type SolutionMessage interface {
 	GetSolutionId() string
 }
 
+// FittedSolutionMessage represents API messages that have a fitted solution ID.
+type FittedSolutionMessage interface {
+	GetFittedSolutionId() string
+}
+
 // GenerateUnaryClientInterceptor creates an interceptor function that will log unary grpc calls.
 func GenerateUnaryClientInterceptor(label string, trace bool, logger MethodLogger) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		if logger != nil {
-			solutionID, ok := extractSolutionID(req)
-			params := make(map[string]string)
-			if ok {
-				params["solution-id"] = solutionID
-			}
+			params := getParamsFromMessage(req)
 			logger.LogAPIAction(method, params)
 		}
 
@@ -121,11 +123,7 @@ func (c *LoggingClientStream) RecvMsg(m interface{}) error {
 func (c *LoggingClientStream) SendMsg(m interface{}) error {
 	request := fmt.Sprintf("%s [SEND]", c.requestType)
 	if c.logger != nil {
-		solutionID, ok := extractSolutionID(m)
-		params := make(map[string]string)
-		if ok {
-			params["solution-id"] = solutionID
-		}
+		params := getParamsFromMessage(m)
 		c.logger.LogAPIAction(c.method, params)
 	}
 
@@ -144,6 +142,24 @@ func (c *LoggingClientStream) SendMsg(m interface{}) error {
 	return c.ClientStream.SendMsg(m)
 }
 
+func getParamsFromMessage(message interface{}) map[string]string {
+	params := make(map[string]string)
+	solutionID, ok := extractSolutionID(message)
+	if ok {
+		params["solution-id"] = solutionID
+	}
+	fittedSolutionID, ok := extractFittedSolutionID(message)
+	if ok {
+		params["fitted-solution-id"] = fittedSolutionID
+	}
+	name, ok := extractPipelineName(message)
+	if ok {
+		params["name"] = name
+	}
+
+	return params
+}
+
 func extractSolutionID(message interface{}) (string, bool) {
 	solutionID := ""
 	solutionMessage, ok := message.(SolutionMessage)
@@ -152,4 +168,27 @@ func extractSolutionID(message interface{}) (string, bool) {
 	}
 
 	return solutionID, ok
+}
+
+func extractPipelineName(message interface{}) (string, bool) {
+	searchMsg, ok := message.(pipeline.SearchSolutionsRequest)
+	if !ok {
+		return "", false
+	}
+
+	if searchMsg.Template == nil {
+		return "", false
+	}
+
+	return searchMsg.Template.Name, true
+}
+
+func extractFittedSolutionID(message interface{}) (string, bool) {
+	fittedSolutionID := ""
+	fittedSolutionMessage, ok := message.(FittedSolutionMessage)
+	if ok {
+		fittedSolutionID = fittedSolutionMessage.GetFittedSolutionId()
+	}
+
+	return fittedSolutionID, ok
 }
