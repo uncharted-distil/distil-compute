@@ -30,28 +30,21 @@ type MethodLogger interface {
 	LogAPIAction(method string, params map[string]string)
 }
 
-// MethodLoggerCtor creates a MethodLogger when called.
-type MethodLoggerCtor func() (MethodLogger, error)
-
 // SolutionMessage represents API messages that have a solution ID.
 type SolutionMessage interface {
 	GetSolutionId() string
 }
 
 // GenerateUnaryClientInterceptor creates an interceptor function that will log unary grpc calls.
-func GenerateUnaryClientInterceptor(label string, trace bool, loggerCtor MethodLoggerCtor) grpc.UnaryClientInterceptor {
+func GenerateUnaryClientInterceptor(label string, trace bool, logger MethodLogger) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		if loggerCtor != nil {
-			logger, err := loggerCtor()
-			// ignore logger errors
-			if err == nil {
-				solutionID, ok := extractSolutionID(req)
-				params := make(map[string]string)
-				if ok {
-					params["solution-id"] = solutionID
-				}
-				logger.LogAPIAction(method, params)
+		if logger != nil {
+			solutionID, ok := extractSolutionID(req)
+			params := make(map[string]string)
+			if ok {
+				params["solution-id"] = solutionID
 			}
+			logger.LogAPIAction(method, params)
 		}
 
 		startTime := time.Now()
@@ -76,11 +69,11 @@ func GenerateUnaryClientInterceptor(label string, trace bool, loggerCtor MethodL
 }
 
 // GenerateStreamClientInterceptor creates an interceptor function that will log grpc streaming calls.
-func GenerateStreamClientInterceptor(trace bool, loggerCtor MethodLoggerCtor) grpc.StreamClientInterceptor {
+func GenerateStreamClientInterceptor(trace bool, logger MethodLogger) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn,
 		method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		clientStream, err := streamer(ctx, desc, cc, method, opts...)
-		loggingClientStream := newLoggingClientStream(&clientStream, "GRPC.STREAM_CLIENT", method, trace, loggerCtor)
+		loggingClientStream := newLoggingClientStream(&clientStream, "GRPC.STREAM_CLIENT", method, trace, logger)
 		if err != nil {
 			err = errors.Wrap(err, "stream create call failed")
 		}
@@ -94,11 +87,11 @@ type LoggingClientStream struct {
 	requestType string
 	method      string
 	trace       bool
-	loggerCtor  MethodLoggerCtor
+	logger      MethodLogger
 }
 
-func newLoggingClientStream(c *grpc.ClientStream, requestType string, request string, trace bool, loggerCtor MethodLoggerCtor) *LoggingClientStream {
-	return &LoggingClientStream{*c, requestType, request, trace, loggerCtor}
+func newLoggingClientStream(c *grpc.ClientStream, requestType string, request string, trace bool, logger MethodLogger) *LoggingClientStream {
+	return &LoggingClientStream{*c, requestType, request, trace, logger}
 }
 
 // RecvMsg logs messages recieved over a GRPC stream
@@ -127,17 +120,13 @@ func (c *LoggingClientStream) RecvMsg(m interface{}) error {
 // SendMsg logs messages sent out over a GRPC stream
 func (c *LoggingClientStream) SendMsg(m interface{}) error {
 	request := fmt.Sprintf("%s [SEND]", c.requestType)
-	if c.loggerCtor != nil {
-		logger, err := c.loggerCtor()
-		// ignore logger errors
-		if err == nil {
-			solutionID, ok := extractSolutionID(m)
-			params := make(map[string]string)
-			if ok {
-				params["solution-id"] = solutionID
-			}
-			logger.LogAPIAction(c.method, params)
+	if c.logger != nil {
+		solutionID, ok := extractSolutionID(m)
+		params := make(map[string]string)
+		if ok {
+			params["solution-id"] = solutionID
 		}
+		c.logger.LogAPIAction(c.method, params)
 	}
 
 	if c.trace {
