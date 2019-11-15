@@ -171,7 +171,7 @@ func extractSolutionID(message interface{}) (string, bool) {
 }
 
 func extractPipelineName(message interface{}) (string, bool) {
-	searchMsg, ok := message.(pipeline.SearchSolutionsRequest)
+	searchMsg, ok := message.(*pipeline.SearchSolutionsRequest)
 	if !ok {
 		return "", false
 	}
