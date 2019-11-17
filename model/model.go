@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jeffail/gabs"
+	"github.com/Jeffail/gabs/v2"
 )
 
 const (

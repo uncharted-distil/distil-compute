@@ -364,13 +364,13 @@ func CreateDSBoxJoinPipeline(name string, description string, leftJoinCols []str
 }
 
 // CreateTimeseriesFormatterPipeline creates a time series formatter pipeline.
-func CreateTimeseriesFormatterPipeline(name string, description string, resourceId string) (*pipeline.PipelineDescription, error) {
+func CreateTimeseriesFormatterPipeline(name string, description string, resourceID string) (*pipeline.PipelineDescription, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{5, "produce"}}
 
 	steps := []Step{
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewDatasetToDataframeStepWithResource(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, resourceId),
+		NewDatasetToDataframeStepWithResource(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, resourceID),
 		NewCSVReaderStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}),
 		NewHorizontalConcatStep(map[string]DataRef{"left": &StepDataRef{0, "produce"}, "right": &StepDataRef{2, "produce"}}, []string{"produce"}, false, false),
 		NewDataFrameFlattenStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),

@@ -32,7 +32,7 @@ proto:
 	@protoc -I /usr/local/include \
 		-I ./pipeline \
 		--go_out=plugins=grpc:pipeline \
-		./pipeline/*.proto 
+		./pipeline/*.proto
 
 peg:
 	@peg -inline ./api/compute/result/complex_field.peg
@@ -40,6 +40,4 @@ peg:
 install:
 	@go get -u github.com/golang/protobuf/protoc-gen-go
 	@go get -u golang.org/x/lint/golint
-	@go get -u github.com/golang/dep/cmd/dep
 	@go get -u github.com/pointlander/peg
-	@dep ensure
