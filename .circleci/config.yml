@@ -6,7 +6,7 @@ jobs:
   build:
     docker:
       # specify the version
-      - image: circleci/golang:1.10
+      - image: circleci/golang:1.13
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -23,9 +23,9 @@ jobs:
 
       # specify any bash command here prefixed with `run: `
       - run: make install
-      - run: dep ensure -v
+      - run: make compile # update go mod deps
       - run: make test
       - run: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              curl -v -X POST https://circleci.com/api/v1.1/project/github/uncharted-distil/distil-ingest/tree/$CIRCLE_BRANCH?circle-token=$D3MBUILD_KEY
-            fi
+          if [ "${CIRCLE_BRANCH}" == "master" ]; then
+            curl -v -X POST https://circleci.com/api/v1.1/project/github/uncharted-distil/distil-ingest/tree/$CIRCLE_BRANCH?circle-token=$D3MBUILD_KEY
+          fi
