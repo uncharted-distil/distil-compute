@@ -177,7 +177,7 @@ type DataResource struct {
 	ResPath      string      `json:"resPath"`
 	IsCollection bool        `json:"isCollection"`
 	Variables    []*Variable `json:"columns,omitempty"`
-	ResFormat    []string    `json:"resFormat"`
+	ResFormat    [][]string  `json:"resFormat"`
 }
 
 // SuggestedType represents a classified variable type.
@@ -230,7 +230,7 @@ func NewMetadata(id string, name string, description string, storageName string)
 }
 
 // NewDataResource creates a new data resource instance.
-func NewDataResource(id string, typ string, format []string) *DataResource {
+func NewDataResource(id string, typ string, format [][]string) *DataResource {
 	return &DataResource{
 		ResID:     id,
 		ResType:   typ,
