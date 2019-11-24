@@ -158,16 +158,16 @@ type Variable struct {
 	SelectedRole     string                 `json:"selectedRole,omitempty"`
 	Role             []string               `json:"role,omitempty"`
 	DistilRole       string                 `json:"distilRole,omitempty"`
-	OriginalVariable string                 `json:"colOriginalName"`
+	OriginalVariable string                 `json:"colOriginalName,omitempty"`
 	DisplayName      string                 `json:"colDisplayName,omitempty"`
-	Importance       int                    `json:"importance"`
-	Index            int                    `json:"colIndex"`
+	Importance       int                    `json:"importance,omitempty"`
+	Index            int                    `json:"colIndex,omitempty"`
 	SuggestedTypes   []*SuggestedType       `json:"suggestedTypes,omitempty"`
 	RefersTo         map[string]interface{} `json:"refersTo,omitempty"`
-	Deleted          bool                   `json:"deleted"`
-	Grouping         *Grouping              `json:"grouping"`
-	Min              float64                `json:"min"`
-	Max              float64                `json:"max"`
+	Deleted          bool                   `json:"deleted,omitempty"`
+	Grouping         *Grouping              `json:"grouping,omitempty"`
+	Min              float64                `json:"min,omitempty"`
+	Max              float64                `json:"max,omitempty"`
 }
 
 // DataResource represents a set of variables found in a data asset.
@@ -336,6 +336,25 @@ func (dr *DataResource) CanBeFeaturized() bool {
 	return dr.ResType == ResTypeImage
 }
 
+// BaseOnly copies the data resource and variables, keeping ONLY the base
+// properties
+func (dr *DataResource) BaseOnly() *DataResource {
+	drBase := &DataResource{
+		ResFormat:    dr.ResFormat,
+		ResID:        dr.ResID,
+		ResPath:      dr.ResPath,
+		ResType:      dr.ResType,
+		IsCollection: dr.IsCollection,
+		Variables:    make([]*Variable, len(dr.Variables)),
+	}
+
+	for i, v := range dr.Variables {
+		drBase.Variables[i] = v.BaseOnly()
+	}
+
+	return drBase
+}
+
 // AddVariable creates and add a new variable to the data resource.
 func (dr *DataResource) AddVariable(name string, originalName string, typ string, description string, role []string, distilRole string) {
 	v := NewVariable(len(dr.Variables), name, "", originalName, typ, typ, description, role, distilRole, nil, dr.Variables, false)
@@ -394,6 +413,21 @@ func (v *Variable) IsMediaReference() bool {
 		}
 	}
 	return mediaReference
+}
+
+// BaseOnly copies the variable data, including only the fields from the base schema.
+func (v *Variable) BaseOnly() *Variable {
+	vBase := &Variable{
+		Name:         v.Name,
+		Type:         v.Type,
+		Description:  v.Description,
+		SelectedRole: v.SelectedRole,
+		Role:         v.Role,
+		Index:        v.Index,
+		RefersTo:     v.RefersTo,
+	}
+
+	return vBase
 }
 
 // MapD3MTypeToPostgresType generates a postgres type from a d3m type.
