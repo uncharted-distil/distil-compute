@@ -333,7 +333,8 @@ func NewVariable(index int, name, displayName, originalName, typ, originalType, 
 
 // CanBeFeaturized determines if a data resource can be featurized.
 func (dr *DataResource) CanBeFeaturized() bool {
-	return dr.ResType == ResTypeImage
+	// Unicorn and gator are currently not being used
+	return false
 }
 
 // AddVariable creates and add a new variable to the data resource.
