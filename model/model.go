@@ -172,12 +172,12 @@ type Variable struct {
 
 // DataResource represents a set of variables found in a data asset.
 type DataResource struct {
-	ResID        string      `json:"resID"`
-	ResType      string      `json:"resType"`
-	ResPath      string      `json:"resPath"`
-	IsCollection bool        `json:"isCollection"`
-	Variables    []*Variable `json:"columns,omitempty"`
-	ResFormat    []string    `json:"resFormat"`
+	ResID        string              `json:"resID"`
+	ResType      string              `json:"resType"`
+	ResPath      string              `json:"resPath"`
+	IsCollection bool                `json:"isCollection"`
+	Variables    []*Variable         `json:"columns,omitempty"`
+	ResFormat    map[string][]string `json:"resFormat"`
 }
 
 // SuggestedType represents a classified variable type.
@@ -230,7 +230,7 @@ func NewMetadata(id string, name string, description string, storageName string)
 }
 
 // NewDataResource creates a new data resource instance.
-func NewDataResource(id string, typ string, format []string) *DataResource {
+func NewDataResource(id string, typ string, format map[string][]string) *DataResource {
 	return &DataResource{
 		ResID:     id,
 		ResType:   typ,
@@ -333,7 +333,8 @@ func NewVariable(index int, name, displayName, originalName, typ, originalType, 
 
 // CanBeFeaturized determines if a data resource can be featurized.
 func (dr *DataResource) CanBeFeaturized() bool {
-	return dr.ResType == ResTypeImage
+	// Unicorn and gator are currently not being used
+	return false
 }
 
 // AddVariable creates and add a new variable to the data resource.

@@ -38,16 +38,17 @@ func CreateSlothPipeline(name string, description string, timeColumn string, val
 	// }
 
 	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{1, "produce"}}
+	outputs := []DataRef{&StepDataRef{2, "produce"}}
 
 	steps := []Step{
-		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
 		// Sloth now includes the the time series loader in the primitive itself.
 		// This is not a long term solution and will need updating.  The updated
 		// primitive doesn't accept the time and value indices as args, so they
 		// are currently unused.
 		// step2 := NewPipelineNode(NewTimeSeriesLoaderStep(-1, timeIdx, valueIdx))
-		NewSlothStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
+		NewTimeseriesFormatterStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, "learningData", -1),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
+		NewSlothStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}),
 	}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
