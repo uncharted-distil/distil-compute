@@ -685,6 +685,7 @@ func NewTimeseriesFormatterStep(inputs map[string]DataRef, outputMethods []strin
 	}
 	return NewStepData(
 		&pipeline.Primitive{
+			Id:         "1c4aed23-f3d3-4e6b-9710-009a9bc9b694",
 			Version:    "0.1.0",
 			Name:       "Time series formatter",
 			PythonPath: "d3m.primitives.data_preprocessing.data_cleaning.DistilTimeSeriesFormatter",
