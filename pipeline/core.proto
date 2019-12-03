@@ -17,7 +17,7 @@ extend google.protobuf.FileOptions {
 
 // Date-based version string. Use this to populate version field in "SearchSolutionsRequest"
 // and "SearchSolutionsResponse" messages.
-option (protocol_version) = "2019.6.11";
+option (protocol_version) = "2019.7.10_pre";
 
 enum EvaluationMethod {
     // Default value. Not to be used.
@@ -109,22 +109,6 @@ message Progress {
     // Set only when state is "COMPLETED" or "ERRORED".
     google.protobuf.Timestamp end = 4;
 }
-
-// Updates problem with new description. This also updates the problem description for all
-// ongoing solution searches associated with this problem. Internal behavior of TA2
-// is unspecified: it can simply start a new search using new problem description, or
-// it can start modifying solutions it has already found to new problem description, or
-// it can use it to further help narrow down ongoing solution searches. In any case, after
-// this call returns, all reported solutions for searches associated with this problem
-// should be for the updated problem description.
-message UpdateProblemRequest {
-    string search_id = 1;
-    // New problem description. It has to be provided in full and it replaces existing
-    // problem description.
-    ProblemDescription problem = 2;
-}
-
-message UpdateProblemResponse {}
 
 // Starts a new solution search. Found solutions have not necessary been fitted on the provided
 // inputs. Problem description and inputs are used only to help guide the search process.
@@ -577,8 +561,6 @@ service Core {
     rpc GetProduceSolutionResults (GetProduceSolutionResultsRequest) returns (stream GetProduceSolutionResultsResponse) {}
 
     rpc SolutionExport (SolutionExportRequest) returns (SolutionExportResponse) {}
-
-    rpc UpdateProblem (UpdateProblemRequest) returns (UpdateProblemResponse) {}
 
     rpc DataAvailable (DataAvailableRequest) returns (DataAvailableResponse) {}
 

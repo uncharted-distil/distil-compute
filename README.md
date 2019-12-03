@@ -26,6 +26,7 @@ Linux
 curl -OL https://github.com/google/protobuf/releases/download/v3.3.0/protoc-3.3.0-linux-x86_64.zip
 unzip protoc-3.3.0-linux-x86_64.zip -d protoc3
 sudo mv protoc3/bin/protoc /usr/bin/protoc
+sudo mv protoc3/include /usr/local
 ```
 
 OSX

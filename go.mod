@@ -14,9 +14,9 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/unchartedsoftware/plog v0.0.0-20170413154239-34d2bbd3c0a9
 	github.com/vova616/xxhash v0.0.0-20130313230233-f0a9a8b74d48
-	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
-	golang.org/x/sys v0.0.0-20190507160741-ecd444e8653b // indirect
+	golang.org/x/net v0.0.0-20191126235420-ef20fe5d7933
+	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9 // indirect
 	golang.org/x/text v0.3.2 // indirect
-	google.golang.org/genproto v0.0.0-20190502173448-54afdca5d873 // indirect
-	google.golang.org/grpc v1.20.1
+	google.golang.org/genproto v0.0.0-20191115221424-83cc0476cb11 // indirect
+	google.golang.org/grpc v1.25.1
 )
