@@ -235,10 +235,16 @@ func GetMetricLabel(metric string) string {
 	return metricLabel[metric]
 }
 
-// GetDefaultTaskMetricTA3 returns the default TA3 metric type for a supplied
-// TA3 task type.
-func GetDefaultTaskMetricTA3(task string) string {
-	return defaultTaskMetricMap[task]
+// GetDefaultTaskMetricsTA3 returns the default TA3 metrics for a supplied
+// list of TA3 task keywords.
+func GetDefaultTaskMetricsTA3(taskKeywords []string) []string {
+	metrics := []string{}
+	for _, task := range taskKeywords {
+		if val, ok := defaultTaskMetricMap[task]; ok {
+			metrics = append(metrics, val)
+		}
+	}
+	return metrics
 }
 
 // ConvertMetricsFromTA3ToTA2 converts metrics from TA3 to TA2 values.
