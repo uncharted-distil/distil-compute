@@ -8,6 +8,8 @@ import (
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -167,6 +169,14 @@ func (c *executorClient) ExecutePipeline(ctx context.Context, in *PipelineExecut
 // ExecutorServer is the server API for Executor service.
 type ExecutorServer interface {
 	ExecutePipeline(context.Context, *PipelineExecuteRequest) (*PipelineExecuteResponse, error)
+}
+
+// UnimplementedExecutorServer can be embedded to have forward compatible implementations.
+type UnimplementedExecutorServer struct {
+}
+
+func (*UnimplementedExecutorServer) ExecutePipeline(ctx context.Context, req *PipelineExecuteRequest) (*PipelineExecuteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExecutePipeline not implemented")
 }
 
 func RegisterExecutorServer(s *grpc.Server, srv ExecutorServer) {

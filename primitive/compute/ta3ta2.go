@@ -34,8 +34,8 @@ const (
 	// application at the server and client level to capture the model building task type.
 	// For communication with TA2, these need to be translated via the `ConvertXXXFromTA3ToTA2` methods below.
 
-	// TimeseriesForecastingTask represents timeseries forcasting
-	TimeseriesForecastingTask = "timeSeriesForecasting"
+	// ForecastingTask represents timeseries forcasting
+	ForecastingTask = "forecasting"
 	// ClassificationTask represents a classification task on image, timeseries or basic tabular data
 	ClassificationTask = "classification"
 	// RegressionTask represents a regression task on image, timeseries or basic tabular data
@@ -44,37 +44,62 @@ const (
 	ClusteringTask = "clustering"
 	// LinkPredictionTask represents a link prediction task on graph data
 	LinkPredictionTask = "linkPrediction"
+	// VertexClassificationTask represents a vertex nomination task on graph data
+	VertexClassificationTask = "vertexClassification"
 	// VertexNominationTask represents a vertex nomination task on graph data
 	VertexNominationTask = "vertexNomination"
 	// CommunityDetectionTask represents an unsupervised community detectiontask on on graph data
 	CommunityDetectionTask = "communityDetection"
-	// GraphClusteringTask represents an unsupervised clustering task on graph data
-	GraphClusteringTask = "graphClustering"
 	// GraphMatchingTask represents an unsupervised matching task on graph data
 	GraphMatchingTask = "graphMatching"
 	// CollaborativeFilteringTask represents a collaborative filtering recommendation task on basic tabular data
 	CollaborativeFilteringTask = "collaborativeFiltering"
 	// ObjectDetectionTask represents an object detection task on image data
 	ObjectDetectionTask = "objectDetection"
-	// SemiSupervisedClassificationTask represents a semi-supervised classification task on tabular data
-	SemiSupervisedClassificationTask = "semiSupervisedClassification"
-
-	// NoneSubTask represents the absence of a subtask
-	NoneSubTask = "none"
-	// BinarySubTask represents task involving a single binary value for each prediction
-	BinarySubTask = "binary"
-	// MultiClassSubTask represents a task involving a multi class value for each prediction
-	MultiClassSubTask = "multiClass"
-	// MultiLabelSubTask represents a task involving multiple lables for each each prediction
-	MultiLabelSubTask = "multiLabel"
-	// UnivariateSubTask represents a task involving predictions on a single variable
-	UnivariateSubTask = "univariate"
-	// MultivariateSubTask represents a task involving predictions on multiple variables
-	MultivariateSubTask = "multivariate"
-	// OverlappingSubTask represents a task involving overlapping predictions
-	OverlappingSubTask = "overlapping"
-	// NonOverlappingSubTask represents a task involving overlapping predictions
-	NonOverlappingSubTask = "nonOverlapping"
+	// SemiSupervisedTask represents a semi-supervised classification task on tabular data
+	SemiSupervisedTask = "semiSupervised"
+	// BinaryTask represents task involving a single binary value for each prediction
+	BinaryTask = "binary"
+	// MultiClassTask represents a task involving a multi class value for each prediction
+	MultiClassTask = "multiClass"
+	// MultiLabelTask represents a task involving multiple lables for each each prediction
+	MultiLabelTask = "multiLabel"
+	// UnivariateTask represents a task involving predictions on a single variable
+	UnivariateTask = "univariate"
+	// MultivariateTask represents a task involving predictions on multiple variables
+	MultivariateTask = "multivariate"
+	// OverlappingTask represents a task involving overlapping predictions
+	OverlappingTask = "overlapping"
+	// NonOverlappingTask represents a task involving non-overlapping predictions
+	NonOverlappingTask = "nonOverlapping"
+	// TabularTask represents a task involving tabular data
+	TabularTask = "tabular"
+	// RelationalTask represents a task involving relational data
+	RelationalTask = "relational"
+	// ImageTask represents a task involving image data
+	ImageTask = "image"
+	// AudioTask represents a task involving audio data
+	AudioTask = "audio"
+	// VideoTask represents a task involving video data
+	VideoTask = "video"
+	// SpeechTask represents a task involving speech data
+	SpeechTask = "speech"
+	// TextTask represents a task involving text data
+	TextTask = "text"
+	// GraphTask represents a task involving graph data
+	GraphTask = "graph"
+	// MultiGraphTask represents a task involving multiple graph data
+	MultiGraphTask = "multigraph"
+	// TimeSeriesTask represents a task involving timeseries data
+	TimeSeriesTask = "timeseries"
+	// GroupedTask represents a task involving grouped data
+	GroupedTask = "grouped"
+	// GeospatialTask represents a task involving geospatial data
+	GeospatialTask = "geospatial"
+	// RemoteSensingTask represents a task involving remote sensing data
+	RemoteSensingTask = "remoteSensing"
+	// LupiTask represents a task involving LUPI (Learning Using Priveleged Information) data
+	LupiTask = "lupi"
 )
 
 var (
@@ -101,55 +126,51 @@ var (
 		"objectDetectionAP":           "OBJECT_DETECTION_AVERAGE_PRECISION",
 	}
 	problemTaskMap = map[string]string{
-		ClassificationTask:               "CLASSIFICATION",
-		RegressionTask:                   "REGRESSION",
-		ClusteringTask:                   "CLUSTERING",
-		LinkPredictionTask:               "LINK_PREDICTION",
-		VertexNominationTask:             "VERTEX_NOMINATION",
-		CommunityDetectionTask:           "COMMUNITY_DETECTION",
-		GraphClusteringTask:              "GRAPH_CLUSTERING",
-		GraphMatchingTask:                "GRAPH_MATCHING",
-		TimeseriesForecastingTask:        "TIME_SERIES_FORECASTING",
-		CollaborativeFilteringTask:       "COLLABORATIVE_FILTERING",
-		ObjectDetectionTask:              "OBJECT_DETECTION",
-		SemiSupervisedClassificationTask: "SEMISUPERVISED_CLASSIFICATION",
-	}
-	problemTaskSubMap = map[string]string{
-		NoneSubTask:           "NONE",
-		BinarySubTask:         "BINARY",
-		MultiClassSubTask:     "MULTICLASS",
-		MultiLabelSubTask:     "MULTILABEL",
-		UnivariateSubTask:     "UNIVARIATE",
-		MultivariateSubTask:   "MULTIVARIATE",
-		OverlappingSubTask:    "OVERLAPPING",
-		NonOverlappingSubTask: "NONOVERLAPPING",
-	}
-	defaultProblemSubTaskMap = map[string]string{
-		ClassificationTask:               MultiClassSubTask,
-		RegressionTask:                   UnivariateSubTask,
-		ClusteringTask:                   NoneSubTask,
-		VertexNominationTask:             NoneSubTask,
-		CommunityDetectionTask:           NoneSubTask,
-		GraphClusteringTask:              NoneSubTask,
-		GraphMatchingTask:                NoneSubTask,
-		TimeseriesForecastingTask:        NoneSubTask,
-		CollaborativeFilteringTask:       NoneSubTask,
-		ObjectDetectionTask:              OverlappingSubTask,
-		SemiSupervisedClassificationTask: MultiClassSubTask,
+		ClassificationTask:         "CLASSIFICATION",
+		RegressionTask:             "REGRESSION",
+		ClusteringTask:             "CLUSTERING",
+		LinkPredictionTask:         "LINK_PREDICTION",
+		VertexNominationTask:       "VERTEX_NOMINATION",
+		VertexClassificationTask:   "VERTEX_CLASSIFICATION",
+		CommunityDetectionTask:     "COMMUNITY_DETECTION",
+		GraphMatchingTask:          "GRAPH_MATCHING",
+		ForecastingTask:            "FORECASTING",
+		CollaborativeFilteringTask: "COLLABORATIVE_FILTERING",
+		ObjectDetectionTask:        "OBJECT_DETECTION",
+		SemiSupervisedTask:         "SEMISUPERVISED",
+		BinaryTask:                 "BINARY",
+		MultiClassTask:             "MULTICLASS",
+		MultiLabelTask:             "MULTILABEL",
+		UnivariateTask:             "UNIVARIATE",
+		MultivariateTask:           "MULTIVARIATE",
+		OverlappingTask:            "OVERLAPPING",
+		NonOverlappingTask:         "NONOVERLAPPING",
+		TabularTask:                "TABULAR",
+		RelationalTask:             "RELATIONAL",
+		ImageTask:                  "IMAGE",
+		AudioTask:                  "AUDIO",
+		VideoTask:                  "VIDEO",
+		SpeechTask:                 "SPEECH",
+		TextTask:                   "TEXT",
+		GraphTask:                  "GRAPH",
+		MultiGraphTask:             "MULTIGRAPH",
+		TimeSeriesTask:             "TIME_SERIES",
+		GroupedTask:                "GROUPED",
+		GeospatialTask:             "GEOSPATIAL",
+		RemoteSensingTask:          "REMOTE_SENSING",
+		LupiTask:                   "LUPI",
 	}
 	defaultTaskMetricMap = map[string]string{
-		ClassificationTask:               "f1Macro",
-		RegressionTask:                   "meanAbsoluteError",
-		ClusteringTask:                   "normalizedMutualInformation",
-		LinkPredictionTask:               "accuracy",
-		VertexNominationTask:             "accuracy",
-		CommunityDetectionTask:           "accuracy",
-		GraphClusteringTask:              "normalizedMutualInformation",
-		GraphMatchingTask:                "accuracy",
-		TimeseriesForecastingTask:        "rSquared",
-		CollaborativeFilteringTask:       "rSquared",
-		ObjectDetectionTask:              "objectDetectionAP",
-		SemiSupervisedClassificationTask: "f1Macro",
+		ClassificationTask:         "f1Macro",
+		RegressionTask:             "meanAbsoluteError",
+		ClusteringTask:             "normalizedMutualInformation",
+		LinkPredictionTask:         "accuracy",
+		VertexNominationTask:       "accuracy",
+		CommunityDetectionTask:     "accuracy",
+		GraphMatchingTask:          "accuracy",
+		ForecastingTask:            "rSquared",
+		CollaborativeFilteringTask: "rSquared",
+		ObjectDetectionTask:        "objectDetectionAP",
 	}
 	metricScoreMultiplier = map[string]float64{
 		"ACCURACY":                           1,
@@ -203,11 +224,6 @@ func ConvertProblemTaskToTA2(metric string) string {
 	return problemTaskMap[metric]
 }
 
-// ConvertProblemTaskSubToTA2 converts a problem schema metric to a TA2 task sub.
-func ConvertProblemTaskSubToTA2(metric string) string {
-	return problemTaskSubMap[metric]
-}
-
 // GetMetricScoreMultiplier returns a weight to determine whether a higher or
 // lower score is `better`.
 func GetMetricScoreMultiplier(metric string) float64 {
@@ -217,12 +233,6 @@ func GetMetricScoreMultiplier(metric string) float64 {
 // GetMetricLabel returns a label string for a metric.
 func GetMetricLabel(metric string) string {
 	return metricLabel[metric]
-}
-
-// GetDefaultTaskSubTypeTA3 returns the default TA3 subtask type for a supplied
-// TA3 task type.
-func GetDefaultTaskSubTypeTA3(task string) string {
-	return defaultProblemSubTaskMap[task]
 }
 
 // GetDefaultTaskMetricTA3 returns the default TA3 metric type for a supplied
@@ -256,34 +266,19 @@ func ConvertMetricsFromTA3ToTA2(metrics []string) []*pipeline.ProblemPerformance
 	return res
 }
 
-// ConvertTaskTypeFromTA3ToTA2 converts a task from TA3 to TA2.
-func ConvertTaskTypeFromTA3ToTA2(taskType string) pipeline.TaskType {
-	ta2Task := ConvertProblemTaskToTA2(taskType)
+// ConvertTaskKeywordFromTA3ToTA2 converts a task from TA3 to TA2.
+func ConvertTaskKeywordFromTA3ToTA2(taskKeyword string) pipeline.TaskKeyword {
+	ta2Task := ConvertProblemTaskToTA2(taskKeyword)
 	if ta2Task == "" {
-		log.Warnf("unrecognized task type ('%s'), defaulting to undefined", taskType)
-		return pipeline.TaskType_TASK_TYPE_UNDEFINED
+		log.Warnf("unrecognized task type ('%s'), defaulting to undefined", taskKeyword)
+		return pipeline.TaskKeyword_TASK_KEYWORD_UNDEFINED
 	}
-	task, ok := pipeline.TaskType_value[ta2Task]
+	task, ok := pipeline.TaskKeyword_value[ta2Task]
 	if !ok {
 		log.Warnf("undefined task type found ('%s'), defaulting to undefined", ta2Task)
-		return pipeline.TaskType_TASK_TYPE_UNDEFINED
+		return pipeline.TaskKeyword_TASK_KEYWORD_UNDEFINED
 	}
-	return pipeline.TaskType(task)
-}
-
-// ConvertTaskSubTypeFromTA3ToTA2 converts a task sub type from TA3 to TA2.
-func ConvertTaskSubTypeFromTA3ToTA2(taskSubType string) pipeline.TaskSubtype {
-	ta2TaskSub := ConvertProblemTaskSubToTA2(taskSubType)
-	if ta2TaskSub == "" {
-		log.Warnf("unrecognized task sub type ('%s'), defaulting to undefined", taskSubType)
-		return pipeline.TaskSubtype_TASK_SUBTYPE_UNDEFINED
-	}
-	task, ok := pipeline.TaskSubtype_value[ta2TaskSub]
-	if !ok {
-		log.Warnf("undefined task sub type found ('%s'), defaulting to undefined", ta2TaskSub)
-		return pipeline.TaskSubtype_TASK_SUBTYPE_UNDEFINED
-	}
-	return pipeline.TaskSubtype(task)
+	return pipeline.TaskKeyword(task)
 }
 
 // ConvertTargetFeaturesTA3ToTA2 creates a problem target from a target name.
