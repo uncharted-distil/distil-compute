@@ -272,19 +272,25 @@ func ConvertMetricsFromTA3ToTA2(metrics []string) []*pipeline.ProblemPerformance
 	return res
 }
 
-// ConvertTaskKeywordFromTA3ToTA2 converts a task from TA3 to TA2.
-func ConvertTaskKeywordFromTA3ToTA2(taskKeyword string) pipeline.TaskKeyword {
-	ta2Task := ConvertProblemTaskToTA2(taskKeyword)
-	if ta2Task == "" {
-		log.Warnf("unrecognized task type ('%s'), defaulting to undefined", taskKeyword)
-		return pipeline.TaskKeyword_TASK_KEYWORD_UNDEFINED
+// ConvertTaskKeywordsFromTA3ToTA2 converts a task from TA3 to TA2.
+func ConvertTaskKeywordsFromTA3ToTA2(taskKeywords []string) []pipeline.TaskKeyword {
+	result := []pipeline.TaskKeyword{}
+	for _, taskKeyword := range taskKeywords {
+		ta2Task := ConvertProblemTaskToTA2(taskKeyword)
+		if ta2Task == "" {
+			log.Warnf("unrecognized task type ('%s'), defaulting to undefined", taskKeyword)
+			result = append(result, pipeline.TaskKeyword_TASK_KEYWORD_UNDEFINED)
+			continue
+		}
+		task, ok := pipeline.TaskKeyword_value[ta2Task]
+		if !ok {
+			log.Warnf("undefined task type found ('%s'), defaulting to undefined", ta2Task)
+			result = append(result, pipeline.TaskKeyword_TASK_KEYWORD_UNDEFINED)
+			continue
+		}
+		result = append(result, pipeline.TaskKeyword(task))
 	}
-	task, ok := pipeline.TaskKeyword_value[ta2Task]
-	if !ok {
-		log.Warnf("undefined task type found ('%s'), defaulting to undefined", ta2Task)
-		return pipeline.TaskKeyword_TASK_KEYWORD_UNDEFINED
-	}
-	return pipeline.TaskKeyword(task)
+	return result
 }
 
 // ConvertTargetFeaturesTA3ToTA2 creates a problem target from a target name.
