@@ -592,7 +592,7 @@ func NewNumericRangeFilterStep(inputs map[string]DataRef, outputMethods []string
 func NewGoatForwardStep(inputs map[string]DataRef, outputMethods []string, placeColIndex int) *StepData {
 	args := map[string]interface{}{
 		"target_columns": []int{placeColIndex},
-		"rampup_timeout": 15,
+		"rampup_timeout": 150,
 	}
 	return NewStepData(
 		&pipeline.Primitive{
@@ -616,7 +616,7 @@ func NewGoatReverseStep(inputs map[string]DataRef, outputMethods []string, lonCo
 	args := map[string]interface{}{
 		"lon_col_index":  lonCol,
 		"lat_col_index":  latCol,
-		"rampup_timeout": 15,
+		"rampup_timeout": 150,
 	}
 	return NewStepData(
 		&pipeline.Primitive{
