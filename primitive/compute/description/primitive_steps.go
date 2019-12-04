@@ -592,7 +592,7 @@ func NewNumericRangeFilterStep(inputs map[string]DataRef, outputMethods []string
 func NewGoatForwardStep(inputs map[string]DataRef, outputMethods []string, placeColIndex int) *StepData {
 	args := map[string]interface{}{
 		"target_columns": []int{placeColIndex},
-		"rampup":         15,
+		"rampup_timeout": 15,
 	}
 	return NewStepData(
 		&pipeline.Primitive{
@@ -614,9 +614,9 @@ func NewGoatForwardStep(inputs map[string]DataRef, outputMethods []string, place
 // empty value for coords that no meaningful place could be computed.
 func NewGoatReverseStep(inputs map[string]DataRef, outputMethods []string, lonCol int, latCol int) *StepData {
 	args := map[string]interface{}{
-		"lon_col_index": lonCol,
-		"lat_col_index": latCol,
-		"rampup":        15,
+		"lon_col_index":  lonCol,
+		"lat_col_index":  latCol,
+		"rampup_timeout": 15,
 	}
 	return NewStepData(
 		&pipeline.Primitive{
