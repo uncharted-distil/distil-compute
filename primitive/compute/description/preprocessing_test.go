@@ -265,7 +265,7 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 	assert.Equal(t, "inputs.0", inputs)
 
 	pythonPath = pipeline.GetSteps()[1].GetPrimitive().GetPrimitive().GetPythonPath()
-	assert.Equal(t, "d3m.primitives.data_transformation.column_parser.DataFrameCommon", pythonPath)
+	assert.Equal(t, "d3m.primitives.data_transformation.column_parser.Common", pythonPath)
 
 	pythonPath = pipeline.GetSteps()[2].GetPrimitive().GetPrimitive().GetPythonPath()
 	assert.Equal(t, "d3m.primitives.operator.dataset_map.DataFrameCommon", pythonPath)
