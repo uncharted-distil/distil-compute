@@ -416,12 +416,13 @@ func (c *Client) StopSearch(ctx context.Context, searchID string) error {
 
 // EndSearch ends the solution search session.
 func (c *Client) EndSearch(ctx context.Context, searchID string) error {
-
+	log.Infof("ending search %s", searchID)
 	endSearchSolutions := &pipeline.EndSearchSolutionsRequest{
 		SearchId: searchID,
 	}
 
 	_, err := c.client.EndSearchSolutions(ctx, endSearchSolutions)
+	log.Infof("search %s ended", searchID)
 	return errors.Wrap(err, "failed to end solution search")
 }
 
