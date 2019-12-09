@@ -416,13 +416,27 @@ func (c *Client) StopSearch(ctx context.Context, searchID string) error {
 
 // EndSearch ends the solution search session.
 func (c *Client) EndSearch(ctx context.Context, searchID string) error {
-	log.Infof("ending search %s", searchID)
 	endSearchSolutions := &pipeline.EndSearchSolutionsRequest{
 		SearchId: searchID,
 	}
 
-	_, err := c.client.EndSearchSolutions(ctx, endSearchSolutions)
-	log.Infof("search %s ended", searchID)
+	ce := make(chan error, 1)
+	go func() {
+		log.Infof("ending search %s", searchID)
+		_, err := c.client.EndSearchSolutions(ctx, endSearchSolutions)
+		log.Infof("received end message for search %s", searchID)
+		ce <- err
+		log.Infof("search %s ended", searchID)
+	}()
+
+	var err error
+	select {
+	case e := <-ce:
+		err = e
+	case <-time.After(c.PullTimeout):
+		err = errors.Errorf("timeout waiting for end search solutions response")
+	}
+
 	return errors.Wrap(err, "failed to end solution search")
 }
 

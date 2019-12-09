@@ -170,6 +170,10 @@ func (e *ExecPipelineRequest) dispatchRequest(client *Client, requestID string) 
 	e.wg.Wait()
 
 	// end search
+	e.endSearch(client, requestID)
+}
+
+func (e *ExecPipelineRequest) endSearch(client *Client, requestID string) {
 	log.Infof("waiting for end search for request %s", requestID)
 	e.finished <- client.EndSearch(context.Background(), requestID)
 	log.Infof("request %s end written to channel", requestID)
