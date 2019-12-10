@@ -89,10 +89,10 @@ func NewPCAFeaturesStep(inputs map[string]DataRef, outputMethods []string) *Step
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "04573880-d64f-4791-8932-52b7c3877639",
-			Version:    "3.0.2",
+			Version:    "3.1.2",
 			Name:       "PCA Features",
 			PythonPath: "d3m.primitives.feature_selection.pca_features.Pcafeatures",
-			Digest:     "48b7c56260320b32b800f628fbdb103741aa923750a4926a3ae9067f117ae119",
+			Digest:     "8c68e9f60dfccd6901816e7d46258cfe074b9a4446a9d61ca425b421132835ee",
 		},
 		outputMethods,
 		map[string]interface{}{},
