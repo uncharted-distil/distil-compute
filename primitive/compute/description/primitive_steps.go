@@ -86,6 +86,12 @@ func NewUnicornStep(inputs map[string]DataRef, outputMethods []string, targetCol
 // NewPCAFeaturesStep creates a PCA-based feature ranking call that can be added to
 // a pipeline.
 func NewPCAFeaturesStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	// since PCA has fit & produce, need to set the params from
+	// set_training_data. In this case, outputs is not used.
+	if inputs["inputs"] != nil && inputs["outputs"] == nil {
+		inputs["outputs"] = inputs["inputs"]
+	}
+
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "04573880-d64f-4791-8932-52b7c3877639",
