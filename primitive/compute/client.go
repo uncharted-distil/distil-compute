@@ -454,7 +454,7 @@ func (c *Client) ExecutePipeline(ctx context.Context, datasetURIs []string, pipe
 func createInputValues(datasetURIs []string) []*pipeline.Value {
 	inputs := []*pipeline.Value{}
 	for _, uri := range datasetURIs {
-		datasetURI := buildSchemaFileURI(uri)
+		datasetURI := BuildSchemaFileURI(uri)
 		value := &pipeline.Value{
 			Value: &pipeline.Value_DatasetUri{
 				DatasetUri: datasetURI,
@@ -465,7 +465,9 @@ func createInputValues(datasetURIs []string) []*pipeline.Value {
 	return inputs
 }
 
-func buildSchemaFileURI(uri string) string {
+// BuildSchemaFileURI updates a URI to match the expected structure of a
+// the TA2TA3 API.
+func BuildSchemaFileURI(uri string) string {
 	formattedURI := uri
 	// make sure it ends with the standard schema doc name
 	if isDirectory(formattedURI) {

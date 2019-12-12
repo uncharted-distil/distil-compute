@@ -56,13 +56,13 @@ func NewExecPipelineRequest(datasetURIs []string, datasetURIsProduce []string, p
 
 	uris := []string{}
 	for _, uri := range datasetURIs {
-		uris = append(uris, buildSchemaFileURI(uri))
+		uris = append(uris, BuildSchemaFileURI(uri))
 	}
 
 	urisProduce := []string{}
 	if len(datasetURIsProduce) > 0 {
 		for _, uri := range datasetURIsProduce {
-			urisProduce = append(urisProduce, buildSchemaFileURI(uri))
+			urisProduce = append(urisProduce, BuildSchemaFileURI(uri))
 		}
 	} else {
 		urisProduce = uris
