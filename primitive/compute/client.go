@@ -366,11 +366,11 @@ func (c *Client) GetSolutionDescription(ctx context.Context, solutionID string) 
 }
 
 // GeneratePredictions generates predictions.
-func (c *Client) GeneratePredictions(ctx context.Context, request *pipeline.ProduceSolutionRequest) ([]*pipeline.GetProduceSolutionResultsResponse, error) {
+func (c *Client) GeneratePredictions(ctx context.Context, request *pipeline.ProduceSolutionRequest) (string, []*pipeline.GetProduceSolutionResultsResponse, error) {
 
 	produceSolutionResponse, err := c.client.ProduceSolution(ctx, request)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to start solution produce")
+		return "", nil, errors.Wrap(err, "failed to start solution produce")
 	}
 
 	produceSolutionResultsRequest := &pipeline.GetProduceSolutionResultsRequest{
@@ -379,7 +379,7 @@ func (c *Client) GeneratePredictions(ctx context.Context, request *pipeline.Prod
 
 	produceSolutionResultsResponse, err := c.client.GetProduceSolutionResults(ctx, produceSolutionResultsRequest)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to open solution produce result stream")
+		return "", nil, errors.Wrap(err, "failed to open solution produce result stream")
 	}
 
 	var solutionResultResponses []*pipeline.GetProduceSolutionResultsResponse
@@ -397,10 +397,10 @@ func (c *Client) GeneratePredictions(ctx context.Context, request *pipeline.Prod
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 
-	return solutionResultResponses, nil
+	return produceSolutionResponse.RequestId, solutionResultResponses, nil
 }
 
 // StopSearch stop the solution search session.

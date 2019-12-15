@@ -213,7 +213,7 @@ func (e *ExecPipelineRequest) dispatchProduce(statusChan chan ExecPipelineStatus
 	produceRequest := e.createProduceSolutionRequest(e.datasetURIsProduce, fittedSolutionID)
 
 	// run produce - this blocks until all responses are returned
-	responses, err := client.GeneratePredictions(context.Background(), produceRequest)
+	_, responses, err := client.GeneratePredictions(context.Background(), produceRequest)
 	if err != nil {
 		e.notifyError(statusChan, requestID, err)
 		return
