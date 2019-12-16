@@ -95,10 +95,10 @@ func NewPCAFeaturesStep(inputs map[string]DataRef, outputMethods []string) *Step
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "04573880-d64f-4791-8932-52b7c3877639",
-			Version:    "3.1.2",
+			Version:    "3.0.2",
 			Name:       "PCA Features",
 			PythonPath: "d3m.primitives.feature_selection.pca_features.Pcafeatures",
-			Digest:     "8c68e9f60dfccd6901816e7d46258cfe074b9a4446a9d61ca425b421132835ee",
+			Digest:     "48b7c56260320b32b800f628fbdb103741aa923750a4926a3ae9067f117ae119",
 		},
 		outputMethods,
 		map[string]interface{}{},
@@ -598,7 +598,7 @@ func NewNumericRangeFilterStep(inputs map[string]DataRef, outputMethods []string
 func NewGoatForwardStep(inputs map[string]DataRef, outputMethods []string, placeColIndex int) *StepData {
 	args := map[string]interface{}{
 		"target_columns": []int{placeColIndex},
-		"rampup_timeout": 150,
+		"rampup":         15,
 	}
 	return NewStepData(
 		&pipeline.Primitive{
@@ -620,9 +620,9 @@ func NewGoatForwardStep(inputs map[string]DataRef, outputMethods []string, place
 // empty value for coords that no meaningful place could be computed.
 func NewGoatReverseStep(inputs map[string]DataRef, outputMethods []string, lonCol int, latCol int) *StepData {
 	args := map[string]interface{}{
-		"lon_col_index":  lonCol,
-		"lat_col_index":  latCol,
-		"rampup_timeout": 150,
+		"lon_col_index": lonCol,
+		"lat_col_index": latCol,
+		"rampup":        15,
 	}
 	return NewStepData(
 		&pipeline.Primitive{
@@ -691,7 +691,7 @@ func NewTimeseriesFormatterStep(inputs map[string]DataRef, outputMethods []strin
 	}
 	return NewStepData(
 		&pipeline.Primitive{
-			Id:         "1c4aed23-f3d3-4e6b-9710-009a9bc9b694",
+			Id:         "6a1ce3ee-ee70-428b-b1ff-0490bdb23023",
 			Version:    "0.1.0",
 			Name:       "Time series formatter",
 			PythonPath: "d3m.primitives.data_preprocessing.data_cleaning.DistilTimeSeriesFormatter",
