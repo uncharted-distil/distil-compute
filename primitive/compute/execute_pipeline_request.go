@@ -56,13 +56,13 @@ func NewExecPipelineRequest(datasetURIs []string, datasetURIsProduce []string, p
 
 	uris := []string{}
 	for _, uri := range datasetURIs {
-		uris = append(uris, buildSchemaFileURI(uri))
+		uris = append(uris, BuildSchemaFileURI(uri))
 	}
 
 	urisProduce := []string{}
 	if len(datasetURIsProduce) > 0 {
 		for _, uri := range datasetURIsProduce {
-			urisProduce = append(urisProduce, buildSchemaFileURI(uri))
+			urisProduce = append(urisProduce, BuildSchemaFileURI(uri))
 		}
 	} else {
 		urisProduce = uris
@@ -213,7 +213,7 @@ func (e *ExecPipelineRequest) dispatchProduce(statusChan chan ExecPipelineStatus
 	produceRequest := e.createProduceSolutionRequest(e.datasetURIsProduce, fittedSolutionID)
 
 	// run produce - this blocks until all responses are returned
-	responses, err := client.GeneratePredictions(context.Background(), produceRequest)
+	_, responses, err := client.GeneratePredictions(context.Background(), produceRequest)
 	if err != nil {
 		e.notifyError(statusChan, requestID, err)
 		return
