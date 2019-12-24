@@ -36,8 +36,6 @@ import (
 	elastic "gopkg.in/olivere/elastic.v5"
 
 	"github.com/uncharted-distil/distil-compute/model"
-	"github.com/uncharted-distil/distil-ingest/pkg/rest"
-	"github.com/uncharted-distil/distil-ingest/pkg/smmry"
 )
 
 // DatasetSource flags the type of ingest action that created a dataset
@@ -51,6 +49,7 @@ const (
 
 	schemaVersion = "4.0.0"
 	license       = "Unknown"
+	summaryLength = 256
 
 	// Seed flags a dataset as ingested from seed data
 	Seed DatasetSource = "seed"
@@ -69,6 +68,10 @@ var (
 type classificationData struct {
 	labels        []*gabs.Container
 	probabilities []*gabs.Container
+}
+
+type SummaryResult struct {
+	Summary string `json:"summary"`
 }
 
 // SetTypeProbabilityThreshold below which a suggested type is not used as
@@ -351,31 +354,34 @@ func writeSummaryFile(summaryFile string, summary string) error {
 	return ioutil.WriteFile(summaryFile, []byte(summary), 0644)
 }
 
-// LoadSummaryFromDescription loads a summary from the description.
-func LoadSummaryFromDescription(m *model.Metadata, summaryFile string) error {
-	// request summary
-	summary, err := smmry.GetSummaryFromDescription(m.Description)
-	if err != nil {
-		return err
+func getSummaryFallback(str string) string {
+	if len(str) < summaryLength {
+		return str
 	}
+	return str[:summaryLength] + "..."
+}
+
+// LoadSummaryFromDescription loads a summary from the description.
+func LoadSummaryFromDescription(m *model.Metadata, summaryFile string) {
+	// request summary
+	summary := getSummaryFallback(m.Description)
 	// set summary
 	m.Summary = summary
 	// cache summary file
 	writeSummaryFile(summaryFile, m.Summary)
-	return nil
 }
 
 // LoadSummary loads a description summary
-func LoadSummary(m *model.Metadata, summaryFile string, useCache bool) error {
+func LoadSummary(m *model.Metadata, summaryFile string, useCache bool) {
 	// use cache if available
 	if useCache {
 		b, err := ioutil.ReadFile(summaryFile)
 		if err == nil {
 			m.Summary = string(b)
-			return nil
+			return
 		}
 	}
-	return LoadSummaryFromDescription(m, summaryFile)
+	LoadSummaryFromDescription(m, summaryFile)
 }
 
 // LoadSummaryMachine loads a machine-learned summary.
@@ -385,7 +391,7 @@ func LoadSummaryMachine(m *model.Metadata, summaryFile string) error {
 		return errors.Wrap(err, "unable to read machine-learned summary")
 	}
 
-	summary := &rest.SummaryResult{}
+	summary := &SummaryResult{}
 	err = json.Unmarshal(b, summary)
 	if err != nil {
 		return errors.Wrap(err, "unable to parse machine-learned summary")
