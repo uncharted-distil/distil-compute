@@ -89,7 +89,7 @@ func parseResFormats(res *gabs.Container) (map[string][]string, error) {
 			}
 		}
 	} else {
-		resFormats = make(map[string][]string, 0)
+		resFormats = make(map[string][]string)
 	}
 
 	return resFormats, nil

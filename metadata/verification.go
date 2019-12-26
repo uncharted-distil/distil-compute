@@ -113,7 +113,6 @@ func typeMatchesData(v *model.Variable, row []string) bool {
 				log.Warnf("error attempting to parse date value '%s': %v", val, err)
 			}
 		}
-		break
 	}
 
 	return good
