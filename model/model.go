@@ -99,6 +99,12 @@ const (
 	VarRoleIndex = "index"
 	// VarDistilRole is the variable role in distil.
 	VarDistilRole = "distilRole"
+	// VarDistilRoleIndex indicates a var has an index role in distil.
+	VarDistilRoleIndex = "index"
+	// VarDistilRoleData indicates a var has a data role in distil.
+	VarDistilRoleData = "data"
+	// VarDistilRoleGrouping indicates a var has a grouping role in distil.
+	VarDistilRoleGrouping = "grouping"
 	// VarDeleted flags whether the variable is deleted.
 	VarDeleted = "deleted"
 	// VarGroupingField is the field name for the variable grouping.
@@ -432,4 +438,9 @@ func DefaultPostgresValueFromD3MType(typ string) interface{} {
 	default:
 		return "''"
 	}
+}
+
+// IsTA2Field indicates whether or not a particular variable is recognized by a TA2.
+func IsTA2Field(distilRole string) bool {
+	return distilRole == VarDistilRoleData || distilRole == VarDistilRoleIndex
 }
