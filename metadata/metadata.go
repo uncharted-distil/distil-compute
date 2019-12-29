@@ -70,6 +70,7 @@ type classificationData struct {
 	probabilities []*gabs.Container
 }
 
+// SummaryResult captures the output of a summarization primitive.
 type SummaryResult struct {
 	Summary string `json:"summary"`
 }
