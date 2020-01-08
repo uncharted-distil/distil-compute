@@ -39,6 +39,7 @@ func VerifyAndUpdate(m *model.Metadata, dataPath string) (bool, error) {
 	}
 	defer csvFile.Close()
 	reader := csv.NewReader(csvFile)
+	reader.LazyQuotes = true
 
 	// skip header
 	_, err = reader.Read()
