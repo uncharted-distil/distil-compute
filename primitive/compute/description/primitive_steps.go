@@ -37,7 +37,7 @@ func NewSimonStep(inputs map[string]DataRef, outputMethods []string) *StepData {
 			Digest:     "6fa0e87f8044df78a99507a60648d3b7336161862aee8994ff2ed57bea5b0f05",
 		},
 		outputMethods,
-		map[string]interface{}{"statistical_classification": true},
+		map[string]interface{}{"statistical_classification": true, "p_threshold": 0.9},
 		inputs,
 	)
 }
