@@ -547,7 +547,7 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 
 		if refersToData.Path("resObject").Data() != nil {
 			resObjectMap := refersToData.Path("resObject").ChildrenMap()
-			if resObjectMap == nil {
+			if len(resObjectMap) == 0 {
 				// see if it is maybe a string and if it is, ignore
 				data, ok := refersToData.Path("resObject").Data().(string)
 				if !ok {
