@@ -21,6 +21,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/uncharted-distil/distil-compute/model"
 	"github.com/uncharted-distil/distil-compute/pipeline"
+	"github.com/uncharted-distil/distil-compute/primitive/compute"
 )
 
 // CreateSlothPipeline creates a pipeline to peform timeseries clustering on a dataset.
@@ -31,7 +32,7 @@ func CreateSlothPipeline(name string, description string, timeColumn string, val
 	outputs := []DataRef{&StepDataRef{3, "produce"}}
 
 	steps := []Step{
-		NewTimeseriesFormatterStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, "learningData", -1),
+		NewTimeseriesFormatterStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, compute.DefaultResourceID, -1),
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 		NewGroupingFieldComposeStep(
 			map[string]DataRef{"inputs": &StepDataRef{1, "produce"}},

@@ -17,6 +17,7 @@ package description
 
 import (
 	"github.com/uncharted-distil/distil-compute/pipeline"
+	"github.com/uncharted-distil/distil-compute/primitive/compute"
 )
 
 // NewSimonStep creates a SIMON data classification step.  It examines an input
@@ -303,7 +304,7 @@ func NewHorizontalConcatStep(inputs map[string]DataRef, outputMethods []string, 
 // into a PANDAS dataframe using the specified resource.
 func NewDatasetToDataframeStepWithResource(inputs map[string]DataRef, outputMethods []string, resourceName string) *StepData {
 	if resourceName == "" {
-		resourceName = "learningData"
+		resourceName = compute.DefaultResourceID
 	}
 
 	return NewStepData(

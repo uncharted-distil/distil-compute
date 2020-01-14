@@ -33,7 +33,8 @@ import (
 )
 
 const (
-	defaultResourceID       = "learningData"
+	// DefaultResourceID is the default name of the main resource id in a schema.
+	DefaultResourceID       = "learningData"
 	defaultExposedOutputKey = "outputs.0"
 	// SolutionPendingStatus represents that the solution request has been acknoledged by not yet sent to the API
 	SolutionPendingStatus = "SOLUTION_PENDING"
