@@ -117,10 +117,13 @@ func typeMatchesData(v *model.Variable, row []string) bool {
 		}
 	case model.RealType, model.IndexType, model.IntegerType, model.LongitudeType, model.LatitudeType:
 		// test if it is a number
-		_, err := strconv.ParseFloat(val, 64)
-		good = err == nil
-		if err != nil {
-			log.Warnf("error attempting to parse numeric value '%s': %v", val, err)
+		// empty string is also okay
+		if val != "" {
+			_, err := strconv.ParseFloat(val, 64)
+			good = err == nil
+			if err != nil {
+				log.Warnf("error attempting to parse numeric value '%s': %v", val, err)
+			}
 		}
 	}
 
