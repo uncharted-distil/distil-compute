@@ -19,6 +19,7 @@ import (
 	"encoding/csv"
 	"io"
 	"os"
+	"strconv"
 
 	"github.com/araddon/dateparse"
 	"github.com/pkg/errors"
@@ -114,6 +115,10 @@ func typeMatchesData(v *model.Variable, row []string) bool {
 				log.Warnf("error attempting to parse date value '%s': %v", val, err)
 			}
 		}
+	case model.RealType, model.IndexType, model.IntegerType, model.LongitudeType, model.LatitudeType:
+		// test if it is a number
+		_, err := strconv.ParseInt(val, 10, 64)
+		good = err == nil
 	}
 
 	return good
