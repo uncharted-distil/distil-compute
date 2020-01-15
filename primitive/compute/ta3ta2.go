@@ -298,7 +298,7 @@ func ConvertTargetFeaturesTA3ToTA2(target string, columnIndex int) []*pipeline.P
 	return []*pipeline.ProblemTarget{
 		{
 			ColumnName:  target,
-			ResourceId:  defaultResourceID,
+			ResourceId:  DefaultResourceID,
 			TargetIndex: 0,
 			ColumnIndex: int32(columnIndex),
 		},

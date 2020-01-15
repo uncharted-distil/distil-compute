@@ -19,6 +19,7 @@ import (
 	"encoding/csv"
 	"io"
 	"os"
+	"strconv"
 
 	"github.com/araddon/dateparse"
 	"github.com/pkg/errors"
@@ -88,7 +89,7 @@ func checkTypes(m *model.Metadata, row []string) (bool, error) {
 	for _, v := range m.DataResources[0].Variables {
 		// set the type to text if the data doesn't match the metadata
 		if !typeMatchesData(v, row) {
-			log.Infof("updating %s type to text since the data did not match", v.Name)
+			log.Infof("updating %s type to text from %s since the data did not match", v.Name, v.Type)
 			v.Type = model.StringType
 			updated = true
 		}
@@ -112,6 +113,16 @@ func typeMatchesData(v *model.Variable, row []string) bool {
 			good = err == nil
 			if err != nil {
 				log.Warnf("error attempting to parse date value '%s': %v", val, err)
+			}
+		}
+	case model.RealType, model.IndexType, model.IntegerType, model.LongitudeType, model.LatitudeType:
+		// test if it is a number
+		// empty string is also okay
+		if val != "" {
+			_, err := strconv.ParseFloat(val, 64)
+			good = err == nil
+			if err != nil {
+				log.Warnf("error attempting to parse numeric value '%s': %v", val, err)
 			}
 		}
 	}
