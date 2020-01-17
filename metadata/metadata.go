@@ -116,6 +116,11 @@ func LoadMetadataFromOriginalSchema(schemaPath string) (*model.Metadata, error) 
 	// read the header of every data resource and augment the variables since
 	// the metadata may not specify every variable
 	for _, dr := range meta.DataResources {
+		// collection data resources need not be augmented
+		if dr.IsCollection {
+			continue
+		}
+
 		// read header from the raw datafile.
 		dataPath := path.Join(path.Dir(schemaPath), dr.ResPath)
 		csvFile, err := os.Open(dataPath)
@@ -679,11 +684,6 @@ func parseSuggestedTypes(m *model.Metadata, name string, index int, labels []*ga
 // AugmentVariablesFromHeader augments the metadata variables with variables
 // found in the header. All variables found in the header default to strings.
 func AugmentVariablesFromHeader(dr *model.DataResource, header []string) []*model.Variable {
-	// collection data resources need not be augmented
-	if dr.IsCollection {
-		return dr.Variables
-	}
-
 	// map variables by col index for quick lookup
 	metaVars := make(map[int]*model.Variable)
 	for _, v := range dr.Variables {
