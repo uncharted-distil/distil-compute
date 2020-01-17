@@ -116,13 +116,18 @@ func LoadMetadataFromOriginalSchema(schemaPath string) (*model.Metadata, error) 
 	// read the header of every data resource and augment the variables since
 	// the metadata may not specify every variable
 	for _, dr := range meta.DataResources {
-		// collection data resources need not be augmented
+		dataPath := path.Join(path.Dir(schemaPath), dr.ResPath)
+
+		// collection data resources need special care since datapath is a folder
 		if dr.IsCollection {
-			continue
+			var ok bool
+			dataPath, ok = getSampleFilename(dr, dataPath)
+			if !ok {
+				continue
+			}
 		}
 
 		// read header from the raw datafile.
-		dataPath := path.Join(path.Dir(schemaPath), dr.ResPath)
 		csvFile, err := os.Open(dataPath)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to open raw data file")
@@ -139,6 +144,36 @@ func LoadMetadataFromOriginalSchema(schemaPath string) (*model.Metadata, error) 
 	}
 
 	return meta, nil
+}
+
+func getSampleFilename(dr *model.DataResource, resourceFolder string) (string, bool) {
+	// each resource type needs separate handling
+	switch dr.ResType {
+	case model.ResTypeTime:
+		// take any file in the resource folder
+		files, err := getFiles(resourceFolder)
+		if err != nil || len(files) == 0 {
+			return "", false
+		}
+		return files[0], true
+	}
+	return "", false
+}
+
+func getFiles(inputPath string) ([]string, error) {
+	contents, err := ioutil.ReadDir(inputPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to list directory content")
+	}
+
+	files := make([]string, 0)
+	for _, f := range contents {
+		if !f.IsDir() {
+			files = append(files, path.Join(inputPath, f.Name()))
+		}
+	}
+
+	return files, nil
 }
 
 // LoadMetadataFromMergedSchema loads metadata from a merged schema file.
