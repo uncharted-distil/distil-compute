@@ -112,7 +112,68 @@ func LoadMetadataFromOriginalSchema(schemaPath string) (*model.Metadata, error) 
 	if err != nil {
 		return nil, err
 	}
+
+	// read the header of every data resource and augment the variables since
+	// the metadata may not specify every variable
+	for _, dr := range meta.DataResources {
+		dataPath := path.Join(path.Dir(schemaPath), dr.ResPath)
+
+		// collection data resources need special care since datapath is a folder
+		if dr.IsCollection {
+			var ok bool
+			dataPath, ok = getSampleFilename(dr, dataPath)
+			if !ok {
+				continue
+			}
+		}
+
+		// read header from the raw datafile.
+		csvFile, err := os.Open(dataPath)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to open raw data file")
+		}
+		defer csvFile.Close()
+
+		reader := csv.NewReader(csvFile)
+		header, err := reader.Read()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to read header line")
+		}
+
+		dr.Variables = AugmentVariablesFromHeader(dr, header)
+	}
+
 	return meta, nil
+}
+
+func getSampleFilename(dr *model.DataResource, resourceFolder string) (string, bool) {
+	// each resource type needs separate handling
+	switch dr.ResType {
+	case model.ResTypeTime:
+		// take any file in the resource folder
+		files, err := getFiles(resourceFolder)
+		if err != nil || len(files) == 0 {
+			return "", false
+		}
+		return files[0], true
+	}
+	return "", false
+}
+
+func getFiles(inputPath string) ([]string, error) {
+	contents, err := ioutil.ReadDir(inputPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to list directory content")
+	}
+
+	files := make([]string, 0)
+	for _, f := range contents {
+		if !f.IsDir() {
+			files = append(files, path.Join(inputPath, f.Name()))
+		}
+	}
+
+	return files, nil
 }
 
 // LoadMetadataFromMergedSchema loads metadata from a merged schema file.
@@ -653,6 +714,30 @@ func parseSuggestedTypes(m *model.Metadata, name string, index int, labels []*ga
 		return suggested[i].Probability > suggested[j].Probability
 	})
 	return suggested, nil
+}
+
+// AugmentVariablesFromHeader augments the metadata variables with variables
+// found in the header. All variables found in the header default to strings.
+func AugmentVariablesFromHeader(dr *model.DataResource, header []string) []*model.Variable {
+	// map variables by col index for quick lookup
+	metaVars := make(map[int]*model.Variable)
+	for _, v := range dr.Variables {
+		metaVars[v.Index] = v
+	}
+
+	// add missing variables (default to string) and drop any vars not in header
+	augmentedVars := make([]*model.Variable, len(header))
+	for i, c := range header {
+		if i < len(augmentedVars) {
+			v := metaVars[i]
+			if v == nil {
+				v = model.NewVariable(i, c, c, c, model.StringType, model.StringType, "", []string{"attribute"}, model.VarRoleData, nil, augmentedVars, true)
+			}
+			augmentedVars[i] = v
+		}
+	}
+
+	return augmentedVars
 }
 
 func loadOriginalSchemaVariables(m *model.Metadata, schemaPath string) error {

@@ -6,7 +6,7 @@
     },
     "dataResources": [{
         "resID": "0",
-        "resPath": ".",
+        "resPath": "data/learningData.csv",
         "resType": "table",
         "resFormat": [
             "text/csv"

@@ -273,7 +273,7 @@ func NormalizeVariableName(name string) string {
 
 func doesNameAlreadyExist(name string, existingVariables []*Variable) bool {
 	for _, v := range existingVariables {
-		if v.Name == name {
+		if v != nil && v.Name == name {
 			return true
 		}
 	}
