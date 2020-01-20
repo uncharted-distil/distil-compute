@@ -198,6 +198,7 @@ func createUpdateSemanticTypes(allFeatures []*model.Variable, selectedSet map[st
 	// create maps of (semantic type, index list) - primitive allows for semantic types to be added to /
 	// remove from multiple columns in a single operation
 	updateMap := map[string]*update{}
+	attributes := make([]int, 0)
 	for _, v := range allFeatures {
 		// empty selected set means all selected
 		if len(selectedSet) == 0 || selectedSet[strings.ToLower(v.Name)] {
@@ -223,6 +224,9 @@ func createUpdateSemanticTypes(allFeatures []*model.Variable, selectedSet map[st
 				updateMap[removeType].removeIndices = append(updateMap[removeType].removeIndices, v.Index)
 			}
 		}
+
+		// update all non target to attribute
+		attributes = append(attributes, v.Index)
 	}
 
 	// Copy the created maps into the column update structure used by the primitive.  Force
@@ -262,6 +266,16 @@ func createUpdateSemanticTypes(allFeatures []*model.Variable, selectedSet map[st
 			semanticTypeUpdates = append(semanticTypeUpdates, removeUpdate, wrapper)
 			offset += 2
 		}
+	}
+
+	if len(attributes) > 0 {
+		attribs := &ColumnUpdate{
+			SemanticTypes: []string{model.TA2AttributeType},
+			Indices:       attributes,
+		}
+		attributeUpdate := NewAddSemanticTypeStep(nil, nil, attribs)
+		wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+		semanticTypeUpdates = append(semanticTypeUpdates, attributeUpdate, wrapper)
 	}
 	return semanticTypeUpdates, nil
 }

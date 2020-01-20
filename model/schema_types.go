@@ -124,6 +124,8 @@ const (
 	// D3M runtime.  These should not be used/stored internally, but instead translated into the Distil
 	// types at the application boundaries.
 
+	//TA2AttributeType is the semantic type representing an attribute
+	TA2AttributeType = "https://metadata.datadrivendiscovery.org/types/Attribute"
 	// TA2StringType is the semantic type reprsenting a text/string
 	TA2StringType = "http://schema.org/Text"
 	// TA2IntegerType is the TA2 semantic type for an integer value
