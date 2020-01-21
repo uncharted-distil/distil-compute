@@ -731,7 +731,7 @@ func AugmentVariablesFromHeader(dr *model.DataResource, header []string) []*mode
 		if i < len(augmentedVars) {
 			v := metaVars[i]
 			if v == nil {
-				v = model.NewVariable(i, c, c, c, model.StringType, model.StringType, "", []string{"attribute"}, model.VarRoleData, nil, augmentedVars, true)
+				v = model.NewVariable(i, c, c, c, model.UnknownType, model.UnknownType, "", []string{"attribute"}, model.VarRoleData, nil, augmentedVars, true)
 			}
 			augmentedVars[i] = v
 		}
