@@ -224,7 +224,7 @@ func CreateTargetRankingPipeline(name string, description string, target string,
 
 	// ranking is dependent on user updated semantic types, so we need to make sure we apply
 	// those to the original data
-	updateSemanticTypeStep, err := createUpdateSemanticTypes(features, map[string]bool{}, offset)
+	updateSemanticTypeStep, err := createUpdateSemanticTypes(target, features, map[string]bool{}, offset)
 	if err != nil {
 		return nil, err
 	}

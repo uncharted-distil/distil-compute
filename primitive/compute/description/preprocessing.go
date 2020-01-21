@@ -112,7 +112,7 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 	}
 
 	// create the semantic type update primitive
-	updateSemanticTypes, err := createUpdateSemanticTypes(datasetDescription.AllFeatures, selectedSet, offset)
+	updateSemanticTypes, err := createUpdateSemanticTypes(datasetDescription.TargetFeature.Name, datasetDescription.AllFeatures, selectedSet, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +194,7 @@ func newUpdate() *update {
 	}
 }
 
-func createUpdateSemanticTypes(allFeatures []*model.Variable, selectedSet map[string]bool, offset int) ([]Step, error) {
+func createUpdateSemanticTypes(target string, allFeatures []*model.Variable, selectedSet map[string]bool, offset int) ([]Step, error) {
 	// create maps of (semantic type, index list) - primitive allows for semantic types to be added to /
 	// remove from multiple columns in a single operation
 	updateMap := map[string]*update{}
@@ -225,7 +225,9 @@ func createUpdateSemanticTypes(allFeatures []*model.Variable, selectedSet map[st
 			}
 
 			// update all non target to attribute
-			attributes = append(attributes, v.Index)
+			if v.DistilRole != model.RoleIndex && !strings.EqualFold(v.Name, target) {
+				attributes = append(attributes, v.Index)
+			}
 		}
 	}
 
