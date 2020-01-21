@@ -223,10 +223,10 @@ func createUpdateSemanticTypes(allFeatures []*model.Variable, selectedSet map[st
 				}
 				updateMap[removeType].removeIndices = append(updateMap[removeType].removeIndices, v.Index)
 			}
-		}
 
-		// update all non target to attribute
-		attributes = append(attributes, v.Index)
+			// update all non target to attribute
+			attributes = append(attributes, v.Index)
+		}
 	}
 
 	// Copy the created maps into the column update structure used by the primitive.  Force
