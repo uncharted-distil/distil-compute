@@ -184,6 +184,8 @@ const (
 	TimeSeriesSchemaType = "timeseries"
 	// TimestampSchemaType is the schema doc type for image data
 	TimestampSchemaType = "timestamp"
+	// UnknownSchemaType is the scehma type representing the unknown field type
+	UnknownSchemaType = "unknown"
 )
 
 var (
@@ -265,6 +267,7 @@ var (
 		ImageType:       ImageSchemaType,
 		TimeSeriesType:  TimeSeriesSchemaType,
 		TimestampType:   TimestampSchemaType,
+		UnknownType:     UnknownSchemaType,
 	}
 
 	// Maps from Lincoln Labs D3M dataset doc type to Distil internal type
@@ -282,6 +285,7 @@ var (
 		TimestampSchemaType:      TimestampType,
 		TextSchemaTypeDeprecated: StringType,
 		StringSchemaType:         StringType,
+		UnknownSchemaType:        UnknownType,
 	}
 
 	// Maps from Simon type to Distil internal type
