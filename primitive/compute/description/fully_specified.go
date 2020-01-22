@@ -28,9 +28,6 @@ import (
 func CreateSlothPipeline(name string, description string, timeColumn string, valueColumn string,
 	timeSeriesFeatures []*model.Variable) (*pipeline.PipelineDescription, error) {
 
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{3, "produce"}}
-
 	steps := make([]Step, 0)
 	steps = append(steps, NewTimeseriesFormatterStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, compute.DefaultResourceID, -1))
 
@@ -51,6 +48,9 @@ func CreateSlothPipeline(name string, description string, timeColumn string, val
 		"__grouping_key",
 	))
 	steps = append(steps, NewSlothStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}))
+
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
 	if err != nil {
