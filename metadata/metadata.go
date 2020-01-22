@@ -351,7 +351,7 @@ func loadRawVariables(datasetPath string) (*model.DataResource, error) {
 			nil,
 			dataResource.Variables,
 			false)
-		variable.Type = model.StringType
+		variable.Type = model.UnknownType
 		dataResource.Variables = append(dataResource.Variables, variable)
 	}
 	return dataResource, nil
@@ -555,7 +555,6 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 	if v.Path("colDisplayName").Data() != nil {
 		varDisplayName = v.Path("colDisplayName").Data().(string)
 	}
-
 	varType := ""
 	if v.Path("colType").Data() != nil {
 		varType = v.Path("colType").Data().(string)
@@ -592,6 +591,14 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 	varOriginalName := ""
 	if v.Path("varOriginalName").Data() != nil {
 		varOriginalName = v.Path("varOriginalName").Data().(string)
+	}
+
+	varOriginalType := ""
+	if v.Path("colOriginalType").Data() != nil {
+		varOriginalType = v.Path("colOriginalType").Data().(string)
+		varOriginalType = model.MapLLType(varOriginalType)
+	} else {
+		varOriginalType = varType
 	}
 
 	// parse the refersTo fields to properly serialize it if necessary
@@ -631,18 +638,47 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 		varDisplayName,
 		varOriginalName,
 		varType,
-		varType,
+		varOriginalType,
 		varDescription,
 		varRoles,
 		varDistilRole,
 		refersTo,
 		existingVariables,
 		normalizeName)
-	variable.SuggestedTypes = append(variable.SuggestedTypes, &model.SuggestedType{
-		Type:        variable.Type,
-		Probability: 0,
-		Provenance:  ProvenanceSchema,
-	})
+
+	// parse suggested types if present
+	suggestedTypesJSON := v.Path("suggestedTypes").Children()
+	suggestedTypes := make([]*model.SuggestedType, len(suggestedTypesJSON))
+	for i, suggestion := range suggestedTypesJSON {
+		stType := ""
+		if suggestion.Path("type").Data() != nil {
+			stType = suggestion.Path("type").Data().(string)
+		}
+		stProbability := -1.0
+		if suggestion.Path("probability").Data() != nil {
+			stProbability = suggestion.Path("probability").Data().(float64)
+		}
+		stProvenance := ""
+		if suggestion.Path("provenance").Data() != nil {
+			stProvenance = suggestion.Path("provenance").Data().(string)
+		}
+
+		suggestedTypes[i] = &model.SuggestedType{
+			Type:        stType,
+			Probability: stProbability,
+			Provenance:  stProvenance,
+		}
+	}
+
+	// no suggested type present so initialize it
+	if len(suggestedTypes) == 0 {
+		suggestedTypes = append(suggestedTypes, &model.SuggestedType{
+			Type:        variable.Type,
+			Probability: 0,
+			Provenance:  ProvenanceSchema,
+		})
+	}
+	variable.SuggestedTypes = suggestedTypes
 
 	return variable, nil
 }
@@ -731,7 +767,7 @@ func AugmentVariablesFromHeader(dr *model.DataResource, header []string) []*mode
 		if i < len(augmentedVars) {
 			v := metaVars[i]
 			if v == nil {
-				v = model.NewVariable(i, c, c, c, model.StringType, model.StringType, "", []string{"attribute"}, model.VarRoleData, nil, augmentedVars, true)
+				v = model.NewVariable(i, c, c, c, model.UnknownType, model.UnknownType, "", []string{"attribute"}, model.VarRoleData, nil, augmentedVars, true)
 			}
 			augmentedVars[i] = v
 		}
@@ -854,13 +890,24 @@ func loadClassificationVariables(m *model.Metadata, normalizeVariableNames bool)
 		if err != nil {
 			return err
 		}
-		// get suggested types
-		suggestedTypes, err := parseSuggestedTypes(m, variable.Name, index, labels, probabilities)
-		if err != nil {
-			return err
+
+		// get suggested types if not loaded from schema
+		loaded := false
+		for _, suggestion := range variable.SuggestedTypes {
+			if suggestion.Provenance == ProvenanceSimon {
+				loaded = true
+				break
+			}
 		}
-		variable.SuggestedTypes = append(variable.SuggestedTypes, suggestedTypes...)
-		variable.Type = getHighestProbablySuggestedType(variable.SuggestedTypes)
+		if !loaded {
+			suggestedTypes, err := parseSuggestedTypes(m, variable.Name, index, labels, probabilities)
+			if err != nil {
+				return err
+			}
+			variable.SuggestedTypes = append(variable.SuggestedTypes, suggestedTypes...)
+			variable.Type = getHighestProbablySuggestedType(variable.SuggestedTypes)
+		}
+
 		m.DataResources[0].Variables = append(m.DataResources[0].Variables, variable)
 	}
 	return nil

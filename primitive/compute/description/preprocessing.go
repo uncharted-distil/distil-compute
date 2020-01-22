@@ -112,7 +112,7 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 	}
 
 	// create the semantic type update primitive
-	updateSemanticTypes, err := createUpdateSemanticTypes(datasetDescription.AllFeatures, selectedSet, offset)
+	updateSemanticTypes, err := createUpdateSemanticTypes(datasetDescription.TargetFeature.Name, datasetDescription.AllFeatures, selectedSet, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -194,10 +194,11 @@ func newUpdate() *update {
 	}
 }
 
-func createUpdateSemanticTypes(allFeatures []*model.Variable, selectedSet map[string]bool, offset int) ([]Step, error) {
+func createUpdateSemanticTypes(target string, allFeatures []*model.Variable, selectedSet map[string]bool, offset int) ([]Step, error) {
 	// create maps of (semantic type, index list) - primitive allows for semantic types to be added to /
 	// remove from multiple columns in a single operation
 	updateMap := map[string]*update{}
+	attributes := make([]int, 0)
 	for _, v := range allFeatures {
 		// empty selected set means all selected
 		if len(selectedSet) == 0 || selectedSet[strings.ToLower(v.Name)] {
@@ -205,6 +206,11 @@ func createUpdateSemanticTypes(allFeatures []*model.Variable, selectedSet map[st
 			if addType == "" {
 				return nil, errors.Errorf("variable `%s` internal type `%s` can't be mapped to ta2", v.Name, v.Type)
 			}
+			// unknown type must not be passed to TA2
+			if addType == model.TA2UnknownType {
+				addType = model.TA2StringType
+			}
+
 			removeType := model.MapTA2Type(v.OriginalType)
 			if removeType == "" {
 				return nil, errors.Errorf("remove variable `%s` internal type `%s` can't be mapped to ta2", v.Name, v.OriginalType)
@@ -221,6 +227,11 @@ func createUpdateSemanticTypes(allFeatures []*model.Variable, selectedSet map[st
 					updateMap[removeType] = newUpdate()
 				}
 				updateMap[removeType].removeIndices = append(updateMap[removeType].removeIndices, v.Index)
+			}
+
+			// update all non target to attribute
+			if v.SelectedRole != model.RoleIndex && !strings.EqualFold(v.Name, target) {
+				attributes = append(attributes, v.Index)
 			}
 		}
 	}
@@ -262,6 +273,16 @@ func createUpdateSemanticTypes(allFeatures []*model.Variable, selectedSet map[st
 			semanticTypeUpdates = append(semanticTypeUpdates, removeUpdate, wrapper)
 			offset += 2
 		}
+	}
+
+	if len(attributes) > 0 {
+		attribs := &ColumnUpdate{
+			SemanticTypes: []string{model.TA2AttributeType},
+			Indices:       attributes,
+		}
+		attributeUpdate := NewAddSemanticTypeStep(nil, nil, attribs)
+		wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+		semanticTypeUpdates = append(semanticTypeUpdates, attributeUpdate, wrapper)
 	}
 	return semanticTypeUpdates, nil
 }

@@ -23,12 +23,6 @@ import (
 // NewSimonStep creates a SIMON data classification step.  It examines an input
 // dataframe, and assigns types to the columns based on the exposed metadata.
 func NewSimonStep(inputs map[string]DataRef, outputMethods []string) *StepData {
-	// since Simon has fit & produce, need to set the params from
-	// set_training_data. In this case, outputs is not used.
-	if inputs["inputs"] != nil && inputs["outputs"] == nil {
-		inputs["outputs"] = inputs["inputs"]
-	}
-
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "d2fa8df2-6517-3c26-bafc-87b701c4043a",
