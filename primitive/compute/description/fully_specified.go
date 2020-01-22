@@ -31,18 +31,26 @@ func CreateSlothPipeline(name string, description string, timeColumn string, val
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{3, "produce"}}
 
-	steps := []Step{
-		NewTimeseriesFormatterStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, compute.DefaultResourceID, -1),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-		NewGroupingFieldComposeStep(
-			map[string]DataRef{"inputs": &StepDataRef{1, "produce"}},
-			[]string{"produce"},
-			[]int{},
-			"_",
-			"__grouping_key",
-		),
-		NewSlothStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+	steps := make([]Step, 0)
+	steps = append(steps, NewTimeseriesFormatterStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, compute.DefaultResourceID, -1))
+
+	offset := 0
+	updateSemanticTypes, err := createUpdateSemanticTypes("", timeSeriesFeatures, nil, offset)
+	if err != nil {
+		return nil, err
 	}
+	steps = append(steps, updateSemanticTypes...)
+	offset += len(updateSemanticTypes)
+
+	steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	steps = append(steps, NewGroupingFieldComposeStep(
+		map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}},
+		[]string{"produce"},
+		[]int{},
+		"_",
+		"__grouping_key",
+	))
+	steps = append(steps, NewSlothStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}))
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
 	if err != nil {

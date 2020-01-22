@@ -468,8 +468,8 @@ func TestCreateUnicornPipeline(t *testing.T) {
 
 func TestCreateSlothPipeline(t *testing.T) {
 	timeSeriesVariables := []*model.Variable{
-		{Name: "time", Index: 0},
-		{Name: "value", Index: 1},
+		{Name: "time", Type: "string", OriginalType: "unknown", Index: 0},
+		{Name: "value", Type: "string", OriginalType: "unknown", Index: 1},
 	}
 
 	pipeline, err := CreateSlothPipeline("sloth_test", "test sloth object detection pipeline", "time", "value", timeSeriesVariables)
