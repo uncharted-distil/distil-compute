@@ -206,6 +206,11 @@ func createUpdateSemanticTypes(target string, allFeatures []*model.Variable, sel
 			if addType == "" {
 				return nil, errors.Errorf("variable `%s` internal type `%s` can't be mapped to ta2", v.Name, v.Type)
 			}
+			// unknown type must not be passed to TA2
+			if addType == model.TA2UnknownType {
+				addType = model.TA2StringType
+			}
+
 			removeType := model.MapTA2Type(v.OriginalType)
 			if removeType == "" {
 				return nil, errors.Errorf("remove variable `%s` internal type `%s` can't be mapped to ta2", v.Name, v.OriginalType)
