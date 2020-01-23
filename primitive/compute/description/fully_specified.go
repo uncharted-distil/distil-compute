@@ -31,13 +31,13 @@ func CreateSlothPipeline(name string, description string, timeColumn string, val
 	steps := make([]Step, 0)
 	steps = append(steps, NewTimeseriesFormatterStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, compute.DefaultResourceID, -1))
 
-	offset := 0
+	offset := 1
 	updateSemanticTypes, err := createUpdateSemanticTypes("", timeSeriesFeatures, nil, offset)
 	if err != nil {
 		return nil, err
 	}
 	steps = append(steps, updateSemanticTypes...)
-	offset += len(updateSemanticTypes)
+	offset += len(updateSemanticTypes) - 1
 
 	steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 	steps = append(steps, NewGroupingFieldComposeStep(
