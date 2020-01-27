@@ -222,6 +222,7 @@ type Metadata struct {
 	SearchResult     string
 	SearchProvenance string
 	SourceDataset    string
+	Type             string
 }
 
 // NewMetadata creates a new metadata instance.

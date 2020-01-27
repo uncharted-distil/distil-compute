@@ -1089,6 +1089,7 @@ func IngestMetadata(client *elastic.Client, index string, datasetPrefix string, 
 		"datasetFolder":    meta.DatasetFolder,
 		"source":           datasetSource,
 		"datasetOrigins":   origins,
+		"type":             meta.Type,
 	}
 
 	bytes, err := json.Marshal(source)
