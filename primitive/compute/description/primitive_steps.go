@@ -110,10 +110,10 @@ func NewTargetRankingStep(inputs map[string]DataRef, outputMethods []string, tar
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "a31b0c26-cca8-4d54-95b9-886e23df8886",
-			Version:    "0.2.0",
+			Version:    "0.2.1",
 			Name:       "Mutual Information Feature Ranking",
-			PythonPath: "d3m.primitives.feature_selection.mi_ranking.DistilMIRanking",
-			Digest:     "5302eebf2fb8a80e9f00e7b74888aba9eb448a9c0463d9d26786dab717a62c61",
+			PythonPath: "d3m.primitives.feature_selection.mutual_info_classif.DistilMIRanking",
+			Digest:     "5a8c7aa0777ea6ad586805beaa850874ff34c1a98f8ac9739251511afda49e2c",
 		},
 		outputMethods,
 		map[string]interface{}{"target_col_index": targetCol},
