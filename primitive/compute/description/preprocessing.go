@@ -199,6 +199,7 @@ func createUpdateSemanticTypes(target string, allFeatures []*model.Variable, sel
 	// remove from multiple columns in a single operation
 	updateMap := map[string]*update{}
 	attributes := make([]int, 0)
+	targetIndex := -1
 	for _, v := range allFeatures {
 		// empty selected set means all selected
 		if len(selectedSet) == 0 || selectedSet[strings.ToLower(v.Name)] {
@@ -230,8 +231,12 @@ func createUpdateSemanticTypes(target string, allFeatures []*model.Variable, sel
 			}
 
 			// update all non target to attribute
-			if v.SelectedRole != model.RoleIndex && !strings.EqualFold(v.Name, target) {
-				attributes = append(attributes, v.Index)
+			if v.SelectedRole != model.RoleIndex {
+				if !strings.EqualFold(v.Name, target) {
+					attributes = append(attributes, v.Index)
+				} else {
+					targetIndex = v.Index
+				}
 			}
 		}
 	}
@@ -275,6 +280,7 @@ func createUpdateSemanticTypes(target string, allFeatures []*model.Variable, sel
 		}
 	}
 
+	// apply attribute semantic type
 	if len(attributes) > 0 {
 		attribs := &ColumnUpdate{
 			SemanticTypes: []string{model.TA2AttributeType},
@@ -283,7 +289,20 @@ func createUpdateSemanticTypes(target string, allFeatures []*model.Variable, sel
 		attributeUpdate := NewAddSemanticTypeStep(nil, nil, attribs)
 		wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
 		semanticTypeUpdates = append(semanticTypeUpdates, attributeUpdate, wrapper)
+		offset += 2
 	}
+
+	// apply target semantic type if a target was found
+	if targetIndex >= 0 {
+		targetColumnUpdate := &ColumnUpdate{
+			SemanticTypes: []string{model.TA2TargetType},
+			Indices:       []int{targetIndex},
+		}
+		targetUpdate := NewAddSemanticTypeStep(nil, nil, targetColumnUpdate)
+		wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+		semanticTypeUpdates = append(semanticTypeUpdates, targetUpdate, wrapper)
+	}
+
 	return semanticTypeUpdates, nil
 }
 
