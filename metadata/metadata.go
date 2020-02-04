@@ -240,7 +240,7 @@ func LoadMetadataFromRawFile(datasetPath string, classificationPath string) (*mo
 
 // LoadMetadataFromClassification loads metadata from a merged schema and
 // classification file.
-func LoadMetadataFromClassification(schemaPath string, classificationPath string, normalizeVariableNames bool) (*model.Metadata, error) {
+func LoadMetadataFromClassification(schemaPath string, classificationPath string, normalizeVariableNames bool, mergedFallback bool) (*model.Metadata, error) {
 	meta := &model.Metadata{
 		SchemaSource: model.SchemaSourceClassification,
 	}
@@ -249,8 +249,13 @@ func LoadMetadataFromClassification(schemaPath string, classificationPath string
 	classification, err := loadClassification(classificationPath)
 	if err != nil {
 		log.Warnf("unable to load classification file: %v", err)
-		log.Warnf("attempting to load from merged schema")
-		return LoadMetadataFromMergedSchema(schemaPath)
+		if mergedFallback {
+			log.Warnf("attempting to load from merged schema")
+			return LoadMetadataFromMergedSchema(schemaPath)
+		} else {
+			log.Warnf("attempting to load from original schema")
+			return LoadMetadataFromOriginalSchema(schemaPath)
+		}
 	}
 	meta.Classification = classification
 
@@ -1054,13 +1059,15 @@ func writeVariable(variable *model.Variable, extendedSchema bool) interface{} {
 // IngestMetadata adds a document consisting of the metadata to the
 // provided index.
 func IngestMetadata(client *elastic.Client, index string, datasetPrefix string, datasetSource DatasetSource, meta *model.Metadata) error {
-	// filter variables for surce object
-	if len(meta.DataResources) > 1 {
+
+	if len(meta.DataResources) > 1 && meta.SchemaSource != model.SchemaSourceOriginal {
 		return errors.New("metadata variables not merged into a single dataset")
 	}
 
+	mainDR := meta.GetMainDataResource()
+
 	// clear refers to
-	for _, v := range meta.DataResources[0].Variables {
+	for _, v := range mainDR.Variables {
 		v.RefersTo = nil
 	}
 	var origins []map[string]interface{}
@@ -1085,7 +1092,7 @@ func IngestMetadata(client *elastic.Client, index string, datasetPrefix string, 
 		"summaryMachine":   meta.SummaryMachine,
 		"numRows":          meta.NumRows,
 		"numBytes":         meta.NumBytes,
-		"variables":        meta.DataResources[0].Variables,
+		"variables":        mainDR.Variables,
 		"datasetFolder":    meta.DatasetFolder,
 		"source":           datasetSource,
 		"datasetOrigins":   origins,
