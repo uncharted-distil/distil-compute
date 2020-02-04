@@ -35,6 +35,14 @@
             "role": [
                 "suggestedTarget"
             ]
+        },
+        {
+            "colIndex": 3,
+            "colName": "d3mIndex",
+            "colType": "integer",
+            "role": [
+                "index"
+            ]
         }]
     }]
 }

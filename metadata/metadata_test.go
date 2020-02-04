@@ -33,7 +33,7 @@ func TestMetadataFromSchema(t *testing.T) {
 	assert.Equal(t, meta.Name, "test dataset")
 	assert.Equal(t, meta.ID, "test_dataset")
 	assert.Equal(t, meta.Description, "YOU ARE STANDING AT THE END OF A ROAD BEFORE A SMALL BRICK BUILDING.")
-	assert.Equal(t, len(meta.DataResources[0].Variables), 3)
+	assert.Equal(t, len(meta.DataResources[0].Variables), 4)
 	assert.Equal(t, meta.DataResources[0].Variables[0].Name, "bravo")
 	assert.Equal(t, meta.DataResources[0].Variables[0].Role, []string{"index"})
 	assert.Equal(t, meta.DataResources[0].Variables[0].Type, "integer")
@@ -46,6 +46,10 @@ func TestMetadataFromSchema(t *testing.T) {
 	assert.Equal(t, meta.DataResources[0].Variables[2].Role, []string{"suggestedTarget"})
 	assert.Equal(t, meta.DataResources[0].Variables[2].Type, "integer")
 	assert.Equal(t, meta.DataResources[0].Variables[2].OriginalType, "integer")
+	assert.Equal(t, meta.DataResources[0].Variables[3].Name, "d3mIndex")
+	assert.Equal(t, meta.DataResources[0].Variables[3].Role, []string{"index"})
+	assert.Equal(t, meta.DataResources[0].Variables[3].Type, "integer")
+	assert.Equal(t, meta.DataResources[0].Variables[3].OriginalType, "integer")
 }
 
 func TestIngestMetadata(t *testing.T) {
@@ -58,7 +62,7 @@ func TestIngestMetadata(t *testing.T) {
 
 		variables := reqBody.Path("variables").Children()
 		assert.NotNil(t, variables)
-		assert.Equal(t, 3, len(variables))
+		assert.Equal(t, 4, len(variables))
 		assert.Equal(t, "bravo", variables[0].Path("colName").Data().(string))
 		roles := variables[0].Path("role").Data().([]interface{})
 		assert.Equal(t, "index", roles[0].(string))
