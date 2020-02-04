@@ -240,7 +240,7 @@ func LoadMetadataFromRawFile(datasetPath string, classificationPath string) (*mo
 
 // LoadMetadataFromClassification loads metadata from a merged schema and
 // classification file.
-func LoadMetadataFromClassification(schemaPath string, classificationPath string, normalizeVariableNames bool) (*model.Metadata, error) {
+func LoadMetadataFromClassification(schemaPath string, classificationPath string, normalizeVariableNames bool, mergedFallback bool) (*model.Metadata, error) {
 	meta := &model.Metadata{
 		SchemaSource: model.SchemaSourceClassification,
 	}
@@ -249,8 +249,13 @@ func LoadMetadataFromClassification(schemaPath string, classificationPath string
 	classification, err := loadClassification(classificationPath)
 	if err != nil {
 		log.Warnf("unable to load classification file: %v", err)
-		log.Warnf("attempting to load from merged schema")
-		return LoadMetadataFromMergedSchema(schemaPath)
+		if mergedFallback {
+			log.Warnf("attempting to load from merged schema")
+			return LoadMetadataFromMergedSchema(schemaPath)
+		} else {
+			log.Warnf("attempting to load from original schema")
+			return LoadMetadataFromOriginalSchema(schemaPath)
+		}
 	}
 	meta.Classification = classification
 
