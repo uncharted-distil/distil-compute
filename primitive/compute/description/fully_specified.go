@@ -28,7 +28,7 @@ import (
 // cluster images together, adding a column with the resulting cluster.
 func CreateImageClusteringPipeline(name string, description string, imageVariables []*model.Variable) (*pipeline.PipelineDescription, error) {
 	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{2, "produce"}}
+	outputs := []DataRef{&StepDataRef{4, "produce"}}
 
 	cols := make([]int, len(imageVariables))
 	for i, v := range imageVariables {
