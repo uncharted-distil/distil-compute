@@ -26,6 +26,8 @@ const (
 	FilterSizeLimit = 1000
 	// CategoricalFilter represents a categorical filter type.
 	CategoricalFilter = "categorical"
+	// ClusterFilter represents a cluster filter type.
+	ClusterFilter = "cluster"
 	// NumericalFilter represents a numerical filter type.
 	NumericalFilter = "numerical"
 	// BivariateFilter represents a numerical filter type.

@@ -48,7 +48,7 @@ func NewDataframeImageReaderStep(inputs map[string]DataRef, outputMethods []stri
 			Digest:     "5403088d47cd02998766fb7e7e5a6bc7211af16548696ce8706bce003ef1a14b",
 		},
 		outputMethods,
-		map[string]interface{}{"use_columns": columns},
+		map[string]interface{}{"use_columns": columns, "return_result": "replace"},
 		inputs,
 	)
 }
