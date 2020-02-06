@@ -133,6 +133,17 @@ func NewCategoricalFilter(key string, mode string, categories []string) *Filter 
 	}
 }
 
+// NewClusterFilter instantiates a cluster filter.
+func NewClusterFilter(key string, mode string, categories []string) *Filter {
+	sort.Strings(categories)
+	return &Filter{
+		Key:        key,
+		Type:       ClusterFilter,
+		Mode:       mode,
+		Categories: categories,
+	}
+}
+
 // NewFeatureFilter instantiates a feature filter.
 func NewFeatureFilter(key string, mode string, categories []string) *Filter {
 	sort.Strings(categories)
