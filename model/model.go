@@ -441,6 +441,16 @@ func DefaultPostgresValueFromD3MType(typ string) interface{} {
 	}
 }
 
+// PostgresValueForFieldType generates the select field value for a given variable type.
+func PostgresValueForFieldType(typ string, field string) string {
+	switch typ {
+	case RealListType:
+		return fmt.Sprintf("string_to_array(\"%s\", ',')", field)
+	default:
+		return fmt.Sprintf("\"%s\"", field)
+	}
+}
+
 // IsTA2Field indicates whether or not a particular variable is recognized by a TA2.
 func IsTA2Field(distilRole string) bool {
 	return distilRole == VarDistilRoleData || distilRole == VarDistilRoleIndex
