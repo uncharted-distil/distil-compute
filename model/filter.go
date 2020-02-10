@@ -36,6 +36,8 @@ const (
 	FeatureFilter = "feature"
 	// TextFilter represents a text filter type.
 	TextFilter = "text"
+	// VectorFilter represents a text filter type.
+	VectorFilter = "vector"
 	// RowFilter represents a numerical filter type.
 	RowFilter = "row"
 	// IncludeFilter represents an inclusive filter mode.
@@ -75,6 +77,7 @@ type Bounds struct {
 type Filter struct {
 	Key        string   `json:"key"`
 	Type       string   `json:"type"`
+	NestedType string   `json:"nestedType"`
 	Mode       string   `json:"mode"`
 	Min        *float64 `json:"min"`
 	Max        *float64 `json:"max"`
@@ -91,6 +94,18 @@ func NewNumericalFilter(key string, mode string, min float64, max float64) *Filt
 		Mode: mode,
 		Min:  &min,
 		Max:  &max,
+	}
+}
+
+// NewVectorFilter instantiates a vector filter.
+func NewVectorFilter(key string, nestedType string, mode string, min float64, max float64) *Filter {
+	return &Filter{
+		Key:        key,
+		Type:       VectorFilter,
+		NestedType: nestedType,
+		Mode:       mode,
+		Min:        &min,
+		Max:        &max,
 	}
 }
 
