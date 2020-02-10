@@ -37,6 +37,54 @@ func NewSimonStep(inputs map[string]DataRef, outputMethods []string) *StepData {
 	)
 }
 
+// NewDataframeImageReaderStep reads images for further processing.
+func NewDataframeImageReaderStep(inputs map[string]DataRef, outputMethods []string, columns []int) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "8f2e51e8-da59-456d-ae29-53912b2b9f3d",
+			Version:    "0.2.0",
+			Name:       "Columns image reader",
+			PythonPath: "d3m.primitives.data_preprocessing.image_reader.Common",
+			Digest:     "5403088d47cd02998766fb7e7e5a6bc7211af16548696ce8706bce003ef1a14b",
+		},
+		outputMethods,
+		map[string]interface{}{"use_columns": columns, "return_result": "replace"},
+		inputs,
+	)
+}
+
+// NewImageTransferStep processes images.
+func NewImageTransferStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "782e261e-8e23-4184-9258-5a412c9b32d4",
+			Version:    "0.1.1",
+			Name:       "Image Transfer",
+			PythonPath: "d3m.primitives.feature_extraction.image_transfer.DistilImageTransfer",
+			Digest:     "55a5bcc4ff50ba902f01876d9b9191e58726264fab6404f879c27df84a4c98ec",
+		},
+		outputMethods,
+		map[string]interface{}{},
+		inputs,
+	)
+}
+
+// NewKMeansCluteringStep clusters the input using a siple k-means clustering.
+func NewKMeansCluteringStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "3b09024e-a83b-418c-8ff4-cf3d30a9609e",
+			Version:    "0.1.1",
+			Name:       "K means",
+			PythonPath: "d3m.primitives.clustering.k_means.DistilKMeans",
+			Digest:     "dd384db638780dc00c09c87085c9d1b93fc02abf083616d705bea6d0bf312ceb",
+		},
+		outputMethods,
+		map[string]interface{}{"n_clusters": 4},
+		inputs,
+	)
+}
+
 // NewSlothStep creates a Sloth timeseries clustering step.
 func NewSlothStep(inputs map[string]DataRef, outputMethods []string) *StepData {
 	// since Sloth has fit & produce, need to set the params from

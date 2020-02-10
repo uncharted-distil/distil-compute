@@ -26,6 +26,8 @@ const (
 	FilterSizeLimit = 1000
 	// CategoricalFilter represents a categorical filter type.
 	CategoricalFilter = "categorical"
+	// ClusterFilter represents a cluster filter type.
+	ClusterFilter = "cluster"
 	// NumericalFilter represents a numerical filter type.
 	NumericalFilter = "numerical"
 	// BivariateFilter represents a numerical filter type.
@@ -126,6 +128,17 @@ func NewCategoricalFilter(key string, mode string, categories []string) *Filter 
 	return &Filter{
 		Key:        key,
 		Type:       CategoricalFilter,
+		Mode:       mode,
+		Categories: categories,
+	}
+}
+
+// NewClusterFilter instantiates a cluster filter.
+func NewClusterFilter(key string, mode string, categories []string) *Filter {
+	sort.Strings(categories)
+	return &Filter{
+		Key:        key,
+		Type:       ClusterFilter,
 		Mode:       mode,
 		Categories: categories,
 	}

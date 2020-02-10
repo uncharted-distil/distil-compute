@@ -24,6 +24,33 @@ import (
 	"github.com/uncharted-distil/distil-compute/primitive/compute"
 )
 
+// CreateImageClusteringPipeline creates a fully specified pipeline that will
+// cluster images together, adding a column with the resulting cluster.
+func CreateImageClusteringPipeline(name string, description string, imageVariables []*model.Variable) (*pipeline.PipelineDescription, error) {
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{5, "produce"}}
+
+	cols := make([]int, len(imageVariables))
+	for i, v := range imageVariables {
+		cols[i] = v.Index
+	}
+
+	steps := []Step{
+		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
+		NewDataframeImageReaderStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, cols),
+		NewImageTransferStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+		NewKMeansCluteringStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
+	}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+	return pipeline, nil
+}
+
 // CreateSlothPipeline creates a pipeline to peform timeseries clustering on a dataset.
 func CreateSlothPipeline(name string, description string, timeColumn string, valueColumn string,
 	timeSeriesFeatures []*model.Variable) (*pipeline.PipelineDescription, error) {
