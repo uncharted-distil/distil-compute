@@ -107,25 +107,6 @@ func NewSlothStep(inputs map[string]DataRef, outputMethods []string) *StepData {
 	)
 }
 
-// NewUnicornStep creates a unicorn image clustering step.
-func NewUnicornStep(inputs map[string]DataRef, outputMethods []string, targetColumns []string, outputLabels []string) *StepData {
-	return NewStepData(
-		&pipeline.Primitive{
-			Id:         "475c26dc-eb2e-43d3-acdb-159b80d9f099",
-			Version:    "1.1.0",
-			Name:       "unicorn",
-			PythonPath: "d3m.primitives.digital_image_processing.unicorn.Unicorn",
-			Digest:     "8c1280cb1355115d98de08e9981ea7cb95f6952885d5b190d9db789921664020",
-		},
-		outputMethods,
-		map[string]interface{}{
-			"target_columns": targetColumns,
-			"output_labels":  outputLabels,
-		},
-		inputs,
-	)
-}
-
 // NewPCAFeaturesStep creates a PCA-based feature ranking call that can be added to
 // a pipeline.
 func NewPCAFeaturesStep(inputs map[string]DataRef, outputMethods []string) *StepData {
@@ -197,25 +178,6 @@ func NewDataCleaningStep(inputs map[string]DataRef, outputMethods []string) *Ste
 		},
 		outputMethods,
 		map[string]interface{}{},
-		inputs,
-	)
-}
-
-// NewCrocStep creates a wrapper for the Croc image classifier.
-func NewCrocStep(inputs map[string]DataRef, outputMethods []string, targetColumns []string, outputLabels []string) *StepData {
-	return NewStepData(
-		&pipeline.Primitive{
-			Id:         "404fae2a-2f0a-4c9b-9ad2-fb1528990561",
-			Version:    "1.2.4",
-			Name:       "croc",
-			PythonPath: "d3m.primitives.digital_image_processing.croc.Croc",
-			Digest:     "a0cd922401d96b8ffbfe11f5db188b6a4d410119319392932e417b706ed5ae6",
-		},
-		outputMethods,
-		map[string]interface{}{
-			"target_columns": targetColumns,
-			"output_labels":  outputLabels,
-		},
 		inputs,
 	)
 }
