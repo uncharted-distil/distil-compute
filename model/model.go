@@ -416,7 +416,7 @@ func MapD3MTypeToPostgresType(typ string) string {
 		return dataTypeText
 	case DateTimeType:
 		return dataTypeDate
-	case RealVectorType:
+	case RealVectorType, RealListType:
 		return dataTypeVector
 	default:
 		return dataTypeText
@@ -434,10 +434,20 @@ func DefaultPostgresValueFromD3MType(typ string) interface{} {
 		return int(0)
 	case DateTimeType:
 		return fmt.Sprintf("'%s'", time.Time{}.Format(dateFormat))
-	case RealVectorType:
+	case RealVectorType, RealListType:
 		return "'{}'"
 	default:
 		return "''"
+	}
+}
+
+// PostgresValueForFieldType generates the select field value for a given variable type.
+func PostgresValueForFieldType(typ string, field string) string {
+	switch typ {
+	case RealListType:
+		return fmt.Sprintf("string_to_array(\"%s\", ',')", field)
+	default:
+		return fmt.Sprintf("\"%s\"", field)
 	}
 }
 

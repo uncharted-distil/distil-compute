@@ -36,6 +36,8 @@ const (
 	RealType = "real"
 	// RealVectorType is the schema type for a vector of real values
 	RealVectorType = "realVector"
+	// RealListType is the schema type for a list of real values
+	RealListType = "realList"
 	// BoolType is the schema type for bool values
 	BoolType = "boolean"
 	// DateTimeType is the schema type for date/time values
@@ -148,6 +150,8 @@ const (
 	TA2ImageType = "http://schema.org/ImageObject"
 	// TA2TimeSeriesType is the TA2 semantic type for timeseries data
 	TA2TimeSeriesType = "https://metadata.datadrivendiscovery.org/types/Timeseries"
+	// TA2RealVectorType is the TA2 semantic type for vector data
+	TA2RealVectorType = "https://metadata.datadrivendiscovery.org/types/Vector"
 
 	// TA2 Role keys
 
@@ -241,6 +245,8 @@ var (
 		TimestampType:   TA2TimeType,
 		TimeSeriesType:  TA2TimeSeriesType,
 		UnknownType:     TA2UnknownType,
+		RealVectorType:  TA2RealVectorType,
+		RealListType:    TA2RealVectorType,
 	}
 
 	// Maps from Distil internal type to D3M dataset doc type
@@ -356,6 +362,12 @@ func IsText(typ string) bool {
 // of analysis.
 func IsVector(typ string) bool {
 	return typ == RealVectorType
+}
+
+// IsList indicates whether or not a schema type is a list for the purposes
+// of analysis.
+func IsList(typ string) bool {
+	return typ == RealListType
 }
 
 // IsImage indicates whether or not a schema type is an image for the purposes
