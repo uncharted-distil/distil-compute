@@ -350,6 +350,12 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int, off
 			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
 			filterSteps = append(filterSteps, filter, wrapper)
 			offset += 2
+
+		case model.TextFilter:
+			filter = NewTermFilterStep(nil, nil, colIndex, inclusive, f.Categories, false)
+			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+			filterSteps = append(filterSteps, filter, wrapper)
+			offset += 2
 		}
 
 	}
