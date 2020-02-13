@@ -34,8 +34,6 @@ const (
 	BivariateFilter = "bivariate"
 	// DatetimeFilter represents a datetime filter type.
 	DatetimeFilter = "datetime"
-	// FeatureFilter represents a feature filter type.
-	FeatureFilter = "feature"
 	// TextFilter represents a text filter type.
 	TextFilter = "text"
 	// VectorFilter represents a text filter type.
@@ -154,17 +152,6 @@ func NewClusterFilter(key string, mode string, categories []string) *Filter {
 	return &Filter{
 		Key:        key,
 		Type:       ClusterFilter,
-		Mode:       mode,
-		Categories: categories,
-	}
-}
-
-// NewFeatureFilter instantiates a feature filter.
-func NewFeatureFilter(key string, mode string, categories []string) *Filter {
-	sort.Strings(categories)
-	return &Filter{
-		Key:        key,
-		Type:       FeatureFilter,
 		Mode:       mode,
 		Categories: categories,
 	}

@@ -338,12 +338,6 @@ func NewVariable(index int, name, displayName, originalName, typ, originalType, 
 	}
 }
 
-// CanBeFeaturized determines if a data resource can be featurized.
-func (dr *DataResource) CanBeFeaturized() bool {
-	// Unicorn and gator are currently not being used
-	return false
-}
-
 // AddVariable creates and add a new variable to the data resource.
 func (dr *DataResource) AddVariable(name string, originalName string, typ string, description string, role []string, distilRole string) {
 	v := NewVariable(len(dr.Variables), name, "", originalName, typ, typ, description, role, distilRole, nil, dr.Variables, false)

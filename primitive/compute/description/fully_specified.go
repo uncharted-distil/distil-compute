@@ -166,42 +166,6 @@ func CreateGroupingFieldComposePipeline(name string, description string, colIndi
 	return pipeline, nil
 }
 
-// CreateCrocPipeline creates a pipeline to run image featurization on a dataset.
-func CreateCrocPipeline(name string, description string, targetColumns []string, outputLabels []string) (*pipeline.PipelineDescription, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{2, "produce"}}
-
-	steps := []Step{
-		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-		NewCrocStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, targetColumns, outputLabels),
-	}
-
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
-// CreateUnicornPipeline creates a pipeline to run image clustering on a dataset.
-func CreateUnicornPipeline(name string, description string, targetColumns []string, outputLabels []string) (*pipeline.PipelineDescription, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{2, "produce"}}
-
-	steps := []Step{
-		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-		NewUnicornStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, targetColumns, outputLabels),
-	}
-
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-	return pipeline, nil
-}
-
 // CreatePCAFeaturesPipeline creates a pipeline to run feature ranking on an input dataset.
 func CreatePCAFeaturesPipeline(name string, description string) (*pipeline.PipelineDescription, error) {
 	inputs := []string{"inputs"}

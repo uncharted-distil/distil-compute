@@ -252,10 +252,10 @@ func LoadMetadataFromClassification(schemaPath string, classificationPath string
 		if mergedFallback {
 			log.Warnf("attempting to load from merged schema")
 			return LoadMetadataFromMergedSchema(schemaPath)
-		} else {
-			log.Warnf("attempting to load from original schema")
-			return LoadMetadataFromOriginalSchema(schemaPath)
 		}
+
+		log.Warnf("attempting to load from original schema")
+		return LoadMetadataFromOriginalSchema(schemaPath)
 	}
 	meta.Classification = classification
 

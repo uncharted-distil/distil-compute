@@ -430,18 +430,6 @@ func TestCreateSimonPipeline(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestCreateCrocPipeline(t *testing.T) {
-	pipeline, err := CreateCrocPipeline("croc_test", "test croc object detection pipeline", []string{"filename"}, []string{"objects"})
-	assert.NoError(t, err)
-
-	data, err := proto.Marshal(pipeline)
-	assert.NoError(t, err)
-	assert.NotNil(t, data)
-
-	err = ioutil.WriteFile("/tmp/croc.pln", data, 0644)
-	assert.NoError(t, err)
-}
-
 func TestCreateDataCleaningPipeline(t *testing.T) {
 	pipeline, err := CreateDataCleaningPipeline("data cleaning test", "test data cleaning pipeline")
 	assert.NoError(t, err)
@@ -451,18 +439,6 @@ func TestCreateDataCleaningPipeline(t *testing.T) {
 	assert.NotNil(t, data)
 
 	err = ioutil.WriteFile("/tmp/datacleaning.pln", data, 0644)
-	assert.NoError(t, err)
-}
-
-func TestCreateUnicornPipeline(t *testing.T) {
-	pipeline, err := CreateUnicornPipeline("unicorn test", "test unicorn image detection pipeline", []string{"filename"}, []string{"objects"})
-	assert.NoError(t, err)
-
-	data, err := proto.Marshal(pipeline)
-	assert.NoError(t, err)
-	assert.NotNil(t, data)
-
-	err = ioutil.WriteFile("/tmp/unicorn.pln", data, 0644)
 	assert.NoError(t, err)
 }
 
