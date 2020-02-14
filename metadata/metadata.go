@@ -677,9 +677,13 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 
 	// no suggested type present so initialize it
 	if len(suggestedTypes) == 0 {
+		probability := 1.0
+		if variable.Type == model.UnknownType {
+			probability = 0
+		}
 		suggestedTypes = append(suggestedTypes, &model.SuggestedType{
 			Type:        variable.Type,
-			Probability: 0,
+			Probability: probability,
 			Provenance:  ProvenanceSchema,
 		})
 	}
