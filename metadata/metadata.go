@@ -88,7 +88,7 @@ func IsMetadataVariable(v *model.Variable) bool {
 }
 
 // LoadMetadataFromOriginalSchema loads metadata from a schema file.
-func LoadMetadataFromOriginalSchema(schemaPath string) (*model.Metadata, error) {
+func LoadMetadataFromOriginalSchema(schemaPath string, augmentFromData bool) (*model.Metadata, error) {
 	meta := &model.Metadata{
 		SchemaSource: model.SchemaSourceOriginal,
 	}
@@ -115,32 +115,34 @@ func LoadMetadataFromOriginalSchema(schemaPath string) (*model.Metadata, error) 
 
 	// read the header of every data resource and augment the variables since
 	// the metadata may not specify every variable
-	for _, dr := range meta.DataResources {
-		dataPath := path.Join(path.Dir(schemaPath), dr.ResPath)
+	if augmentFromData {
+		for _, dr := range meta.DataResources {
+			dataPath := path.Join(path.Dir(schemaPath), dr.ResPath)
 
-		// collection data resources need special care since datapath is a folder
-		if dr.IsCollection {
-			var ok bool
-			dataPath, ok = getSampleFilename(dr, dataPath)
-			if !ok {
-				continue
+			// collection data resources need special care since datapath is a folder
+			if dr.IsCollection {
+				var ok bool
+				dataPath, ok = getSampleFilename(dr, dataPath)
+				if !ok {
+					continue
+				}
 			}
-		}
 
-		// read header from the raw datafile.
-		csvFile, err := os.Open(dataPath)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to open raw data file")
-		}
-		defer csvFile.Close()
+			// read header from the raw datafile.
+			csvFile, err := os.Open(dataPath)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to open raw data file")
+			}
+			defer csvFile.Close()
 
-		reader := csv.NewReader(csvFile)
-		header, err := reader.Read()
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to read header line")
-		}
+			reader := csv.NewReader(csvFile)
+			header, err := reader.Read()
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to read header line")
+			}
 
-		dr.Variables = AugmentVariablesFromHeader(dr, header)
+			dr.Variables = AugmentVariablesFromHeader(dr, header)
+		}
 	}
 
 	return meta, nil
@@ -255,7 +257,7 @@ func LoadMetadataFromClassification(schemaPath string, classificationPath string
 		}
 
 		log.Warnf("attempting to load from original schema")
-		return LoadMetadataFromOriginalSchema(schemaPath)
+		return LoadMetadataFromOriginalSchema(schemaPath, true)
 	}
 	meta.Classification = classification
 
