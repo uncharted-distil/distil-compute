@@ -1035,7 +1035,10 @@ func writeDataResource(resource *model.DataResource, extendedSchema bool) map[st
 		"resType":      resource.ResType,
 		"resFormat":    resource.ResFormat,
 		"isCollection": resource.IsCollection,
-		"columns":      vars,
+	}
+
+	if len(vars) > 0 {
+		output["columns"] = vars
 	}
 
 	return output
