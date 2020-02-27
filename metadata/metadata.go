@@ -1060,6 +1060,7 @@ func writeVariable(variable *model.Variable, extendedSchema bool) interface{} {
 		"colName":  variable.DisplayName,
 		"colType":  colType,
 		"role":     variable.Role,
+		"refersTo": variable.RefersTo,
 	}
 
 	return output
