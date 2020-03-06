@@ -16,6 +16,7 @@
 package description
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -29,6 +30,16 @@ import (
 type FullySpecifiedPipeline struct {
 	Pipeline         *pipeline.PipelineDescription
 	EquivalentValues []interface{}
+}
+
+// MarshalSteps marshals a pipeline description into a json representation.
+func MarshalSteps(step *pipeline.PipelineDescription) (string, error) {
+	stepJSON, err := json.Marshal(step)
+	if err != nil {
+		return "", errors.Wrapf(err, "unable to marshal steps")
+	}
+
+	return string(stepJSON), nil
 }
 
 // CreateImageClusteringPipeline creates a fully specified pipeline that will
@@ -56,9 +67,14 @@ func CreateImageClusteringPipeline(name string, description string, imageVariabl
 		return nil, err
 	}
 
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
 	fullySpecified := &FullySpecifiedPipeline{
 		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipeline},
+		EquivalentValues: []interface{}{pipelineJSON},
 	}
 	return fullySpecified, nil
 }
@@ -96,9 +112,14 @@ func CreateSlothPipeline(name string, description string, timeColumn string, val
 		return nil, err
 	}
 
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
 	fullySpecified := &FullySpecifiedPipeline{
 		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipeline},
+		EquivalentValues: []interface{}{pipelineJSON},
 	}
 	return fullySpecified, nil
 }
@@ -118,9 +139,14 @@ func CreateDukePipeline(name string, description string) (*FullySpecifiedPipelin
 		return nil, err
 	}
 
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
 	fullySpecified := &FullySpecifiedPipeline{
 		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipeline},
+		EquivalentValues: []interface{}{pipelineJSON},
 	}
 	return fullySpecified, nil
 }
@@ -147,9 +173,14 @@ func CreateSimonPipeline(name string, description string) (*FullySpecifiedPipeli
 		return nil, err
 	}
 
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
 	fullySpecified := &FullySpecifiedPipeline{
 		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipeline},
+		EquivalentValues: []interface{}{pipelineJSON},
 	}
 	return fullySpecified, nil
 }
@@ -174,9 +205,14 @@ func CreateDataCleaningPipeline(name string, description string) (*FullySpecifie
 		return nil, err
 	}
 
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
 	fullySpecified := &FullySpecifiedPipeline{
 		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipeline},
+		EquivalentValues: []interface{}{pipelineJSON},
 	}
 	return fullySpecified, nil
 }
@@ -196,9 +232,14 @@ func CreateGroupingFieldComposePipeline(name string, description string, colIndi
 		return nil, err
 	}
 
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
 	fullySpecified := &FullySpecifiedPipeline{
 		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipeline},
+		EquivalentValues: []interface{}{pipelineJSON},
 	}
 	return fullySpecified, nil
 }
@@ -218,9 +259,14 @@ func CreatePCAFeaturesPipeline(name string, description string) (*FullySpecified
 		return nil, err
 	}
 
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
 	fullySpecified := &FullySpecifiedPipeline{
 		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipeline},
+		EquivalentValues: []interface{}{pipelineJSON},
 	}
 	return fullySpecified, nil
 }
@@ -240,9 +286,14 @@ func CreateDenormalizePipeline(name string, description string) (*FullySpecified
 		return nil, err
 	}
 
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
 	fullySpecified := &FullySpecifiedPipeline{
 		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipeline},
+		EquivalentValues: []interface{}{pipelineJSON},
 	}
 	return fullySpecified, nil
 }
@@ -321,9 +372,14 @@ func CreateGoatForwardPipeline(name string, description string, placeCol *model.
 		return nil, err
 	}
 
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
 	fullySpecified := &FullySpecifiedPipeline{
 		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipeline},
+		EquivalentValues: []interface{}{pipelineJSON},
 	}
 	return fullySpecified, nil
 }
@@ -344,9 +400,14 @@ func CreateGoatReversePipeline(name string, description string, lonSource *model
 		return nil, err
 	}
 
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
 	fullySpecified := &FullySpecifiedPipeline{
 		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipeline},
+		EquivalentValues: []interface{}{pipelineJSON},
 	}
 	return fullySpecified, nil
 }
@@ -392,9 +453,14 @@ func CreateJoinPipeline(name string, description string, leftJoinCol *model.Vari
 		return nil, err
 	}
 
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
 	fullySpecified := &FullySpecifiedPipeline{
 		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipeline},
+		EquivalentValues: []interface{}{pipelineJSON},
 	}
 	return fullySpecified, nil
 }
@@ -421,9 +487,14 @@ func CreateDSBoxJoinPipeline(name string, description string, leftJoinCols []str
 		return nil, err
 	}
 
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
 	fullySpecified := &FullySpecifiedPipeline{
 		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipeline},
+		EquivalentValues: []interface{}{pipelineJSON},
 	}
 	return fullySpecified, nil
 }
@@ -444,9 +515,14 @@ func CreateTimeseriesFormatterPipeline(name string, description string, resource
 		return nil, err
 	}
 
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
 	fullySpecified := &FullySpecifiedPipeline{
 		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipeline},
+		EquivalentValues: []interface{}{pipelineJSON},
 	}
 	return fullySpecified, nil
 }
@@ -466,9 +542,14 @@ func CreateDatamartDownloadPipeline(name string, description string, searchResul
 		return nil, err
 	}
 
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
 	fullySpecified := &FullySpecifiedPipeline{
 		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipeline},
+		EquivalentValues: []interface{}{pipelineJSON},
 	}
 	return fullySpecified, nil
 }
@@ -488,9 +569,14 @@ func CreateDatamartAugmentPipeline(name string, description string, searchResult
 		return nil, err
 	}
 
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
 	fullySpecified := &FullySpecifiedPipeline{
 		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipeline},
+		EquivalentValues: []interface{}{pipelineJSON},
 	}
 	return fullySpecified, nil
 }
