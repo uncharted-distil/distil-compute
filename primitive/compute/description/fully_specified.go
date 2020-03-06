@@ -24,6 +24,8 @@ import (
 	"github.com/uncharted-distil/distil-compute/primitive/compute"
 )
 
+// FullySpecifiedPipeline wraps a fully specified pipeline along with
+// the fields which can be used to determine equivalent pipelines.
 type FullySpecifiedPipeline struct {
 	Pipeline         *pipeline.PipelineDescription
 	EquivalentValues []interface{}
