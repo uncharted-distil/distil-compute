@@ -24,9 +24,14 @@ import (
 	"github.com/uncharted-distil/distil-compute/primitive/compute"
 )
 
+type FullySpecifiedPipeline struct {
+	Pipeline         *pipeline.PipelineDescription
+	EquivalentValues []interface{}
+}
+
 // CreateImageClusteringPipeline creates a fully specified pipeline that will
 // cluster images together, adding a column with the resulting cluster.
-func CreateImageClusteringPipeline(name string, description string, imageVariables []*model.Variable) (*pipeline.PipelineDescription, error) {
+func CreateImageClusteringPipeline(name string, description string, imageVariables []*model.Variable) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{5, "produce"}}
 
@@ -48,12 +53,17 @@ func CreateImageClusteringPipeline(name string, description string, imageVariabl
 	if err != nil {
 		return nil, err
 	}
-	return pipeline, nil
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipeline},
+	}
+	return fullySpecified, nil
 }
 
 // CreateSlothPipeline creates a pipeline to peform timeseries clustering on a dataset.
 func CreateSlothPipeline(name string, description string, timeColumn string, valueColumn string,
-	timeSeriesFeatures []*model.Variable) (*pipeline.PipelineDescription, error) {
+	timeSeriesFeatures []*model.Variable) (*FullySpecifiedPipeline, error) {
 
 	steps := make([]Step, 0)
 	steps = append(steps, NewTimeseriesFormatterStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, compute.DefaultResourceID, -1))
@@ -83,11 +93,16 @@ func CreateSlothPipeline(name string, description string, timeColumn string, val
 	if err != nil {
 		return nil, err
 	}
-	return pipeline, nil
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipeline},
+	}
+	return fullySpecified, nil
 }
 
 // CreateDukePipeline creates a pipeline to peform image featurization on a dataset.
-func CreateDukePipeline(name string, description string) (*pipeline.PipelineDescription, error) {
+func CreateDukePipeline(name string, description string) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{1, "produce"}}
 
@@ -100,12 +115,17 @@ func CreateDukePipeline(name string, description string) (*pipeline.PipelineDesc
 	if err != nil {
 		return nil, err
 	}
-	return pipeline, nil
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipeline},
+	}
+	return fullySpecified, nil
 }
 
 // CreateSimonPipeline creates a pipeline to run semantic type inference on a dataset's
 // columns.
-func CreateSimonPipeline(name string, description string) (*pipeline.PipelineDescription, error) {
+func CreateSimonPipeline(name string, description string) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{1, "produce_metafeatures"}}
 
@@ -124,11 +144,16 @@ func CreateSimonPipeline(name string, description string) (*pipeline.PipelineDes
 	if err != nil {
 		return nil, err
 	}
-	return pipeline, nil
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipeline},
+	}
+	return fullySpecified, nil
 }
 
 // CreateDataCleaningPipeline creates a pipeline to run data cleaning on a dataset.
-func CreateDataCleaningPipeline(name string, description string) (*pipeline.PipelineDescription, error) {
+func CreateDataCleaningPipeline(name string, description string) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{2, "produce"}}
 
@@ -146,11 +171,16 @@ func CreateDataCleaningPipeline(name string, description string) (*pipeline.Pipe
 	if err != nil {
 		return nil, err
 	}
-	return pipeline, nil
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipeline},
+	}
+	return fullySpecified, nil
 }
 
 // CreateGroupingFieldComposePipeline creates a pipeline to create a grouping key field for a dataset.
-func CreateGroupingFieldComposePipeline(name string, description string, colIndices []int, joinChar string, outputName string) (*pipeline.PipelineDescription, error) {
+func CreateGroupingFieldComposePipeline(name string, description string, colIndices []int, joinChar string, outputName string) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{1, "produce"}}
 
@@ -163,11 +193,16 @@ func CreateGroupingFieldComposePipeline(name string, description string, colIndi
 	if err != nil {
 		return nil, err
 	}
-	return pipeline, nil
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipeline},
+	}
+	return fullySpecified, nil
 }
 
 // CreatePCAFeaturesPipeline creates a pipeline to run feature ranking on an input dataset.
-func CreatePCAFeaturesPipeline(name string, description string) (*pipeline.PipelineDescription, error) {
+func CreatePCAFeaturesPipeline(name string, description string) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{1, "produce_metafeatures"}}
 
@@ -180,11 +215,16 @@ func CreatePCAFeaturesPipeline(name string, description string) (*pipeline.Pipel
 	if err != nil {
 		return nil, err
 	}
-	return pipeline, nil
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipeline},
+	}
+	return fullySpecified, nil
 }
 
 // CreateDenormalizePipeline creates a pipeline to run the denormalize primitive on an input dataset.
-func CreateDenormalizePipeline(name string, description string) (*pipeline.PipelineDescription, error) {
+func CreateDenormalizePipeline(name string, description string) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{1, "produce"}}
 
@@ -197,11 +237,16 @@ func CreateDenormalizePipeline(name string, description string) (*pipeline.Pipel
 	if err != nil {
 		return nil, err
 	}
-	return pipeline, nil
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipeline},
+	}
+	return fullySpecified, nil
 }
 
 // CreateTargetRankingPipeline creates a pipeline to run feature ranking on an input dataset.
-func CreateTargetRankingPipeline(name string, description string, target string, features []*model.Variable) (*pipeline.PipelineDescription, error) {
+func CreateTargetRankingPipeline(name string, description string, target string, features []*model.Variable) (*FullySpecifiedPipeline, error) {
 
 	// compute index associated with column name
 	targetIdx := -1
@@ -250,11 +295,16 @@ func CreateTargetRankingPipeline(name string, description string, target string,
 	if err != nil {
 		return nil, err
 	}
-	return pipeline, nil
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{name, target},
+	}
+	return fullySpecified, nil
 }
 
 // CreateGoatForwardPipeline creates a forward geocoding pipeline.
-func CreateGoatForwardPipeline(name string, description string, placeCol *model.Variable) (*pipeline.PipelineDescription, error) {
+func CreateGoatForwardPipeline(name string, description string, placeCol *model.Variable) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{2, "produce"}}
 
@@ -268,11 +318,16 @@ func CreateGoatForwardPipeline(name string, description string, placeCol *model.
 	if err != nil {
 		return nil, err
 	}
-	return pipeline, nil
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipeline},
+	}
+	return fullySpecified, nil
 }
 
 // CreateGoatReversePipeline creates a forward geocoding pipeline.
-func CreateGoatReversePipeline(name string, description string, lonSource *model.Variable, latSource *model.Variable) (*pipeline.PipelineDescription, error) {
+func CreateGoatReversePipeline(name string, description string, lonSource *model.Variable, latSource *model.Variable) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{2, "produce"}}
 
@@ -286,12 +341,17 @@ func CreateGoatReversePipeline(name string, description string, lonSource *model
 	if err != nil {
 		return nil, err
 	}
-	return pipeline, nil
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipeline},
+	}
+	return fullySpecified, nil
 }
 
 // CreateJoinPipeline creates a pipeline that joins two input datasets using a caller supplied column.
 // Accuracy is a normalized value that controls how exact the join has to be.
-func CreateJoinPipeline(name string, description string, leftJoinCol *model.Variable, rightJoinCol *model.Variable, accuracy float32) (*pipeline.PipelineDescription, error) {
+func CreateJoinPipeline(name string, description string, leftJoinCol *model.Variable, rightJoinCol *model.Variable, accuracy float32) (*FullySpecifiedPipeline, error) {
 	steps := make([]Step, 0)
 	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
 	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}))
@@ -329,12 +389,17 @@ func CreateJoinPipeline(name string, description string, leftJoinCol *model.Vari
 	if err != nil {
 		return nil, err
 	}
-	return pipeline, nil
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipeline},
+	}
+	return fullySpecified, nil
 }
 
 // CreateDSBoxJoinPipeline creates a pipeline that joins two input datasets
 // using caller supplied columns.
-func CreateDSBoxJoinPipeline(name string, description string, leftJoinCols []string, rightJoinCols []string, accuracy float32) (*pipeline.PipelineDescription, error) {
+func CreateDSBoxJoinPipeline(name string, description string, leftJoinCols []string, rightJoinCols []string, accuracy float32) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{2, "produce"}}
 
@@ -353,11 +418,16 @@ func CreateDSBoxJoinPipeline(name string, description string, leftJoinCols []str
 	if err != nil {
 		return nil, err
 	}
-	return pipeline, nil
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipeline},
+	}
+	return fullySpecified, nil
 }
 
 // CreateTimeseriesFormatterPipeline creates a time series formatter pipeline.
-func CreateTimeseriesFormatterPipeline(name string, description string, resource string) (*pipeline.PipelineDescription, error) {
+func CreateTimeseriesFormatterPipeline(name string, description string, resource string) (*FullySpecifiedPipeline, error) {
 
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{1, "produce"}}
@@ -371,11 +441,16 @@ func CreateTimeseriesFormatterPipeline(name string, description string, resource
 	if err != nil {
 		return nil, err
 	}
-	return pipeline, nil
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipeline},
+	}
+	return fullySpecified, nil
 }
 
 // CreateDatamartDownloadPipeline creates a pipeline to download data from a datamart.
-func CreateDatamartDownloadPipeline(name string, description string, searchResult string, systemIdentifier string) (*pipeline.PipelineDescription, error) {
+func CreateDatamartDownloadPipeline(name string, description string, searchResult string, systemIdentifier string) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{1, "produce"}}
 
@@ -388,11 +463,16 @@ func CreateDatamartDownloadPipeline(name string, description string, searchResul
 	if err != nil {
 		return nil, err
 	}
-	return pipeline, nil
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipeline},
+	}
+	return fullySpecified, nil
 }
 
 // CreateDatamartAugmentPipeline creates a pipeline to augment data with datamart data.
-func CreateDatamartAugmentPipeline(name string, description string, searchResult string, systemIdentifier string) (*pipeline.PipelineDescription, error) {
+func CreateDatamartAugmentPipeline(name string, description string, searchResult string, systemIdentifier string) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{1, "produce"}}
 
@@ -405,5 +485,10 @@ func CreateDatamartAugmentPipeline(name string, description string, searchResult
 	if err != nil {
 		return nil, err
 	}
-	return pipeline, nil
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipeline},
+	}
+	return fullySpecified, nil
 }
