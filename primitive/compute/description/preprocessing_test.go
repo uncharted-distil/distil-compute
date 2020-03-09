@@ -410,7 +410,7 @@ func TestCreatePCAFeaturesPipeline(t *testing.T) {
 	pipeline, err := CreatePCAFeaturesPipeline("pca_features_test", "test pca feature ranking pipeline")
 	assert.NoError(t, err)
 
-	data, err := proto.Marshal(pipeline)
+	data, err := proto.Marshal(pipeline.Pipeline)
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
@@ -422,7 +422,7 @@ func TestCreateSimonPipeline(t *testing.T) {
 	pipeline, err := CreateSimonPipeline("simon_test", "test simon classification pipeline")
 	assert.NoError(t, err)
 
-	data, err := proto.Marshal(pipeline)
+	data, err := proto.Marshal(pipeline.Pipeline)
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
@@ -434,7 +434,7 @@ func TestCreateDataCleaningPipeline(t *testing.T) {
 	pipeline, err := CreateDataCleaningPipeline("data cleaning test", "test data cleaning pipeline")
 	assert.NoError(t, err)
 
-	data, err := proto.Marshal(pipeline)
+	data, err := proto.Marshal(pipeline.Pipeline)
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
@@ -451,7 +451,7 @@ func TestCreateSlothPipeline(t *testing.T) {
 	pipeline, err := CreateSlothPipeline("sloth_test", "test sloth object detection pipeline", "time", "value", timeSeriesVariables)
 	assert.NoError(t, err)
 
-	data, err := proto.Marshal(pipeline)
+	data, err := proto.Marshal(pipeline.Pipeline)
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
@@ -463,7 +463,7 @@ func TestCreateDukePipeline(t *testing.T) {
 	pipeline, err := CreateDukePipeline("duke_test", "test duke data summary pipeline")
 	assert.NoError(t, err)
 
-	data, err := proto.Marshal(pipeline)
+	data, err := proto.Marshal(pipeline.Pipeline)
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
@@ -483,7 +483,7 @@ func TestCreateTargetRankingPipeline(t *testing.T) {
 	pipeline, err := CreateTargetRankingPipeline("target_ranking_test", "test target_ranking pipeline", "hall_of_fame", vars)
 	assert.NoError(t, err)
 
-	data, err := proto.Marshal(pipeline)
+	data, err := proto.Marshal(pipeline.Pipeline)
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
@@ -499,7 +499,7 @@ func TestCreateGoatForwardPipeline(t *testing.T) {
 	pipeline, err := CreateGoatForwardPipeline("goat_forward_test", "test goat forward geocoding pipeline", region)
 	assert.NoError(t, err)
 
-	data, err := proto.Marshal(pipeline)
+	data, err := proto.Marshal(pipeline.Pipeline)
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
@@ -519,7 +519,7 @@ func TestCreateGoatReversePipeline(t *testing.T) {
 	pipeline, err := CreateGoatReversePipeline("goat_reverse_test", "test goat reverse geocoding pipeline", lat, lon)
 	assert.NoError(t, err)
 
-	data, err := proto.Marshal(pipeline)
+	data, err := proto.Marshal(pipeline.Pipeline)
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
@@ -532,7 +532,7 @@ func TestCreateJoinPipeline(t *testing.T) {
 		&model.Variable{DisplayName: "Doubles"}, &model.Variable{DisplayName: "horsepower"}, 0.8)
 	assert.NoError(t, err)
 
-	data, err := proto.Marshal(pipeline)
+	data, err := proto.Marshal(pipeline.Pipeline)
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
@@ -544,7 +544,7 @@ func TestCreateDSBoxJoinPipeline(t *testing.T) {
 	pipeline, err := CreateDSBoxJoinPipeline("ds_join_test", "test ds box join pipeline", []string{"Doubles"}, []string{"horsepower"}, 0.8)
 	assert.NoError(t, err)
 
-	data, err := proto.Marshal(pipeline)
+	data, err := proto.Marshal(pipeline.Pipeline)
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
@@ -556,7 +556,7 @@ func TestCreateDenormalizePipeline(t *testing.T) {
 	pipeline, err := CreateDenormalizePipeline("denorm_test", "test denorm pipeline")
 	assert.NoError(t, err)
 
-	data, err := proto.Marshal(pipeline)
+	data, err := proto.Marshal(pipeline.Pipeline)
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
@@ -568,7 +568,7 @@ func TestCreateTimeseriesFormatterPipeline(t *testing.T) {
 	pipeline, err := CreateTimeseriesFormatterPipeline("formatter_test", "test formatter pipeline", "0")
 	assert.NoError(t, err)
 
-	data, err := proto.Marshal(pipeline)
+	data, err := proto.Marshal(pipeline.Pipeline)
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
@@ -580,7 +580,7 @@ func TestCreateDatamartDownloadPipeline(t *testing.T) {
 	pipeline, err := CreateDatamartDownloadPipeline("download_test", "test download pipeline", searchResult, "NYU")
 	assert.NoError(t, err)
 
-	data, err := proto.Marshal(pipeline)
+	data, err := proto.Marshal(pipeline.Pipeline)
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
@@ -592,7 +592,7 @@ func TestCreateDatamartAugmentPipeline(t *testing.T) {
 	pipeline, err := CreateDatamartAugmentPipeline("augment_test", "test augment pipeline", searchResult, "NYU")
 	assert.NoError(t, err)
 
-	data, err := proto.Marshal(pipeline)
+	data, err := proto.Marshal(pipeline.Pipeline)
 	assert.NoError(t, err)
 	assert.NotNil(t, data)
 
