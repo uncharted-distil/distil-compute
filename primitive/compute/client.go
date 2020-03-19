@@ -436,6 +436,24 @@ func (c *Client) ExportSolution(ctx context.Context, solutionID string) error {
 	return errors.Wrap(err, "failed to export solution")
 }
 
+// SaveSolution saves the solution.
+func (c *Client) SaveSolution(ctx context.Context, solutionID string) error {
+	saveSolution := &pipeline.SaveSolutionRequest{
+		SolutionId: solutionID,
+	}
+	_, err := c.client.SaveSolution(ctx, saveSolution)
+	return errors.Wrap(err, "failed to save solution")
+}
+
+// SaveFittedSolution saves the fitted solution.
+func (c *Client) SaveFittedSolution(ctx context.Context, fittedSolutionID string) error {
+	saveSolution := &pipeline.SaveFittedSolutionRequest{
+		FittedSolutionId: fittedSolutionID,
+	}
+	_, err := c.client.SaveFittedSolution(ctx, saveSolution)
+	return errors.Wrap(err, "failed to save fitted solution")
+}
+
 // ExecutePipeline executes a pre-specified pipeline.
 func (c *Client) ExecutePipeline(ctx context.Context, datasetURIs []string, pipelineDesc *pipeline.PipelineDescription) (*pipeline.PipelineExecuteResponse, error) {
 	in := &pipeline.PipelineExecuteRequest{
