@@ -1333,3 +1333,123 @@ func CreateMetadataIndex(client *elastic.Client, index string, overwrite bool) e
 	}
 	return nil
 }
+
+// CreateModelIndex creates a new ElasticSearch index with our target
+// mappings.
+func CreateModelIndex(client *elastic.Client, index string, overwrite bool) error {
+	// check if it already exists
+	exists, err := client.IndexExists(index).Do(context.Background())
+	if err != nil {
+		return errors.Wrapf(err, "failed to complete check for existence of index %s", index)
+	}
+
+	// delete the index if it already exists
+	if exists {
+		if overwrite {
+			deleted, err := client.
+				DeleteIndex(index).
+				Do(context.Background())
+			if err != nil {
+				return errors.Wrapf(err, "failed to delete index %s", index)
+			}
+			if !deleted.Acknowledged {
+				return fmt.Errorf("failed to create index `%s`, index could not be deleted", index)
+			}
+		} else {
+			return nil
+		}
+	}
+
+	// create body
+	body := `{
+		"settings": {
+			"analysis": {
+				"filter": {
+					"ngram_filter": {
+						"type": "ngram",
+						"min_gram": 4,
+						"max_gram": 20
+					},
+					"search_filter": {
+						"type": "edge_ngram",
+						"min_gram": 1,
+						"max_gram": 20
+					}
+				},
+				"tokenizer": {
+					"search_tokenizer": {
+						"type": "edge_ngram",
+						"min_gram": 1,
+						"max_gram": 20,
+						"token_chars": [
+							"letter",
+							"digit"
+						]
+					}
+				},
+				"analyzer": {
+					"ngram_analyzer": {
+						"type": "custom",
+						"tokenizer": "standard",
+						"filter": [
+							"lowercase",
+							"ngram_filter"
+						]
+					},
+					"search_analyzer": {
+						"type": "custom",
+						"tokenizer": "search_tokenizer",
+						"filter": [
+							"lowercase",
+							"search_filter"
+						]
+					},
+					"id_analyzer": {
+						"type":	  "pattern",
+						"pattern":   "\\W|_",
+						"lowercase": true
+					}
+				}
+			}
+		},
+		"mappings": {
+			"model": {
+				"properties": {
+					"datasetID": {
+						"type": "text",
+						"analyzer": "search_analyzer"
+					},
+					"datasetName": {
+						"type": "text",
+						"analyzer": "search_analyzer",
+						"fields": {
+							"keyword": {
+								"type": "keyword",
+								"ignore_above": 256
+							}
+						}
+					},
+					"variables": {
+						"type": "text",
+						"analyzer": "search_analyzer",
+						"include_in_all": true,
+						"term_vector": "yes"
+					}
+				}
+			}
+		}
+	}`
+
+	// create index
+	created, err := client.
+		CreateIndex(index).
+		BodyString(body).
+		Do(context.Background())
+	if err != nil {
+		return errors.Wrapf(err, "failed to create index %s", index)
+	}
+	if !created.Acknowledged {
+		return fmt.Errorf("Failed to create new index %s", index)
+	}
+	return nil
+}
