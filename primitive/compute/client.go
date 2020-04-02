@@ -437,21 +437,29 @@ func (c *Client) ExportSolution(ctx context.Context, solutionID string) error {
 }
 
 // SaveSolution saves the solution.
-func (c *Client) SaveSolution(ctx context.Context, solutionID string) error {
+func (c *Client) SaveSolution(ctx context.Context, solutionID string) (string, error) {
 	saveSolution := &pipeline.SaveSolutionRequest{
 		SolutionId: solutionID,
 	}
-	_, err := c.client.SaveSolution(ctx, saveSolution)
-	return errors.Wrap(err, "failed to save solution")
+	resp, err := c.client.SaveSolution(ctx, saveSolution)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to save solution")
+	}
+
+	return resp.GetSolutionUri(), nil
 }
 
 // SaveFittedSolution saves the fitted solution.
-func (c *Client) SaveFittedSolution(ctx context.Context, fittedSolutionID string) error {
+func (c *Client) SaveFittedSolution(ctx context.Context, fittedSolutionID string) (string, error) {
 	saveSolution := &pipeline.SaveFittedSolutionRequest{
 		FittedSolutionId: fittedSolutionID,
 	}
-	_, err := c.client.SaveFittedSolution(ctx, saveSolution)
-	return errors.Wrap(err, "failed to save fitted solution")
+	resp, err := c.client.SaveFittedSolution(ctx, saveSolution)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to save fitted solution")
+	}
+
+	return resp.GetFittedSolutionUri(), nil
 }
 
 // ExecutePipeline executes a pre-specified pipeline.
