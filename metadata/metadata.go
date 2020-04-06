@@ -1415,6 +1415,14 @@ func CreateModelIndex(client *elastic.Client, index string, overwrite bool) erro
 		"mappings": {
 			"model": {
 				"properties": {
+					"modelName": {
+						"type": "text",
+						"analyzer": "search_analyzer"
+					},
+					"modelDescription": {
+						"type": "text",
+						"analyzer": "search_analyzer"
+					},
 					"filepath": {
 						"type": "text"
 					},
