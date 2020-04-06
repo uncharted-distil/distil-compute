@@ -1429,7 +1429,7 @@ func CreateModelIndex(client *elastic.Client, index string, overwrite bool) erro
 					"fittedSolutionId": {
 						"type": "text"
 					},
-					"datasetID": {
+					"datasetId": {
 						"type": "text",
 						"analyzer": "search_analyzer"
 					},
