@@ -462,6 +462,32 @@ func (c *Client) SaveFittedSolution(ctx context.Context, fittedSolutionID string
 	return resp.GetFittedSolutionUri(), nil
 }
 
+// LoadSolution will have the server load a solution by URI.
+func (c *Client) LoadSolution(ctx context.Context, solutionURI string) (string, error) {
+	loadSolution := &pipeline.LoadSolutionRequest{
+		SolutionUri: solutionURI,
+	}
+	resp, err := c.client.LoadSolution(ctx, loadSolution)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to load solution")
+	}
+
+	return resp.GetSolutionId(), nil
+}
+
+// LoadFittedSolution will have the server load a fitted solution by URI.
+func (c *Client) LoadFittedSolution(ctx context.Context, fittedSolutionURI string) (string, error) {
+	loadSolution := &pipeline.LoadFittedSolutionRequest{
+		FittedSolutionUri: fittedSolutionURI,
+	}
+	resp, err := c.client.LoadFittedSolution(ctx, loadSolution)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to load fitted solution")
+	}
+
+	return resp.GetFittedSolutionId(), nil
+}
+
 // ExecutePipeline executes a pre-specified pipeline.
 func (c *Client) ExecutePipeline(ctx context.Context, datasetURIs []string, pipelineDesc *pipeline.PipelineDescription) (*pipeline.PipelineExecuteResponse, error) {
 	in := &pipeline.PipelineExecuteRequest{
