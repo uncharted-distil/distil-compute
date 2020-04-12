@@ -355,6 +355,10 @@ func (m *Metadata) GetMainDataResource() *DataResource {
 		}
 	}
 
+	if len(m.DataResources) > 0 {
+		return m.DataResources[0]
+	}
+
 	return nil
 }
 

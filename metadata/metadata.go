@@ -357,7 +357,7 @@ func loadRawVariables(datasetPath string) (*model.DataResource, error) {
 			model.VarRoleData,
 			nil,
 			dataResource.Variables,
-			false)
+			true)
 		variable.Type = model.UnknownType
 		dataResource.Variables = append(dataResource.Variables, variable)
 	}
