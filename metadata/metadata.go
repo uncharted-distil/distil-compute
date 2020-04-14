@@ -350,8 +350,8 @@ func loadRawVariables(datasetPath string) (*model.DataResource, error) {
 			v,
 			"",
 			"",
-			"",
-			"",
+			model.UnknownType,
+			model.UnknownType,
 			"",
 			[]string{"attribute"},
 			model.VarRoleData,
@@ -1045,10 +1045,6 @@ func writeDataResource(resource *model.DataResource, extendedSchema bool) map[st
 }
 
 func writeVariable(variable *model.Variable, extendedSchema bool) interface{} {
-	if extendedSchema {
-		return variable
-	}
-
 	// col type index doesn't exist for TA2
 	colType := variable.Type
 	if colType == model.IndexType {
@@ -1056,11 +1052,27 @@ func writeVariable(variable *model.Variable, extendedSchema bool) interface{} {
 	}
 
 	output := map[string]interface{}{
-		"colIndex": variable.Index,
-		"colName":  variable.DisplayName,
-		"colType":  colType,
-		"role":     variable.Role,
-		"refersTo": variable.RefersTo,
+		model.VarIndexField: variable.Index,
+		model.VarNameField:  variable.DisplayName,
+		model.VarTypeField:  colType,
+		model.VarRoleField:  variable.Role,
+		"refersTo":          variable.RefersTo,
+	}
+
+	if extendedSchema {
+		output[model.VarDescriptionField] = variable.Description
+		output[model.VarOriginalTypeField] = variable.OriginalType
+		output[model.VarSelectedRoleField] = variable.SelectedRole
+		output[model.VarDistilRole] = variable.DistilRole
+		output[model.VarOriginalVariableField] = variable.OriginalVariable
+		output[model.VarNameField] = variable.Name
+		output[model.VarDisplayVariableField] = variable.DisplayName
+		output[model.VarImportanceField] = variable.Importance
+		output[model.VarSuggestedTypesField] = variable.SuggestedTypes
+		output[model.VarDeleted] = variable.Deleted
+		output[model.VarGroupingField] = variable.Grouping
+		output[model.VarMinField] = variable.Min
+		output[model.VarMaxField] = variable.Max
 	}
 
 	return output
