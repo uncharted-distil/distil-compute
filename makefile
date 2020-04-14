@@ -35,9 +35,9 @@ proto:
 		./pipeline/*.proto
 
 peg:
-	@peg -inline ./api/compute/result/complex_field.peg
+	@peg -inline ./primitive/compute/result/complex_field.peg
 
 install:
-	@go get -u github.com/golang/protobuf/protoc-gen-go
+	@go get -u github.com/golang/protobuf/protoc-gen-go@d3c38a4eb4970272b87a425ae00ccc4548e2f9bb
 	@go get -u golang.org/x/lint/golint
-	@go get -u github.com/pointlander/peg
+	@go get -u github.com/pointlander/peg@21bead84a59870739b2ee9eac3125ff9e5767e00
