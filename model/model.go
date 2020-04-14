@@ -321,6 +321,9 @@ func NewVariable(index int, name, displayName, originalName, typ, originalType, 
 	if displayName == "" {
 		displayName = name
 	}
+	if originalType == "" {
+		originalType = typ
+	}
 
 	return &Variable{
 		Name:             normalized,
