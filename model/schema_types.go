@@ -140,7 +140,9 @@ const (
 	TA2BooleanType = "http://schema.org/Boolean"
 	// TA2LocationType is the TA2 semantic type for a location value
 	TA2LocationType = "https://metadata.datadrivendiscovery.org/types/Location"
-	// TA2TimeType is the TA2 semantic type for a time value
+	// TA2DateTimeType is the TA2 semantic type for a datetime value
+	TA2DateTimeType = "http://schema.org/DateTime"
+	// TA2TimeType is the TA2 semantic type for a time (role) value
 	TA2TimeType = "https://metadata.datadrivendiscovery.org/types/Time"
 	// TA2CategoricalType is the TA2 semantic type for categorical data
 	TA2CategoricalType = "https://metadata.datadrivendiscovery.org/types/CategoricalData"
@@ -227,7 +229,7 @@ var (
 		IntegerType:     TA2IntegerType,
 		RealType:        TA2RealType,
 		BoolType:        TA2BooleanType,
-		DateTimeType:    TA2TimeType,
+		DateTimeType:    TA2DateTimeType,
 		OrdinalType:     TA2CategoricalType,
 		CategoricalType: TA2CategoricalType,
 		NumericalType:   TA2RealType,
@@ -242,7 +244,7 @@ var (
 		StateType:       TA2CategoricalType,
 		URIType:         TA2StringType,
 		ImageType:       TA2StringType,
-		TimestampType:   TA2TimeType,
+		TimestampType:   TA2DateTimeType,
 		TimeSeriesType:  TA2TimeSeriesType,
 		UnknownType:     TA2UnknownType,
 		RealVectorType:  TA2RealVectorType,
