@@ -444,9 +444,14 @@ func DefaultPostgresValueFromD3MType(typ string) interface{} {
 
 // PostgresValueForFieldType generates the select field value for a given variable type.
 func PostgresValueForFieldType(typ string, field string) string {
+	fieldQuote := fmt.Sprintf("\"%s\"", field)
 	switch typ {
 	case RealListType:
-		return fmt.Sprintf("string_to_array(\"%s\", ',')", field)
+		return fmt.Sprintf("string_to_array(%s, ',')", fieldQuote)
+	case DateTimeType:
+		// datetime may be only time so need to support both cases
+		// times can have first value missing a 0 so want to first get a time value then add it to epoch time 0
+		return fmt.Sprintf("CASE WHEN length(%[1]s) IN (4, 5) AND position(':' in %[1]s) > 0 THEN CONCAT('1970-01-01 ', to_char(to_timestamp(%[1]s, 'MI:SS'), 'HH24:MI:SS')) ELSE %[1]s END", fieldQuote)
 	default:
 		return fmt.Sprintf("\"%s\"", field)
 	}
