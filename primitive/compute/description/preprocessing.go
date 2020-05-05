@@ -231,7 +231,7 @@ func createUpdateSemanticTypes(target string, allFeatures []*model.Variable, sel
 			}
 
 			// update all non target to attribute
-			if v.SelectedRole != model.RoleIndex {
+			if !model.IsIndexRole(v.SelectedRole) {
 				if !strings.EqualFold(v.Name, target) {
 					attributes = append(attributes, v.Index)
 				} else {

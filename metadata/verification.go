@@ -70,7 +70,7 @@ func VerifyAndUpdate(m *model.Metadata, dataPath string) (bool, error) {
 	// check role consistency
 	for _, v := range m.DataResources[0].Variables {
 		// if the type is index, then set the role to index as well
-		if v.Type == model.IndexType {
+		if v.Type == model.IndexType && !model.IsIndexRole(v.SelectedRole) {
 			log.Infof("updating %s role to index to match identified type", v.Name)
 			v.Role = []string{model.RoleIndex}
 			v.SelectedRole = model.RoleIndex

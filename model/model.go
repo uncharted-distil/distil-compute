@@ -64,6 +64,8 @@ const (
 	FeatureTypeTarget = "target"
 	// RoleIndex is the role used for index fields.
 	RoleIndex = "index"
+	// RoleMultiIndex is the role used for index fields which are not unique in the learning data.
+	RoleMultiIndex = "multiIndex"
 	// D3MIndexFieldName denotes the name of the index field.
 	D3MIndexFieldName = "d3mIndex"
 	// FeatureVarPrefix is the prefix of a metadata var name.
@@ -95,8 +97,6 @@ const (
 	VarImportanceField = "importance"
 	// VarSuggestedTypesField is the field name for the suggested variable types.
 	VarSuggestedTypesField = "suggestedTypes"
-	// VarRoleIndex is the variable role of an index field.
-	VarRoleIndex = "index"
 	// VarDistilRole is the variable role in distil.
 	VarDistilRole = "distilRole"
 	// VarDistilRoleIndex indicates a var has an index role in distil.
@@ -460,4 +460,9 @@ func PostgresValueForFieldType(typ string, field string) string {
 // IsTA2Field indicates whether or not a particular variable is recognized by a TA2.
 func IsTA2Field(distilRole string) bool {
 	return distilRole == VarDistilRoleData || distilRole == VarDistilRoleIndex
+}
+
+// IsIndexRole returns true if the d3m role is an index role.
+func IsIndexRole(role string) bool {
+	return role == RoleIndex || role == RoleMultiIndex
 }
