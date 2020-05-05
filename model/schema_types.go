@@ -70,6 +70,8 @@ const (
 	URIType = "uri"
 	// ImageType is the schema type for Image values
 	ImageType = "image"
+	// MultiBandImageType is t he schema type for multi-band (satellite) images
+	MultiBandImageType = "multiband_image"
 	// TimeSeriesType is the schema type for timeseries values
 	TimeSeriesType = "timeseries"
 	// GeoCoordinateType is the schema type for timeseries values
@@ -224,58 +226,60 @@ var (
 
 	// Maps from Distil internal type to TA2 supported type
 	ta2TypeMap = map[string]string{
-		AddressType:     TA2StringType,
-		IndexType:       TA2IntegerType,
-		IntegerType:     TA2IntegerType,
-		RealType:        TA2RealType,
-		BoolType:        TA2BooleanType,
-		DateTimeType:    TA2DateTimeType,
-		OrdinalType:     TA2CategoricalType,
-		CategoricalType: TA2CategoricalType,
-		NumericalType:   TA2RealType,
-		StringType:      TA2StringType,
-		CityType:        TA2CategoricalType,
-		CountryType:     TA2CategoricalType,
-		EmailType:       TA2StringType,
-		LatitudeType:    TA2RealType,
-		LongitudeType:   TA2RealType,
-		PhoneType:       TA2StringType,
-		PostalCodeType:  TA2StringType,
-		StateType:       TA2CategoricalType,
-		URIType:         TA2StringType,
-		ImageType:       TA2StringType,
-		TimestampType:   TA2DateTimeType,
-		TimeSeriesType:  TA2TimeSeriesType,
-		UnknownType:     TA2UnknownType,
-		RealVectorType:  TA2RealVectorType,
-		RealListType:    TA2RealVectorType,
+		AddressType:        TA2StringType,
+		IndexType:          TA2IntegerType,
+		IntegerType:        TA2IntegerType,
+		RealType:           TA2RealType,
+		BoolType:           TA2BooleanType,
+		DateTimeType:       TA2TimeType,
+		OrdinalType:        TA2CategoricalType,
+		CategoricalType:    TA2CategoricalType,
+		NumericalType:      TA2RealType,
+		StringType:         TA2StringType,
+		CityType:           TA2CategoricalType,
+		CountryType:        TA2CategoricalType,
+		EmailType:          TA2StringType,
+		LatitudeType:       TA2RealType,
+		LongitudeType:      TA2RealType,
+		PhoneType:          TA2StringType,
+		PostalCodeType:     TA2StringType,
+		StateType:          TA2CategoricalType,
+		URIType:            TA2StringType,
+		ImageType:          TA2StringType,
+		MultiBandImageType: TA2StringType,
+		TimestampType:      TA2TimeType,
+		TimeSeriesType:     TA2TimeSeriesType,
+		UnknownType:        TA2UnknownType,
+		RealVectorType:     TA2RealVectorType,
+		RealListType:       TA2RealVectorType,
 	}
 
 	// Maps from Distil internal type to D3M dataset doc type
 	schemaTypeMap = map[string]string{
-		AddressType:     StringSchemaType,
-		IndexType:       IntegerSchemaType,
-		IntegerType:     IntegerSchemaType,
-		RealType:        RealSchemaType,
-		BoolType:        BooleanSchemaType,
-		DateTimeType:    DatetimeSchemaType,
-		OrdinalType:     CategoricalSchemaType,
-		CategoricalType: CategoricalSchemaType,
-		NumericalType:   RealSchemaType,
-		StringType:      StringSchemaType,
-		CityType:        StringSchemaType,
-		CountryType:     StringSchemaType,
-		EmailType:       StringSchemaType,
-		LatitudeType:    RealSchemaType,
-		LongitudeType:   RealSchemaType,
-		PhoneType:       StringSchemaType,
-		PostalCodeType:  StringSchemaType,
-		StateType:       StringSchemaType,
-		URIType:         StringSchemaType,
-		ImageType:       ImageSchemaType,
-		TimeSeriesType:  TimeSeriesSchemaType,
-		TimestampType:   TimestampSchemaType,
-		UnknownType:     UnknownSchemaType,
+		AddressType:        StringSchemaType,
+		IndexType:          IntegerSchemaType,
+		IntegerType:        IntegerSchemaType,
+		RealType:           RealSchemaType,
+		BoolType:           BooleanSchemaType,
+		DateTimeType:       DatetimeSchemaType,
+		OrdinalType:        CategoricalSchemaType,
+		CategoricalType:    CategoricalSchemaType,
+		NumericalType:      RealSchemaType,
+		StringType:         StringSchemaType,
+		CityType:           StringSchemaType,
+		CountryType:        StringSchemaType,
+		EmailType:          StringSchemaType,
+		LatitudeType:       RealSchemaType,
+		LongitudeType:      RealSchemaType,
+		PhoneType:          StringSchemaType,
+		PostalCodeType:     StringSchemaType,
+		StateType:          StringSchemaType,
+		URIType:            StringSchemaType,
+		ImageType:          ImageSchemaType,
+		MultiBandImageType: ImageSchemaType,
+		TimeSeriesType:     TimeSeriesSchemaType,
+		TimestampType:      TimestampSchemaType,
+		UnknownType:        UnknownSchemaType,
 	}
 
 	// Maps from Lincoln Labs D3M dataset doc type to Distil internal type
@@ -376,6 +380,12 @@ func IsList(typ string) bool {
 // of analysis.
 func IsImage(typ string) bool {
 	return typ == ImageType
+}
+
+// IsMultiBandImage indicates whether or not a schema type is a multi-band (satellite) image for the
+// purposes of analysis
+func IsMultiBandImage(typ string) bool {
+	return typ == MultiBandImageType
 }
 
 // IsTimeSeries indicates whether or not a schema type is a timeseries for the purposes
