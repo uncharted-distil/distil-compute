@@ -354,7 +354,7 @@ func loadRawVariables(datasetPath string) (*model.DataResource, error) {
 			model.UnknownType,
 			"",
 			[]string{"attribute"},
-			model.VarRoleData,
+			model.VarDistilRoleData,
 			nil,
 			dataResource.Variables,
 			true)
@@ -778,7 +778,7 @@ func AugmentVariablesFromHeader(dr *model.DataResource, header []string) []*mode
 		if i < len(augmentedVars) {
 			v := metaVars[i]
 			if v == nil {
-				v = model.NewVariable(i, c, c, c, model.UnknownType, model.UnknownType, "", []string{"attribute"}, model.VarRoleData, nil, augmentedVars, true)
+				v = model.NewVariable(i, c, c, c, model.UnknownType, model.UnknownType, "", []string{"attribute"}, model.VarDistilRoleData, nil, augmentedVars, true)
 			}
 			augmentedVars[i] = v
 		}
