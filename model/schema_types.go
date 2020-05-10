@@ -277,11 +277,12 @@ var (
 		PostalCodeType:     StringSchemaType,
 		StateType:          StringSchemaType,
 		URIType:            StringSchemaType,
-		ImageType:          ImageSchemaType,
-		MultiBandImageType: ImageSchemaType,
+		ImageType:          StringSchemaType,
+		MultiBandImageType: StringSchemaType,
 		TimeSeriesType:     TimeSeriesSchemaType,
 		TimestampType:      TimestampSchemaType,
 		UnknownType:        UnknownSchemaType,
+		RealVectorType:     RealVectorSchemaType,
 	}
 
 	// Maps from Lincoln Labs D3M dataset doc type to Distil internal type

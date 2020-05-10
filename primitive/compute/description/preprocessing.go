@@ -112,6 +112,7 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 
 		remoteSensingGrouping := getRemoteSensingGrouping(datasetDescription)
 		if remoteSensingGrouping != nil {
+			selectedSet[remoteSensingGrouping.Name] = true
 			attribs := &ColumnUpdate{
 				SemanticTypes: []string{model.TA2GroupingKeyType},
 				Indices:       []int{remoteSensingGrouping.Index},
@@ -119,7 +120,7 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 			remoteSensingUpdate := NewAddSemanticTypeStep(nil, nil, attribs)
 			remoteSensingWrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
 			steps = append(steps, remoteSensingUpdate, remoteSensingWrapper)
-			offset++
+			offset += 2
 		}
 	}
 

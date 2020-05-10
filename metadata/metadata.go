@@ -1046,10 +1046,7 @@ func writeDataResource(resource *model.DataResource, extendedSchema bool) map[st
 
 func writeVariable(variable *model.Variable, extendedSchema bool) interface{} {
 	// col type index doesn't exist for TA2
-	colType := variable.Type
-	if colType == model.IndexType {
-		colType = model.IntegerType
-	}
+	colType := model.MapSchemaType(variable.Type)
 
 	output := map[string]interface{}{
 		model.VarIndexField: variable.Index,
