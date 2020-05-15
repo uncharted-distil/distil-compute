@@ -35,10 +35,6 @@ const (
 	SchemaSourceOriginal = "original"
 	// SchemaSourceRaw was loaded via raw data file
 	SchemaSourceRaw = "raw"
-	// VarRoleData is the distil role for data variables
-	VarRoleData = "data"
-	// VarRoleMetadata is the distil role for metadata variables
-	VarRoleMetadata = "metadata"
 
 	variableNameSizeLimit = 50
 	datasetIDSizeLimit    = 50
@@ -66,6 +62,9 @@ const (
 	RoleIndex = "index"
 	// RoleMultiIndex is the role used for index fields which are not unique in the learning data.
 	RoleMultiIndex = "multiIndex"
+	// RoleAttribute is the role used for attribute fields.
+	RoleAttribute = "attribute"
+
 	// D3MIndexFieldName denotes the name of the index field.
 	D3MIndexFieldName = "d3mIndex"
 	// FeatureVarPrefix is the prefix of a metadata var name.
@@ -105,6 +104,8 @@ const (
 	VarDistilRoleData = "data"
 	// VarDistilRoleGrouping indicates a var has a grouping role in distil.
 	VarDistilRoleGrouping = "grouping"
+	// VarDistilRoleMetadata is the distil role for metadata variables
+	VarDistilRoleMetadata = "metadata"
 	// VarDeleted flags whether the variable is deleted.
 	VarDeleted = "deleted"
 	// VarGroupingField is the field name for the variable grouping.
@@ -313,7 +314,7 @@ func NewVariable(index int, name, displayName, originalName, typ, originalType, 
 		selectedRole = role[0]
 	}
 	if distilRole == "" {
-		distilRole = VarRoleData
+		distilRole = VarDistilRoleData
 	}
 	if originalName == "" {
 		originalName = normalized
@@ -458,11 +459,24 @@ func PostgresValueForFieldType(typ string, field string) string {
 }
 
 // IsTA2Field indicates whether or not a particular variable is recognized by a TA2.
-func IsTA2Field(distilRole string) bool {
-	return distilRole == VarDistilRoleData || distilRole == VarDistilRoleIndex
+func IsTA2Field(distilRole string, selectedRole string) bool {
+	if distilRole == VarDistilRoleData || distilRole == VarDistilRoleIndex {
+		return true
+	}
+
+	if distilRole == VarDistilRoleGrouping && IsAttributeRole(selectedRole) {
+		return true
+	}
+
+	return false
 }
 
 // IsIndexRole returns true if the d3m role is an index role.
 func IsIndexRole(role string) bool {
 	return role == RoleIndex || role == RoleMultiIndex
+}
+
+// IsAttributeRole returns true if the d3m role is an attribute role.
+func IsAttributeRole(role string) bool {
+	return role == RoleAttribute
 }

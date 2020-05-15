@@ -354,7 +354,7 @@ func loadRawVariables(datasetPath string) (*model.DataResource, error) {
 			model.UnknownType,
 			"",
 			[]string{"attribute"},
-			model.VarRoleData,
+			model.VarDistilRoleData,
 			nil,
 			dataResource.Variables,
 			true)
@@ -778,7 +778,7 @@ func AugmentVariablesFromHeader(dr *model.DataResource, header []string) []*mode
 		if i < len(augmentedVars) {
 			v := metaVars[i]
 			if v == nil {
-				v = model.NewVariable(i, c, c, c, model.UnknownType, model.UnknownType, "", []string{"attribute"}, model.VarRoleData, nil, augmentedVars, true)
+				v = model.NewVariable(i, c, c, c, model.UnknownType, model.UnknownType, "", []string{"attribute"}, model.VarDistilRoleData, nil, augmentedVars, true)
 			}
 			augmentedVars[i] = v
 		}
@@ -1046,10 +1046,7 @@ func writeDataResource(resource *model.DataResource, extendedSchema bool) map[st
 
 func writeVariable(variable *model.Variable, extendedSchema bool) interface{} {
 	// col type index doesn't exist for TA2
-	colType := variable.Type
-	if colType == model.IndexType {
-		colType = model.IntegerType
-	}
+	colType := model.MapSchemaType(variable.Type)
 
 	output := map[string]interface{}{
 		model.VarIndexField: variable.Index,

@@ -109,6 +109,19 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 		steps = append(steps, NewDataCleaningStep(nil, nil))
 		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, offset+3, ""))
 		offset += 5
+
+		remoteSensingGrouping := getRemoteSensingGrouping(datasetDescription)
+		if remoteSensingGrouping != nil {
+			selectedSet[remoteSensingGrouping.Name] = true
+			attribs := &ColumnUpdate{
+				SemanticTypes: []string{model.TA2GroupingKeyType},
+				Indices:       []int{remoteSensingGrouping.Index},
+			}
+			remoteSensingUpdate := NewAddSemanticTypeStep(nil, nil, attribs)
+			remoteSensingWrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+			steps = append(steps, remoteSensingUpdate, remoteSensingWrapper)
+			offset += 2
+		}
 	}
 
 	// create the semantic type update primitive
@@ -157,6 +170,30 @@ func getTimeseriesGrouping(datasetDescription *UserDatasetDescription) *model.Gr
 	for _, v := range datasetDescription.AllFeatures {
 		if v.Grouping != nil && model.IsTimeSeries(v.Grouping.Type) {
 			return v.Grouping
+		}
+	}
+
+	return nil
+}
+
+func getRemoteSensingGrouping(datasetDescription *UserDatasetDescription) *model.Variable {
+	// multiband image type identifies remote sensing dataset
+	isRemoteSensing := false
+	for _, v := range datasetDescription.AllFeatures {
+		if model.IsMultiBandImage(v.Type) {
+			isRemoteSensing = true
+			break
+		}
+	}
+
+	if !isRemoteSensing {
+		return nil
+	}
+
+	// grouping role will identify the grouping key to use
+	for _, v := range datasetDescription.AllFeatures {
+		if v.DistilRole == model.VarDistilRoleGrouping {
+			return v
 		}
 	}
 
