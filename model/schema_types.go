@@ -74,8 +74,10 @@ const (
 	MultiBandImageType = "multiband_image"
 	// TimeSeriesType is the schema type for timeseries values
 	TimeSeriesType = "timeseries"
-	// GeoCoordinateType is the schema type for timeseries values
+	// GeoCoordinateType is the schema type for geocoordinate values
 	GeoCoordinateType = "geocoordinate"
+	// RemoteSensingType is the schema type for remote sensing values
+	RemoteSensingType = "remote_sensing"
 	// TimestampType is the schema type for timestamp values
 	TimestampType = "timestamp"
 	// UnknownType is the schema type for unknown values
@@ -401,6 +403,12 @@ func IsTimeSeries(typ string) bool {
 // for the purposes of analysis.
 func IsGeoCoordinate(typ string) bool {
 	return typ == GeoCoordinateType
+}
+
+// IsGeoCoordinate indicates whether or not a schema type is a remote sensing
+// for the purposes of analysis.
+func IsRemoteSensing(typ string) bool {
+	return typ == RemoteSensingType
 }
 
 // IsTimestamp indicates whether or not a schema type is a timestamp for the purposes
