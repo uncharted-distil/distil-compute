@@ -405,7 +405,7 @@ func IsGeoCoordinate(typ string) bool {
 	return typ == GeoCoordinateType
 }
 
-// IsGeoCoordinate indicates whether or not a schema type is a remote sensing
+// IsRemoteSensing indicates whether or not a schema type is a remote sensing
 // for the purposes of analysis.
 func IsRemoteSensing(typ string) bool {
 	return typ == RemoteSensingType

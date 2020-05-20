@@ -139,21 +139,69 @@ var (
 	nameRegex = regexp.MustCompile("[^a-zA-Z0-9]")
 )
 
-// GroupingProperties represents a grouping properties.
-type GroupingProperties struct {
-	XCol       string `json:"xCol"`
-	YCol       string `json:"yCol"`
-	ClusterCol string `json:"clusterCol"`
+// BaseGrouping provides access to the basic grouping information.
+type BaseGrouping interface {
+	GetDataset() string
+	GetType() string
+	GetIDCol() string
+	GetSubIDs() []string
+	GetHidden() []string
 }
 
 // Grouping represents a variable grouping.
 type Grouping struct {
-	Dataset    string             `json:"dataset"`
-	Type       string             `json:"type"`
-	IDCol      string             `json:"idCol"`
-	SubIDs     []string           `json:"subIds"`
-	Hidden     []string           `json:"hidden"`
-	Properties GroupingProperties `json:"properties"`
+	Dataset string   `json:"dataset"`
+	Type    string   `json:"type"`
+	IDCol   string   `json:"idCol"`
+	SubIDs  []string `json:"subIds"`
+	Hidden  []string `json:"hidden"`
+}
+
+// GeoCoordinateGrouping is used for geocoordinate grouping information.
+type GeoCoordinateGrouping struct {
+	Grouping
+	XCol string `json:"xCol"`
+	YCol string `json:"yCol"`
+}
+
+// TimeseriesGrouping is used for timeseries grouping information.
+type TimeseriesGrouping struct {
+	Grouping
+	ClusterCol string `json:"clusterCol"`
+	XCol       string `json:"xCol"`
+	YCol       string `json:"yCol"`
+}
+
+// RemoteSensingGrouping is used for remote sensing grouping information.
+type RemoteSensingGrouping struct {
+	Grouping
+	ImageCol string `json:"imageCol"`
+	BandCol  string `json:"bandCol"`
+}
+
+// GetDataset returns the grouping dataset.
+func (g *Grouping) GetDataset() string {
+	return g.Dataset
+}
+
+// GetType returns the grouping type.
+func (g *Grouping) GetType() string {
+	return g.Type
+}
+
+// GetIDCol returns the grouping id column name.
+func (g *Grouping) GetIDCol() string {
+	return g.IDCol
+}
+
+// GetSubIDs returns the grouping sub id column names.
+func (g *Grouping) GetSubIDs() []string {
+	return g.SubIDs
+}
+
+// GetHidden returns the grouping hidden column names.
+func (g *Grouping) GetHidden() []string {
+	return g.Hidden
 }
 
 // Variable represents a single variable description.
@@ -172,7 +220,7 @@ type Variable struct {
 	SuggestedTypes   []*SuggestedType       `json:"suggestedTypes,omitempty"`
 	RefersTo         map[string]interface{} `json:"refersTo,omitempty"`
 	Deleted          bool                   `json:"deleted"`
-	Grouping         *Grouping              `json:"grouping"`
+	Grouping         BaseGrouping           `json:"grouping"`
 	Min              float64                `json:"min"`
 	Max              float64                `json:"max"`
 }

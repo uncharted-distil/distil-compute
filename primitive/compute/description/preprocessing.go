@@ -73,8 +73,8 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 		}
 
 		groupingIndices = listColumns(datasetDescription.AllFeatures, groupingSet)
-		selectedSet[strings.ToLower(timeseriesGrouping.Properties.XCol)] = true
-		selectedSet[strings.ToLower(timeseriesGrouping.Properties.YCol)] = true
+		selectedSet[strings.ToLower(timeseriesGrouping.XCol)] = true
+		selectedSet[strings.ToLower(timeseriesGrouping.YCol)] = true
 	}
 
 	// augment the dataset if needed
@@ -163,13 +163,13 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 	return pip, nil
 }
 
-func getTimeseriesGrouping(datasetDescription *UserDatasetDescription) *model.Grouping {
+func getTimeseriesGrouping(datasetDescription *UserDatasetDescription) *model.TimeseriesGrouping {
 	if model.IsTimeSeries(datasetDescription.TargetFeature.Type) {
-		return datasetDescription.TargetFeature.Grouping
+		return datasetDescription.TargetFeature.Grouping.(*model.TimeseriesGrouping)
 	}
 	for _, v := range datasetDescription.AllFeatures {
-		if v.Grouping != nil && model.IsTimeSeries(v.Grouping.Type) {
-			return v.Grouping
+		if v.Grouping != nil && model.IsTimeSeries(v.Grouping.GetType()) {
+			return v.Grouping.(*model.TimeseriesGrouping)
 		}
 	}
 
