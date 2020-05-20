@@ -148,6 +148,11 @@ type BaseGrouping interface {
 	GetHidden() []string
 }
 
+// ClusteredGrouping provides access to grouping cluster information.
+type ClusteredGrouping interface {
+	GetClusterCol() string
+}
+
 // Grouping represents a variable grouping.
 type Grouping struct {
 	Dataset string   `json:"dataset"`
@@ -202,6 +207,11 @@ func (g *Grouping) GetSubIDs() []string {
 // GetHidden returns the grouping hidden column names.
 func (g *Grouping) GetHidden() []string {
 	return g.Hidden
+}
+
+// GetClusterCol returns the cluster column name.
+func (t *TimeseriesGrouping) GetClusterCol() string {
+	return t.ClusterCol
 }
 
 // Variable represents a single variable description.
