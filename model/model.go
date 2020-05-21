@@ -470,6 +470,11 @@ func (v *Variable) IsMediaReference() bool {
 	return mediaReference
 }
 
+// IsGrouping returns true if the variable is a grouping.
+func (v *Variable) IsGrouping() bool {
+	return v.Grouping != nil && !v.Grouping.IsNil()
+}
+
 // MapD3MTypeToPostgresType generates a postgres type from a d3m type.
 func MapD3MTypeToPostgresType(typ string) string {
 	// Integer types can be returned as floats.
