@@ -146,6 +146,7 @@ type BaseGrouping interface {
 	GetIDCol() string
 	GetSubIDs() []string
 	GetHidden() []string
+	IsNil() bool
 }
 
 // ClusteredGrouping provides access to grouping cluster information.
@@ -207,6 +208,11 @@ func (g *Grouping) GetSubIDs() []string {
 // GetHidden returns the grouping hidden column names.
 func (g *Grouping) GetHidden() []string {
 	return g.Hidden
+}
+
+// IsNil checks if this is a typed nil.
+func (g *Grouping) IsNil() bool {
+	return g == nil
 }
 
 // GetClusterCol returns the cluster column name.
