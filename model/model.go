@@ -181,8 +181,9 @@ type TimeseriesGrouping struct {
 // RemoteSensingGrouping is used for remote sensing grouping information.
 type RemoteSensingGrouping struct {
 	Grouping
-	ImageCol string `json:"imageCol"`
-	BandCol  string `json:"bandCol"`
+	BandCol       string `json:"bandCol"`
+	CoordinateCol string `json:"coordinateCol"`
+	ImageCol      string `json:"imageCol"`
 }
 
 // GetDataset returns the grouping dataset.
