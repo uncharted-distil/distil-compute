@@ -682,7 +682,10 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 		probability := 1.0
 		if variable.Type == model.UnknownType {
 			probability = 0
+		} else if model.IsSchemaComplexType(variable.Type) {
+			probability = 1.5
 		}
+
 		suggestedTypes = append(suggestedTypes, &model.SuggestedType{
 			Type:        variable.Type,
 			Probability: probability,

@@ -336,6 +336,11 @@ var (
 		DateTimeType:   true,
 		NumericalType:  true,
 		StringType:     true,
+		UnknownType:    true,
+	}
+
+	schemaComplexTypes = map[string]bool{
+		RealVectorSchemaType: true,
 	}
 )
 
@@ -470,4 +475,9 @@ func MapSimonType(typ string) string {
 // IsBasicSimonType check whether or not a type is a basic simon type.
 func IsBasicSimonType(typ string) bool {
 	return simonBasicTypes[typ]
+}
+
+// IsSchemaComplexType check whether or not a type is a complex schema type.
+func IsSchemaComplexType(typ string) bool {
+	return schemaComplexTypes[typ]
 }
