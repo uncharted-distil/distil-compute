@@ -31,9 +31,9 @@ import (
 	"strings"
 
 	"github.com/Jeffail/gabs/v2"
+	elastic "github.com/olivere/elastic/v7"
 	"github.com/pkg/errors"
 	log "github.com/unchartedsoftware/plog"
-	elastic "gopkg.in/olivere/elastic.v5"
 
 	"github.com/uncharted-distil/distil-compute/model"
 )
@@ -1129,7 +1129,6 @@ func IngestMetadata(client *elastic.Client, index string, datasetPrefix string, 
 	// push the document into the metadata index
 	_, err = client.Index().
 		Index(index).
-		Type("metadata").
 		Id(meta.ID).
 		BodyString(string(bytes)).
 		Refresh("true").
