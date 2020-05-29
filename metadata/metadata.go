@@ -1247,85 +1247,81 @@ func CreateMetadataIndex(client *elastic.Client, index string, overwrite bool) e
 			}
 		},
 		"mappings": {
-			"metadata": {
-				"properties": {
-					"datasetID": {
-						"type": "text",
-						"analyzer": "search_analyzer"
-					},
-					"datasetName": {
-						"type": "text",
-						"analyzer": "search_analyzer",
-						"fields": {
-							"keyword": {
-								"type": "keyword",
-								"ignore_above": 256
-							}
+			"properties": {
+				"datasetID": {
+					"type": "text",
+					"analyzer": "search_analyzer"
+				},
+				"datasetName": {
+					"type": "text",
+					"analyzer": "search_analyzer",
+					"fields": {
+						"keyword": {
+							"type": "keyword",
+							"ignore_above": 256
 						}
-					},
-					"parentDatasetIDs": {
-						"type": "text",
-						"analyzer": "search_analyzer"
-					},
-					"storageName": {
-						"type": "text"
-					},
-					"datasetFolder": {
-						"type": "text"
-					},
-					"description": {
-						"type": "text",
-						"analyzer": "search_analyzer"
-					},
-					"summary": {
-						"type": "text",
-						"analyzer": "search_analyzer"
-					},
-					"summaryMachine": {
-						"type": "text",
-						"analyzer": "search_analyzer"
-					},
-					"numRows": {
-						"type": "long"
-					},
-					"numBytes": {
-						"type": "long"
-					},
-					"variables": {
-						"properties": {
-							"varDescription": {
-								"type": "text"
-							},
-							"varName": {
-								"type": "text",
-								"analyzer": "search_analyzer",
-								"include_in_all": true,
-								"term_vector": "yes"
-							},
-							"colName": {
-								"type": "text",
-								"analyzer": "search_analyzer",
-								"include_in_all": true,
-								"term_vector": "yes"
-							},
-							"varRole": {
-								"type": "text"
-							},
-							"varType": {
-								"type": "text"
-							},
-							"varOriginalType": {
-								"type": "text"
-							},
-							"varOriginalName": {
-								"type": "text"
-							},
-							"varDisplayName": {
-								"type": "text"
-							},
-							"importance": {
-								"type": "integer"
-							}
+					}
+				},
+				"parentDatasetIDs": {
+					"type": "text",
+					"analyzer": "search_analyzer"
+				},
+				"storageName": {
+					"type": "text"
+				},
+				"datasetFolder": {
+					"type": "text"
+				},
+				"description": {
+					"type": "text",
+					"analyzer": "search_analyzer"
+				},
+				"summary": {
+					"type": "text",
+					"analyzer": "search_analyzer"
+				},
+				"summaryMachine": {
+					"type": "text",
+					"analyzer": "search_analyzer"
+				},
+				"numRows": {
+					"type": "long"
+				},
+				"numBytes": {
+					"type": "long"
+				},
+				"variables": {
+					"properties": {
+						"varDescription": {
+							"type": "text"
+						},
+						"varName": {
+							"type": "text",
+							"analyzer": "search_analyzer",
+							"term_vector": "yes"
+						},
+						"colName": {
+							"type": "text",
+							"analyzer": "search_analyzer",
+							"term_vector": "yes"
+						},
+						"varRole": {
+							"type": "text"
+						},
+						"varType": {
+							"type": "text"
+						},
+						"varOriginalType": {
+							"type": "text"
+						},
+						"varOriginalName": {
+							"type": "text"
+						},
+						"varDisplayName": {
+							"type": "text"
+						},
+						"importance": {
+							"type": "integer"
 						}
 					}
 				}
@@ -1376,6 +1372,7 @@ func CreateModelIndex(client *elastic.Client, index string, overwrite bool) erro
 	// create body
 	body := `{
 		"settings": {
+			"max_ngram_diff": 20,
 			"analysis": {
 				"filter": {
 					"ngram_filter": {
@@ -1426,42 +1423,39 @@ func CreateModelIndex(client *elastic.Client, index string, overwrite bool) erro
 			}
 		},
 		"mappings": {
-			"model": {
-				"properties": {
-					"modelName": {
-						"type": "text",
-						"analyzer": "search_analyzer"
-					},
-					"modelDescription": {
-						"type": "text",
-						"analyzer": "search_analyzer"
-					},
-					"filepath": {
-						"type": "text"
-					},
-					"fittedSolutionId": {
-						"type": "text"
-					},
-					"datasetId": {
-						"type": "text",
-						"analyzer": "search_analyzer"
-					},
-					"datasetName": {
-						"type": "text",
-						"analyzer": "search_analyzer",
-						"fields": {
-							"keyword": {
-								"type": "keyword",
-								"ignore_above": 256
-							}
+			"properties": {
+				"modelName": {
+					"type": "text",
+					"analyzer": "search_analyzer"
+				},
+				"modelDescription": {
+					"type": "text",
+					"analyzer": "search_analyzer"
+				},
+				"filepath": {
+					"type": "text"
+				},
+				"fittedSolutionId": {
+					"type": "text"
+				},
+				"datasetId": {
+					"type": "text",
+					"analyzer": "search_analyzer"
+				},
+				"datasetName": {
+					"type": "text",
+					"analyzer": "search_analyzer",
+					"fields": {
+						"keyword": {
+							"type": "keyword",
+							"ignore_above": 256
 						}
-					},
-					"variables": {
-						"type": "text",
-						"analyzer": "search_analyzer",
-						"include_in_all": true,
-						"term_vector": "yes"
 					}
+				},
+				"variables": {
+					"type": "text",
+					"analyzer": "search_analyzer",
+					"term_vector": "yes"
 				}
 			}
 		}
