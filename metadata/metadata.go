@@ -1195,6 +1195,7 @@ func CreateMetadataIndex(client *elastic.Client, index string, overwrite bool) e
 
 	// create body
 	body := `{
+		"max_ngram_diff": 20,
 		"settings": {
 			"analysis": {
 				"filter": {
