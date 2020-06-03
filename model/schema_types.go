@@ -74,8 +74,10 @@ const (
 	MultiBandImageType = "multiband_image"
 	// TimeSeriesType is the schema type for timeseries values
 	TimeSeriesType = "timeseries"
-	// GeoCoordinateType is the schema type for timeseries values
+	// GeoCoordinateType is the schema type for geocoordinate values
 	GeoCoordinateType = "geocoordinate"
+	// RemoteSensingType is the schema type for remote sensing values
+	RemoteSensingType = "remote_sensing"
 	// TimestampType is the schema type for timestamp values
 	TimestampType = "timestamp"
 	// UnknownType is the schema type for unknown values
@@ -334,6 +336,11 @@ var (
 		DateTimeType:   true,
 		NumericalType:  true,
 		StringType:     true,
+		UnknownType:    true,
+	}
+
+	schemaComplexTypes = map[string]bool{
+		RealVectorSchemaType: true,
 	}
 )
 
@@ -403,6 +410,12 @@ func IsGeoCoordinate(typ string) bool {
 	return typ == GeoCoordinateType
 }
 
+// IsRemoteSensing indicates whether or not a schema type is a remote sensing
+// for the purposes of analysis.
+func IsRemoteSensing(typ string) bool {
+	return typ == RemoteSensingType
+}
+
 // IsTimestamp indicates whether or not a schema type is a timestamp for the purposes
 // of analysis.
 func IsTimestamp(typ string) bool {
@@ -462,4 +475,9 @@ func MapSimonType(typ string) string {
 // IsBasicSimonType check whether or not a type is a basic simon type.
 func IsBasicSimonType(typ string) bool {
 	return simonBasicTypes[typ]
+}
+
+// IsSchemaComplexType check whether or not a type is a complex schema type.
+func IsSchemaComplexType(typ string) bool {
+	return schemaComplexTypes[typ]
 }

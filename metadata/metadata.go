@@ -31,9 +31,9 @@ import (
 	"strings"
 
 	"github.com/Jeffail/gabs/v2"
+	elastic "github.com/olivere/elastic/v7"
 	"github.com/pkg/errors"
 	log "github.com/unchartedsoftware/plog"
-	elastic "gopkg.in/olivere/elastic.v5"
 
 	"github.com/uncharted-distil/distil-compute/model"
 )
@@ -682,7 +682,10 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 		probability := 1.0
 		if variable.Type == model.UnknownType {
 			probability = 0
+		} else if model.IsSchemaComplexType(variable.Type) {
+			probability = 1.5
 		}
+
 		suggestedTypes = append(suggestedTypes, &model.SuggestedType{
 			Type:        variable.Type,
 			Probability: probability,
@@ -1126,7 +1129,6 @@ func IngestMetadata(client *elastic.Client, index string, datasetPrefix string, 
 	// push the document into the metadata index
 	_, err = client.Index().
 		Index(index).
-		Type("metadata").
 		Id(meta.ID).
 		BodyString(string(bytes)).
 		Refresh("true").
@@ -1193,6 +1195,7 @@ func CreateMetadataIndex(client *elastic.Client, index string, overwrite bool) e
 	// create body
 	body := `{
 		"settings": {
+			"max_ngram_diff": 20,
 			"analysis": {
 				"filter": {
 					"ngram_filter": {
@@ -1243,85 +1246,81 @@ func CreateMetadataIndex(client *elastic.Client, index string, overwrite bool) e
 			}
 		},
 		"mappings": {
-			"metadata": {
-				"properties": {
-					"datasetID": {
-						"type": "text",
-						"analyzer": "search_analyzer"
-					},
-					"datasetName": {
-						"type": "text",
-						"analyzer": "search_analyzer",
-						"fields": {
-							"keyword": {
-								"type": "keyword",
-								"ignore_above": 256
-							}
+			"properties": {
+				"datasetID": {
+					"type": "text",
+					"analyzer": "search_analyzer"
+				},
+				"datasetName": {
+					"type": "text",
+					"analyzer": "search_analyzer",
+					"fields": {
+						"keyword": {
+							"type": "keyword",
+							"ignore_above": 256
 						}
-					},
-					"parentDatasetIDs": {
-						"type": "text",
-						"analyzer": "search_analyzer"
-					},
-					"storageName": {
-						"type": "text"
-					},
-					"datasetFolder": {
-						"type": "text"
-					},
-					"description": {
-						"type": "text",
-						"analyzer": "search_analyzer"
-					},
-					"summary": {
-						"type": "text",
-						"analyzer": "search_analyzer"
-					},
-					"summaryMachine": {
-						"type": "text",
-						"analyzer": "search_analyzer"
-					},
-					"numRows": {
-						"type": "long"
-					},
-					"numBytes": {
-						"type": "long"
-					},
-					"variables": {
-						"properties": {
-							"varDescription": {
-								"type": "text"
-							},
-							"varName": {
-								"type": "text",
-								"analyzer": "search_analyzer",
-								"include_in_all": true,
-								"term_vector": "yes"
-							},
-							"colName": {
-								"type": "text",
-								"analyzer": "search_analyzer",
-								"include_in_all": true,
-								"term_vector": "yes"
-							},
-							"varRole": {
-								"type": "text"
-							},
-							"varType": {
-								"type": "text"
-							},
-							"varOriginalType": {
-								"type": "text"
-							},
-							"varOriginalName": {
-								"type": "text"
-							},
-							"varDisplayName": {
-								"type": "text"
-							},
-							"importance": {
-								"type": "integer"
-							}
+					}
+				},
+				"parentDatasetIDs": {
+					"type": "text",
+					"analyzer": "search_analyzer"
+				},
+				"storageName": {
+					"type": "text"
+				},
+				"datasetFolder": {
+					"type": "text"
+				},
+				"description": {
+					"type": "text",
+					"analyzer": "search_analyzer"
+				},
+				"summary": {
+					"type": "text",
+					"analyzer": "search_analyzer"
+				},
+				"summaryMachine": {
+					"type": "text",
+					"analyzer": "search_analyzer"
+				},
+				"numRows": {
+					"type": "long"
+				},
+				"numBytes": {
+					"type": "long"
+				},
+				"variables": {
+					"properties": {
+						"varDescription": {
+							"type": "text"
+						},
+						"varName": {
+							"type": "text",
+							"analyzer": "search_analyzer",
+							"term_vector": "yes"
+						},
+						"colName": {
+							"type": "text",
+							"analyzer": "search_analyzer",
+							"term_vector": "yes"
+						},
+						"varRole": {
+							"type": "text"
+						},
+						"varType": {
+							"type": "text"
+						},
+						"varOriginalType": {
+							"type": "text"
+						},
+						"varOriginalName": {
+							"type": "text"
+						},
+						"varDisplayName": {
+							"type": "text"
+						},
+						"importance": {
+							"type": "integer"
 						}
 					}
 				}
@@ -1372,6 +1371,7 @@ func CreateModelIndex(client *elastic.Client, index string, overwrite bool) erro
 	// create body
 	body := `{
 		"settings": {
+			"max_ngram_diff": 20,
 			"analysis": {
 				"filter": {
 					"ngram_filter": {
@@ -1422,42 +1422,39 @@ func CreateModelIndex(client *elastic.Client, index string, overwrite bool) erro
 			}
 		},
 		"mappings": {
-			"model": {
-				"properties": {
-					"modelName": {
-						"type": "text",
-						"analyzer": "search_analyzer"
-					},
-					"modelDescription": {
-						"type": "text",
-						"analyzer": "search_analyzer"
-					},
-					"filepath": {
-						"type": "text"
-					},
-					"fittedSolutionId": {
-						"type": "text"
-					},
-					"datasetId": {
-						"type": "text",
-						"analyzer": "search_analyzer"
-					},
-					"datasetName": {
-						"type": "text",
-						"analyzer": "search_analyzer",
-						"fields": {
-							"keyword": {
-								"type": "keyword",
-								"ignore_above": 256
-							}
+			"properties": {
+				"modelName": {
+					"type": "text",
+					"analyzer": "search_analyzer"
+				},
+				"modelDescription": {
+					"type": "text",
+					"analyzer": "search_analyzer"
+				},
+				"filepath": {
+					"type": "text"
+				},
+				"fittedSolutionId": {
+					"type": "text"
+				},
+				"datasetId": {
+					"type": "text",
+					"analyzer": "search_analyzer"
+				},
+				"datasetName": {
+					"type": "text",
+					"analyzer": "search_analyzer",
+					"fields": {
+						"keyword": {
+							"type": "keyword",
+							"ignore_above": 256
 						}
-					},
-					"variables": {
-						"type": "text",
-						"analyzer": "search_analyzer",
-						"include_in_all": true,
-						"term_vector": "yes"
 					}
+				},
+				"variables": {
+					"type": "text",
+					"analyzer": "search_analyzer",
+					"term_vector": "yes"
 				}
 			}
 		}

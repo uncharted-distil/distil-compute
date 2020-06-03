@@ -21,8 +21,8 @@ import (
 	"testing"
 
 	"github.com/Jeffail/gabs/v2"
+	elastic "github.com/olivere/elastic/v7"
 	"github.com/stretchr/testify/assert"
-	elastic "gopkg.in/olivere/elastic.v5"
 )
 
 func TestMetadataFromSchema(t *testing.T) {
