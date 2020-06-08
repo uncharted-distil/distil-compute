@@ -62,6 +62,7 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 	isTimeseries := false
 	groupingIndices := make([]int, 0)
 	timeseriesGrouping := getTimeseriesGrouping(datasetDescription)
+	targetName := datasetDescription.TargetFeature.Name
 	if timeseriesGrouping != nil {
 		isTimeseries = true
 		groupingSet := map[string]bool{}
@@ -75,6 +76,7 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 		groupingIndices = listColumns(datasetDescription.AllFeatures, groupingSet)
 		selectedSet[strings.ToLower(timeseriesGrouping.XCol)] = true
 		selectedSet[strings.ToLower(timeseriesGrouping.YCol)] = true
+		targetName = timeseriesGrouping.YCol
 	}
 
 	// augment the dataset if needed
@@ -125,7 +127,7 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 	}
 
 	// create the semantic type update primitive
-	updateSemanticTypes, err := createUpdateSemanticTypes(datasetDescription.TargetFeature.Name, datasetDescription.AllFeatures, selectedSet, offset)
+	updateSemanticTypes, err := createUpdateSemanticTypes(targetName, datasetDescription.AllFeatures, selectedSet, offset)
 	if err != nil {
 		return nil, err
 	}
