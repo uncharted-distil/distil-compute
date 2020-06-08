@@ -87,12 +87,6 @@ func NewKMeansCluteringStep(inputs map[string]DataRef, outputMethods []string) *
 
 // NewSlothStep creates a Sloth timeseries clustering step.
 func NewSlothStep(inputs map[string]DataRef, outputMethods []string) *StepData {
-	// since Sloth has fit & produce, need to set the params from
-	// set_training_data. In this case, outputs is not used.
-	if inputs["inputs"] != nil && inputs["outputs"] == nil {
-		inputs["outputs"] = inputs["inputs"]
-	}
-
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "77bf4b92-2faa-3e38-bb7e-804131243a7f",
