@@ -93,13 +93,11 @@ func (e *ExecPipelineRequest) Listen(listener ExecPipelineStatusListener) error 
 func (e *ExecPipelineRequest) Dispatch(client *Client, templateRequest *pipeline.SearchSolutionsRequest) error {
 	if templateRequest == nil {
 		templateRequest = &pipeline.SearchSolutionsRequest{
-			Version:   GetAPIVersion(),
-			UserAgent: client.UserAgent,
-			Template:  e.pipelineDesc,
-			AllowedValueTypes: []pipeline.ValueType{
-				pipeline.ValueType_CSV_URI,
-			},
-			Inputs: createInputValues(e.datasetURIs),
+			Version:           GetAPIVersion(),
+			UserAgent:         client.UserAgent,
+			Template:          e.pipelineDesc,
+			AllowedValueTypes: []string{CSVURIValueType},
+			Inputs:            createInputValues(e.datasetURIs),
 		}
 	}
 
@@ -202,9 +200,7 @@ func (e *ExecPipelineRequest) createProduceSolutionRequest(datasetURIs []string,
 		FittedSolutionId: solutionID,
 		Inputs:           createInputValues(datasetURIs),
 		ExposeOutputs:    []string{defaultExposedOutputKey},
-		ExposeValueTypes: []pipeline.ValueType{
-			pipeline.ValueType_CSV_URI,
-		},
+		ExposeValueTypes: []string{CSVURIValueType},
 	}
 }
 

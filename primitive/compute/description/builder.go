@@ -102,7 +102,6 @@ func (p *PipelineBuilder) Compile() (*pipeline.PipelineDescription, error) {
 		Steps:       compileResults,
 		Inputs:      pipelineInputs,
 		Outputs:     pipelineOutputs,
-		Context:     pipeline.PipelineContext_TESTING,
 	}
 
 	// mark the entire pipeline as compiled so it can't be compiled again
