@@ -100,6 +100,22 @@ const (
 	RemoteSensingTask = "remoteSensing"
 	// LupiTask represents a task involving LUPI (Learning Using Priveleged Information) data
 	LupiTask = "lupi"
+	// UndefinedTask is a flag for undefined/unknown task values
+	UndefinedTask = "undefined"
+
+	// UndefinedMetric is a flag for undefined/uknown metric values
+	UndefinedMetric = "undefined"
+
+	// Value types accepted by the TA2 level
+	// CSVURIValueType denotes a CSV file URI at the TA2 level
+	CSVURIValueType = "CSV_URI"
+	// DatasetURIValueType denotes a D3M dataset file URI at the TA2 level
+	DatasetURIValueType = "DATASET_URI"
+	// RawValueType denotes a raw numeric value
+	RawValueType = "RAW"
+
+	// HoldoutEvaluationMethod indicates a hold out model evaluation at the TA2 level
+	HoldoutEvaluationMethod = "HOLDOUT"
 )
 
 var (
@@ -252,43 +268,28 @@ func ConvertMetricsFromTA3ToTA2(metrics []string) []*pipeline.ProblemPerformance
 	var res []*pipeline.ProblemPerformanceMetric
 	for _, metric := range metrics {
 		ta2Metric := ConvertProblemMetricToTA2(metric)
-		var metricSet pipeline.PerformanceMetric
 		if ta2Metric == "" {
 			log.Warnf("unrecognized metric ('%s'), defaulting to undefined", metric)
-			metricSet = pipeline.PerformanceMetric_METRIC_UNDEFINED
-		} else {
-			metricAdjusted, ok := pipeline.PerformanceMetric_value[ta2Metric]
-			if !ok {
-				log.Warnf("undefined metric found ('%s'), defaulting to undefined", ta2Metric)
-				metricSet = pipeline.PerformanceMetric_METRIC_UNDEFINED
-			} else {
-				metricSet = pipeline.PerformanceMetric(metricAdjusted)
-			}
+			ta2Metric = UndefinedMetric
 		}
 		res = append(res, &pipeline.ProblemPerformanceMetric{
-			Metric: metricSet,
+			Metric: ta2Metric,
 		})
 	}
 	return res
 }
 
 // ConvertTaskKeywordsFromTA3ToTA2 converts a task from TA3 to TA2.
-func ConvertTaskKeywordsFromTA3ToTA2(taskKeywords []string) []pipeline.TaskKeyword {
-	result := []pipeline.TaskKeyword{}
+func ConvertTaskKeywordsFromTA3ToTA2(taskKeywords []string) []string {
+	result := []string{}
 	for _, taskKeyword := range taskKeywords {
 		ta2Task := ConvertProblemTaskToTA2(taskKeyword)
 		if ta2Task == "" {
 			log.Warnf("unrecognized task type ('%s'), defaulting to undefined", taskKeyword)
-			result = append(result, pipeline.TaskKeyword_TASK_KEYWORD_UNDEFINED)
+			result = append(result, UndefinedTask)
 			continue
 		}
-		task, ok := pipeline.TaskKeyword_value[ta2Task]
-		if !ok {
-			log.Warnf("undefined task type found ('%s'), defaulting to undefined", ta2Task)
-			result = append(result, pipeline.TaskKeyword_TASK_KEYWORD_UNDEFINED)
-			continue
-		}
-		result = append(result, pipeline.TaskKeyword(task))
+		result = append(result, ta2Task)
 	}
 	return result
 }
