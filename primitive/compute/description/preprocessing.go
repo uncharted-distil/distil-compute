@@ -48,12 +48,20 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 
 	offset := 0
 
+	// filter out group variables
+	datasetFeatures := []*model.Variable{}
+	for _, v := range datasetDescription.AllFeatures {
+		if v.Grouping == nil {
+			datasetFeatures = append(datasetFeatures, v)
+		}
+	}
+
 	// save the selected features in a set for quick lookup
 	selectedSet := map[string]bool{}
 	for _, v := range datasetDescription.SelectedFeatures {
 		selectedSet[strings.ToLower(v)] = true
 	}
-	columnIndices := mapColumns(datasetDescription.AllFeatures, selectedSet)
+	columnIndices := mapColumns(datasetFeatures, selectedSet)
 
 	// create pipeline nodes for step we need to execute
 	steps := []Step{} // add the denorm primitive
@@ -66,16 +74,10 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 	if timeseriesGrouping != nil {
 		isTimeseries = true
 		groupingSet := map[string]bool{}
-
-		// we need to udpate the selected set to include members of the grouped variable
 		for _, subID := range timeseriesGrouping.SubIDs {
-			selectedSet[strings.ToLower(subID)] = true
 			groupingSet[strings.ToLower(subID)] = true
 		}
-
-		groupingIndices = listColumns(datasetDescription.AllFeatures, groupingSet)
-		selectedSet[strings.ToLower(timeseriesGrouping.XCol)] = true
-		selectedSet[strings.ToLower(timeseriesGrouping.YCol)] = true
+		groupingIndices = listColumns(datasetFeatures, groupingSet)
 		targetName = timeseriesGrouping.YCol
 	}
 
@@ -135,7 +137,7 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 	offset += len(updateSemanticTypes)
 
 	// create the feature selection primitive
-	removeFeatures := createRemoveFeatures(datasetDescription.AllFeatures, selectedSet, offset)
+	removeFeatures := createRemoveFeatures(datasetFeatures, selectedSet, offset)
 	steps = append(steps, removeFeatures...)
 	offset += len(removeFeatures)
 
@@ -182,7 +184,7 @@ func getRemoteSensingGrouping(datasetDescription *UserDatasetDescription) *model
 	// multiband image type identifies remote sensing dataset
 	isRemoteSensing := false
 	for _, v := range datasetDescription.AllFeatures {
-		if model.IsMultiBandImage(v.Type) {
+		if model.IsRemoteSensing(v.Type) {
 			isRemoteSensing = true
 			break
 		}
@@ -443,13 +445,4 @@ func listColumns(allFeatures []*model.Variable, selectedSet map[string]bool) []i
 	}
 
 	return colIndices
-}
-
-func getIndex(allFeatures []*model.Variable, name string) (int, error) {
-	for _, f := range allFeatures {
-		if strings.EqualFold(name, f.Name) {
-			return f.Index, nil
-		}
-	}
-	return -1, errors.Errorf("can't find var '%s'", name)
 }
