@@ -51,7 +51,7 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 	// filter out group variables
 	datasetFeatures := []*model.Variable{}
 	for _, v := range datasetDescription.AllFeatures {
-		if v.Grouping == nil {
+		if v.Grouping == nil && v.DistilRole != model.VarDistilRoleMetadata {
 			datasetFeatures = append(datasetFeatures, v)
 		}
 	}
