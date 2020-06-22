@@ -46,6 +46,29 @@ type UserDatasetAugmentation struct {
 func CreateUserDatasetPipeline(name string, description string, datasetDescription *UserDatasetDescription,
 	augmentations []*UserDatasetAugmentation) (*pipeline.PipelineDescription, error) {
 
+	steps, err := generatePrependSteps(datasetDescription, augmentations)
+	if err != nil {
+		return nil, err
+	}
+	offset := len(steps)
+
+	// mark this is a preprocessing template
+	steps = append(steps, NewInferenceStepData(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}))
+	offset++
+
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{offset - 1, "produce"}}
+
+	pip, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	return pip, nil
+}
+
+func generatePrependSteps(datasetDescription *UserDatasetDescription,
+	augmentations []*UserDatasetAugmentation) ([]Step, error) {
 	offset := 0
 
 	// filter out group variables
@@ -144,7 +167,6 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 	// add filter primitives
 	filterData := createFilterData(datasetDescription.Filters, columnIndices, offset)
 	steps = append(steps, filterData...)
-	offset += len(filterData)
 
 	// If neither have any content, we'll skip the template altogether.
 	if len(updateSemanticTypes) == 0 && removeFeatures == nil &&
@@ -152,19 +174,7 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 		return nil, nil
 	}
 
-	// mark this is a preprocessing template
-	steps = append(steps, NewInferenceStepData(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}))
-	offset++
-
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{offset - 1, "produce"}}
-
-	pip, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-	if err != nil {
-		return nil, err
-	}
-
-	return pip, nil
+	return steps, nil
 }
 
 func getTimeseriesGrouping(datasetDescription *UserDatasetDescription) *model.TimeseriesGrouping {
