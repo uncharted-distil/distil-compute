@@ -23,8 +23,6 @@ import (
 // CreateGeneralClusteringPipeline creates a pipeline that will cluster tabular data.
 func CreateGeneralClusteringPipeline(name string, description string, datasetDescription *UserDatasetDescription,
 	augmentations []*UserDatasetAugmentation) (*FullySpecifiedPipeline, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{5, "produce"}}
 
 	steps, err := generatePrependSteps(datasetDescription, augmentations)
 	if err != nil {
@@ -32,22 +30,39 @@ func CreateGeneralClusteringPipeline(name string, description string, datasetDes
 	}
 	offset := len(steps) - 1
 
-	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	add := &ColumnUpdate{
+		SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/TrueTarget"},
+		Indices:       []int{datasetDescription.TargetFeature.Index},
+	}
+	steps = append(steps, NewAddSemanticTypeStep(nil, nil, add))
+	offset = offset + 1
+	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
 	offset = offset + 1
 
 	steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 	offset = offset + 1
 
-	steps = append(steps, NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, []string{model.TA2IntegerType, model.TA2RealVectorType, model.TA2RealType}))
+	steps = append(steps, NewColumnParserStep(
+		map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}},
+		[]string{"produce"},
+		[]string{model.TA2IntegerType, "https://metadata.datadrivendiscovery.org/types/FloatVector", model.TA2RealType},
+	))
 	offset = offset + 1
+	parseStep := offset
 
-	steps = append(steps, NewExtractColumnsBySemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, []string{"https://metadata.datadrivendiscovery.org/types/Attribute"}))
+	steps = append(steps, NewExtractColumnsBySemanticTypeStep(
+		map[string]DataRef{"inputs": &StepDataRef{parseStep, "produce"}},
+		[]string{"produce"},
+		[]string{"https://metadata.datadrivendiscovery.org/types/Attribute"},
+	))
 	offset = offset + 1
+	attributeStep := offset
 
-	steps = append(steps, NewExtractColumnsBySemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, []string{"https://metadata.datadrivendiscovery.org/types/Target", "https://metadata.datadrivendiscovery.org/types/TrueTarget"}))
+	steps = append(steps, NewExtractColumnsBySemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{parseStep, "produce"}}, []string{"produce"}, []string{"https://metadata.datadrivendiscovery.org/types/Target", "https://metadata.datadrivendiscovery.org/types/TrueTarget"}))
 	offset = offset + 1
+	targetStep := offset
 
-	steps = append(steps, NewEnrichDatesStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	steps = append(steps, NewEnrichDatesStep(map[string]DataRef{"inputs": &StepDataRef{attributeStep, "produce"}}, []string{"produce"}))
 	offset = offset + 1
 
 	steps = append(steps, NewListEncoderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
@@ -59,7 +74,7 @@ func CreateGeneralClusteringPipeline(name string, description string, datasetDes
 	steps = append(steps, NewCategoricalImputerStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 	offset = offset + 1
 
-	steps = append(steps, NewTextEncoderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	steps = append(steps, NewTextEncoderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}, "outputs": &StepDataRef{targetStep, "produce"}}, []string{"produce"}))
 	offset = offset + 1
 
 	steps = append(steps, NewOneHotEncoderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
@@ -77,7 +92,13 @@ func CreateGeneralClusteringPipeline(name string, description string, datasetDes
 	steps = append(steps, NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 	offset = offset + 1
 
-	steps = append(steps, NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}))
+	steps = append(steps, NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, []int{-1}))
+	offset = offset + 1
+
+	steps = append(steps, NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, &StepDataRef{parseStep, "produce"}))
+
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
 	if err != nil {
@@ -203,7 +224,7 @@ func NewOneHotEncoderStep(inputs map[string]DataRef, outputMethods []string) *St
 			Digest:     "9ea16f751325297f9347b105c16c0526e8d1294616c3390fb38997a15418a65e",
 		},
 		outputMethods,
-		map[string]interface{}{},
+		map[string]interface{}{"max_one_hot": 16},
 		inputs,
 	)
 }
@@ -219,7 +240,7 @@ func NewBinaryEncoderStep(inputs map[string]DataRef, outputMethods []string) *St
 			Digest:     "f3874916967418450b3bd5575446219bacdd9bf0679891436d97628da26135ae",
 		},
 		outputMethods,
-		map[string]interface{}{},
+		map[string]interface{}{"min_binary": 17},
 		inputs,
 	)
 }
@@ -277,6 +298,22 @@ func NewHDBScanStep(inputs map[string]DataRef, outputMethods []string) *StepData
 		},
 		outputMethods,
 		map[string]interface{}{"required_output": "feature"},
+		inputs,
+	)
+}
+
+// NewExtractColumnsStep extracts columns by supplied indices.
+func NewExtractColumnsStep(inputs map[string]DataRef, outputMethods []string, indices []int) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "81d7e261-e25b-4721-b091-a31cd46e99ae",
+			Version:    "0.1.0",
+			Name:       "Extracts columns",
+			PythonPath: "d3m.primitives.data_transformation.extract_columns.Common",
+			Digest:     "cf44b2f5af90f10ef9935496655a202bfc8a4a0fa24b8e9d733ee61f096bda87",
+		},
+		outputMethods,
+		map[string]interface{}{"columns": indices},
 		inputs,
 	)
 }
