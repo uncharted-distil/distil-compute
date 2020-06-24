@@ -58,7 +58,7 @@ func CreateImageClusteringPipeline(name string, description string, imageVariabl
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 		NewDataframeImageReaderStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, cols),
 		NewImageTransferStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
-		NewKMeansCluteringStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+		NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
 		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
 	}
 
