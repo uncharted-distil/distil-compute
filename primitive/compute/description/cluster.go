@@ -166,7 +166,7 @@ func CreateImageClusteringPipeline(name string, description string, imageVariabl
 // cluster multiband images together, returning a column with the resulting cluster.
 func CreateMultiBandImageClusteringPipeline(name string, description string, imageVariables []*model.Variable) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{7, "produce"}}
+	outputs := []DataRef{&StepDataRef{8, "produce"}}
 
 	cols := make([]int, len(imageVariables))
 	for i, v := range imageVariables {
@@ -184,9 +184,10 @@ func CreateMultiBandImageClusteringPipeline(name string, description string, ima
 		NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, 1, ""),
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
 		NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
-		NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
-		NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, []int{-1}),
-		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, &StepDataRef{3, "produce"}),
+		NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
+		NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
+		NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, []int{-1}),
+		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{3, "produce"}),
 	}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
@@ -419,6 +420,22 @@ func NewSatelliteImageLoaderStep(inputs map[string]DataRef, outputMethods []stri
 		},
 		outputMethods,
 		map[string]interface{}{},
+		inputs,
+	)
+}
+
+// NewRemoteSensingPretrainedStep featurizes a remote sensing column
+func NewRemoteSensingPretrainedStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "544bb61f-f354-48f5-b055-5c03de71c4fb",
+			Version:    "1.0.0",
+			Name:       "RSPretrained",
+			PythonPath: "d3m.primitives.remote_sensing.remote_sensing_pretrained.RemoteSensingPretrained",
+			Digest:     "cf44b2f5af90f10ef9935496655a202bfc8a4a0fa24b8e9d733ee61f096bda87",
+		},
+		outputMethods,
+		map[string]interface{}{"batch_size": 128},
 		inputs,
 	)
 }
