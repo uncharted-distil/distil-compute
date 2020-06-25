@@ -117,6 +117,95 @@ func CreateGeneralClusteringPipeline(name string, description string, datasetDes
 	return fullySpecified, nil
 }
 
+// CreateImageClusteringPipeline creates a fully specified pipeline that will
+// cluster images together, returning a column with the resulting cluster.
+func CreateImageClusteringPipeline(name string, description string, imageVariables []*model.Variable) (*FullySpecifiedPipeline, error) {
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{8, "produce"}}
+
+	cols := make([]int, len(imageVariables))
+	for i, v := range imageVariables {
+		cols[i] = v.Index
+	}
+
+	add := &ColumnUpdate{
+		SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/TrueTarget"},
+		Indices:       cols,
+	}
+
+	steps := []Step{
+		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+		NewAddSemanticTypeStep(nil, nil, add),
+		NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, 1, ""),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+		NewDataframeImageReaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, cols),
+		NewImageTransferStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
+		NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
+		NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, []int{-1}),
+		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{3, "produce"}),
+	}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipelineJSON},
+	}
+	return fullySpecified, nil
+}
+
+// CreateMultiBandImageClusteringPipeline creates a fully specified pipeline that will
+// cluster multiband images together, returning a column with the resulting cluster.
+func CreateMultiBandImageClusteringPipeline(name string, description string, imageVariables []*model.Variable) (*FullySpecifiedPipeline, error) {
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{7, "produce"}}
+
+	cols := make([]int, len(imageVariables))
+	for i, v := range imageVariables {
+		cols[i] = v.Index
+	}
+
+	add := &ColumnUpdate{
+		SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/TrueTarget"},
+		Indices:       cols,
+	}
+
+	steps := []Step{
+		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+		NewAddSemanticTypeStep(nil, nil, add),
+		NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, 1, ""),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+		NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+		NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
+		NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, []int{-1}),
+		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, &StepDataRef{3, "produce"}),
+	}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipelineJSON},
+	}
+	return fullySpecified, nil
+}
+
 // NewExtractColumnsBySemanticTypeStep extracts columns by supplied semantic types.
 func NewExtractColumnsBySemanticTypeStep(inputs map[string]DataRef, outputMethods []string, semanticTypes []string) *StepData {
 	return NewStepData(
@@ -314,6 +403,22 @@ func NewExtractColumnsStep(inputs map[string]DataRef, outputMethods []string, in
 		},
 		outputMethods,
 		map[string]interface{}{"columns": indices},
+		inputs,
+	)
+}
+
+// NewSatelliteImageLoaderStep loads multi band images.
+func NewSatelliteImageLoaderStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "77d20419-aeb6-44f9-8e63-349ea5b654f7",
+			Version:    "0.4.0",
+			Name:       "Columns satellite image loader",
+			PythonPath: "d3m.primitives.data_preprocessing.satellite_image_loader.DistilSatelliteImageLoader",
+			Digest:     "cf44b2f5af90f10ef9935496655a202bfc8a4a0fa24b8e9d733ee61f096bda87",
+		},
+		outputMethods,
+		map[string]interface{}{},
 		inputs,
 	)
 }
