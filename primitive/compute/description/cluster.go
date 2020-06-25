@@ -297,7 +297,7 @@ func NewHDBScanStep(inputs map[string]DataRef, outputMethods []string) *StepData
 			Digest:     "e805ded4d975e125d257a74f8e50f003d782605137dfedbe8f5e567e3607c219",
 		},
 		outputMethods,
-		map[string]interface{}{"required_output": "feature"},
+		map[string]interface{}{"required_output": "feature", "min_samples": 1, "min_cluster_size": 50, "cluster_selection_method": "leaf"},
 		inputs,
 	)
 }
