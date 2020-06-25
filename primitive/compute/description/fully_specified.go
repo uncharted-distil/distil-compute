@@ -46,20 +46,28 @@ func MarshalSteps(step *pipeline.PipelineDescription) (string, error) {
 // cluster images together, adding a column with the resulting cluster.
 func CreateImageClusteringPipeline(name string, description string, imageVariables []*model.Variable) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{5, "produce"}}
+	outputs := []DataRef{&StepDataRef{8, "produce"}}
 
 	cols := make([]int, len(imageVariables))
 	for i, v := range imageVariables {
 		cols[i] = v.Index
 	}
 
+	add := &ColumnUpdate{
+		SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/TrueTarget"},
+		Indices:       cols,
+	}
+
 	steps := []Step{
 		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-		NewDataframeImageReaderStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, cols),
-		NewImageTransferStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
-		NewKMeansCluteringStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
-		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
+		NewAddSemanticTypeStep(nil, nil, add),
+		NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, 1, ""),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+		NewDataframeImageReaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, cols),
+		NewImageTransferStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
+		NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
+		NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, []int{-1}),
+		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{3, "produce"}),
 	}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
