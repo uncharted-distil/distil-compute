@@ -16,6 +16,7 @@
 package description
 
 import (
+	"github.com/pkg/errors"
 	"github.com/uncharted-distil/distil-compute/model"
 	"github.com/uncharted-distil/distil-compute/pipeline"
 )
@@ -164,30 +165,51 @@ func CreateImageClusteringPipeline(name string, description string, imageVariabl
 
 // CreateMultiBandImageClusteringPipeline creates a fully specified pipeline that will
 // cluster multiband images together, returning a column with the resulting cluster.
-func CreateMultiBandImageClusteringPipeline(name string, description string, imageVariables []*model.Variable) (*FullySpecifiedPipeline, error) {
+func CreateMultiBandImageClusteringPipeline(name string, description string, grouping *model.RemoteSensingGrouping, variables []*model.Variable) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{8, "produce"}}
+	outputs := []DataRef{&StepDataRef{10, "produce"}}
 
-	cols := make([]int, len(imageVariables))
-	for i, v := range imageVariables {
-		cols[i] = v.Index
+	var imageVar *model.Variable
+	var groupVar *model.Variable
+	for _, v := range variables {
+		if v.Name == grouping.ImageCol {
+			imageVar = v
+		} else if v.Name == grouping.IDCol {
+			groupVar = v
+		}
+	}
+	if imageVar == nil {
+		return nil, errors.Errorf("image var with name '%s' not found in supplied variables", grouping.ImageCol)
+	}
+	if groupVar == nil {
+		return nil, errors.Errorf("grouping var with name '%s' not found in supplied variables", grouping.IDCol)
 	}
 
-	add := &ColumnUpdate{
+	addImage := &ColumnUpdate{
 		SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/TrueTarget"},
-		Indices:       cols,
+		Indices:       []int{imageVar.Index},
 	}
+
+	addGroup := &ColumnUpdate{
+		SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/GroupingKey"},
+		Indices:       []int{groupVar.Index},
+	}
+
+	// add grouping compose primitive
 
 	steps := []Step{
 		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewAddSemanticTypeStep(nil, nil, add),
+		NewAddSemanticTypeStep(nil, nil, addGroup),
 		NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, 1, ""),
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
 		NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
-		NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
-		NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
-		NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, []int{-1}),
-		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{3, "produce"}),
+		NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, addImage),
+		NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"},
+			[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, "https://metadata.datadrivendiscovery.org/types/FloatVector"}),
+		NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
+		NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}),
+		NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{8, "produce"}}, []string{"produce"}, []int{-1}),
+		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{9, "produce"}}, []string{"produce"}, &StepDataRef{5, "produce"}),
 	}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
@@ -419,7 +441,7 @@ func NewSatelliteImageLoaderStep(inputs map[string]DataRef, outputMethods []stri
 			Digest:     "cf44b2f5af90f10ef9935496655a202bfc8a4a0fa24b8e9d733ee61f096bda87",
 		},
 		outputMethods,
-		map[string]interface{}{},
+		map[string]interface{}{"return_result": "replace"},
 		inputs,
 	)
 }
