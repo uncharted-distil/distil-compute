@@ -16,6 +16,7 @@
 package description
 
 import (
+	"github.com/pkg/errors"
 	"github.com/uncharted-distil/distil-compute/model"
 	"github.com/uncharted-distil/distil-compute/pipeline"
 )
@@ -99,6 +100,117 @@ func CreateGeneralClusteringPipeline(name string, description string, datasetDes
 
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipelineJSON},
+	}
+	return fullySpecified, nil
+}
+
+// CreateImageClusteringPipeline creates a fully specified pipeline that will
+// cluster images together, returning a column with the resulting cluster.
+func CreateImageClusteringPipeline(name string, description string, imageVariables []*model.Variable) (*FullySpecifiedPipeline, error) {
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{8, "produce"}}
+
+	cols := make([]int, len(imageVariables))
+	for i, v := range imageVariables {
+		cols[i] = v.Index
+	}
+
+	add := &ColumnUpdate{
+		SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/TrueTarget"},
+		Indices:       cols,
+	}
+
+	steps := []Step{
+		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+		NewAddSemanticTypeStep(nil, nil, add),
+		NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, 1, ""),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+		NewDataframeImageReaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, cols),
+		NewImageTransferStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
+		NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
+		NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, []int{-1}),
+		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{3, "produce"}),
+	}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipelineJSON},
+	}
+	return fullySpecified, nil
+}
+
+// CreateMultiBandImageClusteringPipeline creates a fully specified pipeline that will
+// cluster multiband images together, returning a column with the resulting cluster.
+func CreateMultiBandImageClusteringPipeline(name string, description string, grouping *model.RemoteSensingGrouping, variables []*model.Variable) (*FullySpecifiedPipeline, error) {
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{10, "produce"}}
+
+	var imageVar *model.Variable
+	var groupVar *model.Variable
+	for _, v := range variables {
+		if v.Name == grouping.ImageCol {
+			imageVar = v
+		} else if v.Name == grouping.IDCol {
+			groupVar = v
+		}
+	}
+	if imageVar == nil {
+		return nil, errors.Errorf("image var with name '%s' not found in supplied variables", grouping.ImageCol)
+	}
+	if groupVar == nil {
+		return nil, errors.Errorf("grouping var with name '%s' not found in supplied variables", grouping.IDCol)
+	}
+
+	addImage := &ColumnUpdate{
+		SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/TrueTarget"},
+		Indices:       []int{imageVar.Index},
+	}
+
+	addGroup := &ColumnUpdate{
+		SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/GroupingKey"},
+		Indices:       []int{groupVar.Index},
+	}
+
+	// add grouping compose primitive
+
+	steps := []Step{
+		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+		NewAddSemanticTypeStep(nil, nil, addGroup),
+		NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, 1, ""),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+		NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+		NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, addImage),
+		NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"},
+			[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, "https://metadata.datadrivendiscovery.org/types/FloatVector"}),
+		NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
+		NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}),
+		NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{8, "produce"}}, []string{"produce"}, []int{-1}),
+		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{9, "produce"}}, []string{"produce"}, &StepDataRef{5, "produce"}),
+	}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
 	if err != nil {
@@ -314,6 +426,38 @@ func NewExtractColumnsStep(inputs map[string]DataRef, outputMethods []string, in
 		},
 		outputMethods,
 		map[string]interface{}{"columns": indices},
+		inputs,
+	)
+}
+
+// NewSatelliteImageLoaderStep loads multi band images.
+func NewSatelliteImageLoaderStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "77d20419-aeb6-44f9-8e63-349ea5b654f7",
+			Version:    "0.4.0",
+			Name:       "Columns satellite image loader",
+			PythonPath: "d3m.primitives.data_preprocessing.satellite_image_loader.DistilSatelliteImageLoader",
+			Digest:     "cf44b2f5af90f10ef9935496655a202bfc8a4a0fa24b8e9d733ee61f096bda87",
+		},
+		outputMethods,
+		map[string]interface{}{"return_result": "replace"},
+		inputs,
+	)
+}
+
+// NewRemoteSensingPretrainedStep featurizes a remote sensing column
+func NewRemoteSensingPretrainedStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "544bb61f-f354-48f5-b055-5c03de71c4fb",
+			Version:    "1.0.0",
+			Name:       "RSPretrained",
+			PythonPath: "d3m.primitives.remote_sensing.remote_sensing_pretrained.RemoteSensingPretrained",
+			Digest:     "cf44b2f5af90f10ef9935496655a202bfc8a4a0fa24b8e9d733ee61f096bda87",
+		},
+		outputMethods,
+		map[string]interface{}{"batch_size": 128},
 		inputs,
 	)
 }
