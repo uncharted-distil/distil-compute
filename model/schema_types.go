@@ -76,6 +76,8 @@ const (
 	TimeSeriesType = "timeseries"
 	// GeoCoordinateType is the schema type for geocoordinate values
 	GeoCoordinateType = "geocoordinate"
+	// GeoBoundsType is the schema type for geocoordinate values
+	GeoBoundsType = "geobounds"
 	// RemoteSensingType is the schema type for remote sensing values
 	RemoteSensingType = "remote_sensing"
 	// TimestampType is the schema type for timestamp values
@@ -256,6 +258,7 @@ var (
 		UnknownType:        TA2UnknownType,
 		RealVectorType:     TA2RealVectorType,
 		RealListType:       TA2RealVectorType,
+		GeoBoundsType:      TA2RealVectorType,
 	}
 
 	// Maps from Distil internal type to D3M dataset doc type
@@ -408,6 +411,12 @@ func IsTimeSeries(typ string) bool {
 // for the purposes of analysis.
 func IsGeoCoordinate(typ string) bool {
 	return typ == GeoCoordinateType
+}
+
+// IsGeoCoordinate indicates whether or not a schema type is a geo coordinate
+// for the purposes of analysis.
+func IsGeoBounds(typ string) bool {
+	return typ == GeoBoundsType
 }
 
 // IsRemoteSensing indicates whether or not a schema type is a remote sensing

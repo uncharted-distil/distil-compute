@@ -488,7 +488,7 @@ func MapD3MTypeToPostgresType(typ string) string {
 		return dataTypeText
 	case DateTimeType:
 		return dataTypeDate
-	case RealVectorType, RealListType:
+	case RealVectorType, RealListType, GeoBoundsType:
 		return dataTypeVector
 	default:
 		return dataTypeText
@@ -506,7 +506,7 @@ func DefaultPostgresValueFromD3MType(typ string) interface{} {
 		return int(0)
 	case DateTimeType:
 		return fmt.Sprintf("'%s'", time.Time{}.Format(dateFormat))
-	case RealVectorType, RealListType:
+	case RealVectorType, RealListType, GeoBoundsType:
 		return "'{}'"
 	default:
 		return "''"
