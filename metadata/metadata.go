@@ -63,11 +63,6 @@ var (
 	typeProbabilityThreshold = 0.8
 )
 
-type classificationData struct {
-	labels        []*gabs.Container
-	probabilities []*gabs.Container
-}
-
 // SummaryResult captures the output of a summarization primitive.
 type SummaryResult struct {
 	Summary string `json:"summary"`
@@ -223,7 +218,7 @@ func LoadMetadataFromRawFile(datasetPath string, classificationPath string) (*mo
 	meta.DataResources = []*model.DataResource{dr}
 
 	if classificationPath != "" {
-		classification, err := loadClassification(classificationPath)
+		classification, err := parseClassificationFile(classificationPath)
 		if err != nil {
 			return nil, err
 		}
@@ -246,7 +241,7 @@ func LoadMetadataFromClassification(schemaPath string, classificationPath string
 	}
 
 	// If classification can't be loaded, try to load from merged schema.
-	classification, err := loadClassification(classificationPath)
+	classification, err := parseClassificationFile(classificationPath)
 	if err != nil {
 		log.Warnf("unable to load classification file: %v", err)
 		if mergedFallback {
@@ -282,26 +277,19 @@ func LoadMetadataFromClassification(schemaPath string, classificationPath string
 	return meta, nil
 }
 
-func parseClassificationFile(classificationPath string) (*classificationData, error) {
-	classification, err := loadClassification(classificationPath)
+func parseClassificationFile(classificationPath string) (*model.ClassificationData, error) {
+	b, err := ioutil.ReadFile(classificationPath)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to load classification")
+		return nil, errors.Wrap(err, "unable to read classification file")
 	}
 
-	labels := classification.Path("labels").Children()
-	if labels == nil {
-		return nil, errors.New("failed to parse classification labels")
+	classification := &model.ClassificationData{}
+	err = json.Unmarshal(b, classification)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse classification file")
 	}
 
-	probabilities := classification.Path("label_probabilities").Children()
-	if probabilities == nil {
-		return nil, errors.New("Unable to parse classification probabilities")
-	}
-
-	return &classificationData{
-		labels:        labels,
-		probabilities: probabilities,
-	}, nil
+	return classification, nil
 }
 
 func addClassificationTypes(m *model.Metadata, classificationPath string) error {
@@ -312,7 +300,7 @@ func addClassificationTypes(m *model.Metadata, classificationPath string) error 
 
 	for index, variable := range m.DataResources[0].Variables {
 		// get suggested types
-		suggestedTypes, err := parseSuggestedTypes(m, variable.Name, index, classification.labels, classification.probabilities)
+		suggestedTypes, err := parseSuggestedTypes(m, variable.Name, index, classification.Labels, classification.Probabilities)
 		if err != nil {
 			return err
 		}
@@ -382,14 +370,6 @@ func loadMergedSchema(m *model.Metadata, schemaPath string) error {
 	}
 	m.Schema = schema
 	return nil
-}
-
-func loadClassification(classificationPath string) (*gabs.Container, error) {
-	classification, err := gabs.ParseJSONFile(classificationPath)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse classification file")
-	}
-	return classification, nil
 }
 
 // LoadImportance wiull load the importance feature selection metric.
@@ -723,7 +703,7 @@ func parseClassification(m *model.Metadata, index int, labels []*gabs.Container)
 	return model.DefaultVarType, nil
 }
 
-func parseSuggestedTypes(m *model.Metadata, name string, index int, labels []*gabs.Container, probabilities []*gabs.Container) ([]*model.SuggestedType, error) {
+func parseSuggestedTypes(m *model.Metadata, name string, index int, labels [][]string, probabilities [][]float64) ([]*model.SuggestedType, error) {
 	// variables added after classification will not have suggested types
 	if index >= len(labels) {
 		return nil, nil
@@ -732,19 +712,9 @@ func parseSuggestedTypes(m *model.Metadata, name string, index int, labels []*ga
 	// parse probabilities
 	labelsCol := labels[index]
 	probabilitiesCol := probabilities[index]
-	varTypeLabels := labelsCol.Children()
-	if varTypeLabels == nil {
-		return nil, errors.Errorf("failed to parse classification for column `%d`", labelsCol)
-	}
-	varProbabilities := probabilitiesCol.Children()
-	if varProbabilities == nil {
-		return nil, errors.Errorf("failed to parse probabilities for column `%d`", probabilitiesCol)
-	}
 	var suggested []*model.SuggestedType
-	for index, label := range varTypeLabels {
-		prob := varProbabilities[index]
-		typ := label.Data().(string)
-		probability := prob.Data().(float64)
+	for index, typ := range labelsCol {
+		probability := probabilitiesCol[index]
 
 		// adjust the probability for complex suggested types
 		if !model.IsBasicSimonType(typ) {
@@ -869,16 +839,6 @@ func loadClassificationVariables(m *model.Metadata, normalizeVariableNames bool)
 		return errors.New("failed to parse merged variable data")
 	}
 
-	labels := m.Classification.Path("labels").Children()
-	if labels == nil {
-		return errors.New("failed to parse classification labels")
-	}
-
-	probabilities := m.Classification.Path("label_probabilities").Children()
-	if probabilities == nil {
-		return errors.New("Unable to parse classification probabilities")
-	}
-
 	resPath := schemaResources[0].Path("resPath").Data().(string)
 	resID := schemaResources[0].Path("resID").Data().(string)
 
@@ -912,7 +872,7 @@ func loadClassificationVariables(m *model.Metadata, normalizeVariableNames bool)
 			}
 		}
 		if !loaded {
-			suggestedTypes, err := parseSuggestedTypes(m, variable.Name, index, labels, probabilities)
+			suggestedTypes, err := parseSuggestedTypes(m, variable.Name, index, m.Classification.Labels, m.Classification.Probabilities)
 			if err != nil {
 				return err
 			}
@@ -1074,6 +1034,21 @@ func writeVariable(variable *model.Variable, extendedSchema bool) interface{} {
 	}
 
 	return output
+}
+
+// WriteClassification writes classification information to disk.
+func WriteClassification(classification *model.ClassificationData, classificationPath string) error {
+	b, err := json.Marshal(classification)
+	if err != nil {
+		return errors.Wrapf(err, "unable to marshal classification")
+	}
+
+	err = ioutil.WriteFile(classificationPath, b, os.ModePerm)
+	if err != nil {
+		return errors.Wrapf(err, "unable to write classification file")
+	}
+
+	return nil
 }
 
 // DatasetMatches determines if the metadata variables match.

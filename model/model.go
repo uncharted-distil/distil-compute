@@ -278,7 +278,7 @@ type Metadata struct {
 	Raw              bool
 	DataResources    []*DataResource
 	Schema           *gabs.Container
-	Classification   *gabs.Container
+	Classification   *ClassificationData
 	NumRows          int64
 	NumBytes         int64
 	SchemaSource     string
@@ -289,6 +289,13 @@ type Metadata struct {
 	SearchProvenance string
 	SourceDataset    string
 	Type             string
+}
+
+// ClassificationData contains semantic type information by column index.
+type ClassificationData struct {
+	Labels        [][]string  `json:"labels"`
+	Probabilities [][]float64 `json:"label_probabilities"`
+	Path          string      `json:"path"`
 }
 
 // NewMetadata creates a new metadata instance.
