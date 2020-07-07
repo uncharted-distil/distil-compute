@@ -1037,13 +1037,13 @@ func writeVariable(variable *model.Variable, extendedSchema bool) interface{} {
 }
 
 // WriteClassification writes classification information to disk.
-func WriteClassification(classification *model.ClassificationData, path string) error {
+func WriteClassification(classification *model.ClassificationData, classificationPath string) error {
 	b, err := json.Marshal(classification)
 	if err != nil {
 		return errors.Wrapf(err, "unable to marshal classification")
 	}
 
-	err = ioutil.WriteFile(path, b, os.ModePerm)
+	err = ioutil.WriteFile(classificationPath, b, os.ModePerm)
 	if err != nil {
 		return errors.Wrapf(err, "unable to write classification file")
 	}

@@ -284,6 +284,7 @@ var (
 		URIType:            StringSchemaType,
 		ImageType:          StringSchemaType,
 		MultiBandImageType: StringSchemaType,
+		GeoBoundsType:      StringSchemaType,
 		TimeSeriesType:     TimeSeriesSchemaType,
 		TimestampType:      TimestampSchemaType,
 		UnknownType:        UnknownSchemaType,
