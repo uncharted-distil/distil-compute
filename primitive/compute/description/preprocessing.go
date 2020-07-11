@@ -41,6 +41,76 @@ type UserDatasetAugmentation struct {
 	BaseDatasetID string
 }
 
+// CreatePreFeaturizedDatasetPipeline creates a pipeline that acts on a pre featurized
+// dataset. The created prepend is a simplified version due to the dataset already
+// having all features for the end task stored on disk.
+func CreatePreFeaturizedDatasetPipeline(name string, description string, datasetDescription *UserDatasetDescription,
+	augmentations []*UserDatasetAugmentation, columnCount int) (*pipeline.PipelineDescription, error) {
+	// type all features
+	featureSet := map[string]int{}
+	selectedSet := map[string]bool{}
+	for _, v := range datasetDescription.AllFeatures {
+		featureSet[strings.ToLower(v.Name)] = v.Index
+		selectedSet[strings.ToLower(v.Name)] = true
+	}
+
+	steps := []Step{}
+	offset := 0
+
+	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
+	steps = append(steps, NewColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType}))
+	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, ""))
+	steps = append(steps, NewDataCleaningStep(nil, nil))
+	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, offset+3, ""))
+	offset += 5
+
+	updateSemanticTypes, err := createUpdateSemanticTypes(datasetDescription.TargetFeature.Name, datasetDescription.AllFeatures, selectedSet, offset)
+	if err != nil {
+		return nil, err
+	}
+	steps = append(steps, updateSemanticTypes...)
+	offset += len(updateSemanticTypes)
+
+	// apply filters
+	filterData := createFilterData(datasetDescription.Filters, featureSet, offset)
+	steps = append(steps, filterData...)
+	offset += len(filterData)
+
+	// need to drop all features from the dataset
+	colsToDrop := []int{}
+	for _, v := range datasetDescription.AllFeatures {
+		colsToDrop = append(colsToDrop, v.Index)
+	}
+	featureSelect := NewRemoveColumnsStep(nil, nil, colsToDrop)
+	wrapperRemove := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+	steps = append(steps, featureSelect, wrapperRemove)
+	offset += 2
+
+	// type all remaining columns as floats and attributes
+	colsToType := []int{}
+	for i := len(datasetDescription.AllFeatures); i < columnCount; i++ {
+		colsToType = append(colsToType, i)
+	}
+	add := &ColumnUpdate{
+		SemanticTypes: []string{model.TA2AttributeType, model.TA2RealType},
+		Indices:       colsToType,
+	}
+	addUpdate := NewAddSemanticTypeStep(nil, nil, add)
+	wrapperUpdate := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+	steps = append(steps, addUpdate, wrapperUpdate)
+	offset += 2
+
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{offset - 1, "produce"}}
+
+	pip, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	return pip, nil
+}
+
 // CreateUserDatasetPipeline creates a pipeline description to capture user feature selection and
 // semantic type information.
 func CreateUserDatasetPipeline(name string, description string, datasetDescription *UserDatasetDescription,
