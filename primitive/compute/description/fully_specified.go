@@ -42,6 +42,57 @@ func MarshalSteps(step *pipeline.PipelineDescription) (string, error) {
 	return string(stepJSON), nil
 }
 
+// CreateMultiBandImageFeaturizationPipeline creates a pipline that will featurize multiband images.
+func CreateMultiBandImageFeaturizationPipeline(name string, description string, variables []*model.Variable) (*FullySpecifiedPipeline, error) {
+	// add semantic types to variables that are images
+	multiBandImageCols := []int{}
+	for _, v := range variables {
+		if model.IsMultiBandImage(v.Type) && v.Type != v.OriginalType {
+			multiBandImageCols = append(multiBandImageCols, v.Index)
+		}
+	}
+
+	steps := []Step{
+		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
+	}
+	offset := 1
+
+	if len(multiBandImageCols) > 0 {
+		add := &ColumnUpdate{
+			SemanticTypes: []string{model.TA2ImageType},
+			Indices:       multiBandImageCols,
+		}
+		steps = append(steps, NewAddSemanticTypeStep(nil, nil, add))
+		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
+		offset += 2
+	}
+
+	steps = append(steps, NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	offset++
+
+	steps = append(steps, NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipelineJSON},
+	}
+	return fullySpecified, nil
+}
+
 // CreateSlothPipeline creates a pipeline to peform timeseries clustering on a dataset.
 func CreateSlothPipeline(name string, description string, timeColumn string, valueColumn string,
 	timeSeriesFeatures []*model.Variable) (*FullySpecifiedPipeline, error) {
