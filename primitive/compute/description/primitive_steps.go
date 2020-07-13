@@ -484,7 +484,7 @@ func NewColumnParserStep(inputs map[string]DataRef, outputMethods []string, type
 			Digest:     "d95eb0ea8a5e6f9abc0965a97e9c4f5d8f74a3df591c11c4145faea3e581cd06",
 		},
 		outputMethods,
-		map[string]interface{}{"parse_semantic_types": types},
+		map[string]interface{}{"parse_semantic_types": types, "parse_categorical_target_columns": true},
 		inputs,
 	)
 }
