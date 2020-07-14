@@ -44,13 +44,21 @@ func MarshalSteps(step *pipeline.PipelineDescription) (string, error) {
 
 // CreateMultiBandImageFeaturizationPipeline creates a pipline that will featurize multiband images.
 func CreateMultiBandImageFeaturizationPipeline(name string, description string, variables []*model.Variable) (*FullySpecifiedPipeline, error) {
-	// add semantic types to variables that are images
-	multiBandImageCols := []int{}
+	// add semantic types to variables that are images and group ids
+	var grouping *model.RemoteSensingGrouping
+	variableMap := map[string]*model.Variable{}
 	for _, v := range variables {
-		if model.IsMultiBandImage(v.Type) && v.Type != v.OriginalType {
-			multiBandImageCols = append(multiBandImageCols, v.Index)
+		if v.IsGrouping() && model.IsRemoteSensing(v.Grouping.GetType()) {
+			grouping = v.Grouping.(*model.RemoteSensingGrouping)
 		}
+		variableMap[v.Name] = v
 	}
+
+	if grouping == nil {
+		return nil, errors.Errorf("no grouping found in dataset variables")
+	}
+	imageCol := variableMap[grouping.ImageCol]
+	groupingCol := variableMap[grouping.IDCol]
 
 	steps := []Step{
 		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
@@ -58,20 +66,30 @@ func CreateMultiBandImageFeaturizationPipeline(name string, description string, 
 	}
 	offset := 1
 
-	if len(multiBandImageCols) > 0 {
-		add := &ColumnUpdate{
-			SemanticTypes: []string{model.TA2ImageType},
-			Indices:       multiBandImageCols,
-		}
-		steps = append(steps, NewAddSemanticTypeStep(nil, nil, add))
-		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
-		offset += 2
+	addImage := &ColumnUpdate{
+		SemanticTypes: []string{model.TA2ImageType},
+		Indices:       []int{imageCol.Index},
 	}
+	steps = append(steps, NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, addImage))
+	offset++
+
+	addGrouping := &ColumnUpdate{
+		SemanticTypes: []string{model.TA2GroupingKeyType},
+		Indices:       []int{groupingCol.Index},
+	}
+	steps = append(steps, NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, addGrouping))
+	offset++
 
 	steps = append(steps, NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 	offset++
 
 	steps = append(steps, NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	offset++
+
+	steps = append(steps, NewRemoveColumnsStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, []int{imageCol.Index}))
+	offset++
+
+	steps = append(steps, NewHorizontalConcatStep(map[string]DataRef{"left": &StepDataRef{offset, "produce"}, "right": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, true, true))
 
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}

@@ -49,9 +49,13 @@ func CreatePreFeaturizedDatasetPipeline(name string, description string, dataset
 	// type all features
 	featureSet := map[string]int{}
 	selectedSet := map[string]bool{}
+	featureCount := 0
 	for _, v := range datasetDescription.AllFeatures {
 		featureSet[strings.ToLower(v.Name)] = v.Index
 		selectedSet[strings.ToLower(v.Name)] = true
+		if model.IsTA2Field(v.DistilRole, v.SelectedRole) {
+			featureCount++
+		}
 	}
 
 	steps := []Step{}
@@ -76,10 +80,10 @@ func CreatePreFeaturizedDatasetPipeline(name string, description string, dataset
 	steps = append(steps, filterData...)
 	offset += len(filterData)
 
-	// need to drop all features from the dataset
+	// need to drop all features from the dataset (image column already dropped)
 	colsToDrop := []int{}
-	for _, v := range datasetDescription.AllFeatures {
-		colsToDrop = append(colsToDrop, v.Index)
+	for i := 0; i < featureCount-1; i++ {
+		colsToDrop = append(colsToDrop, i)
 	}
 	featureSelect := NewRemoveColumnsStep(nil, nil, colsToDrop)
 	wrapperRemove := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
@@ -88,7 +92,7 @@ func CreatePreFeaturizedDatasetPipeline(name string, description string, dataset
 
 	// type all remaining columns as floats and attributes
 	colsToType := []int{}
-	for i := len(datasetDescription.AllFeatures); i < columnCount; i++ {
+	for i := featureCount - 1; i < columnCount; i++ {
 		colsToType = append(colsToType, i)
 	}
 	add := &ColumnUpdate{
