@@ -45,16 +45,27 @@ type UserDatasetAugmentation struct {
 // dataset. The created prepend is a simplified version due to the dataset already
 // having all features for the end task stored on disk.
 func CreatePreFeaturizedDatasetPipeline(name string, description string, datasetDescription *UserDatasetDescription,
-	augmentations []*UserDatasetAugmentation, columnCount int) (*pipeline.PipelineDescription, error) {
+	augmentations []*UserDatasetAugmentation) (*pipeline.PipelineDescription, error) {
+	// build a lookup for selected features
+	selectedSet := map[string]bool{}
+	for _, v := range datasetDescription.SelectedFeatures {
+		selectedSet[strings.ToLower(v)] = true
+	}
+
 	// type all features
 	featureSet := map[string]int{}
-	selectedSet := map[string]bool{}
 	featureCount := 0
+	colsToDrop := []int{}
 	for _, v := range datasetDescription.AllFeatures {
-		featureSet[strings.ToLower(v.Name)] = v.Index
-		selectedSet[strings.ToLower(v.Name)] = true
 		if model.IsTA2Field(v.DistilRole, v.SelectedRole) {
+			featureSet[strings.ToLower(v.Name)] = v.Index
 			featureCount++
+			// for now, drop all non featurized columns
+			//if !selectedSet[v.Name] {
+			if v.Index != datasetDescription.TargetFeature.Index && !model.IsIndexRole(v.SelectedRole) {
+				colsToDrop = append(colsToDrop, v.Index)
+			}
+			//}
 		}
 	}
 
@@ -80,29 +91,15 @@ func CreatePreFeaturizedDatasetPipeline(name string, description string, dataset
 	steps = append(steps, filterData...)
 	offset += len(filterData)
 
-	// need to drop all features from the dataset (image column already dropped)
-	colsToDrop := []int{}
-	for i := 0; i < featureCount-1; i++ {
-		colsToDrop = append(colsToDrop, i)
-	}
+	// need to drop the features from the dataset
 	featureSelect := NewRemoveColumnsStep(nil, nil, colsToDrop)
 	wrapperRemove := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
 	steps = append(steps, featureSelect, wrapperRemove)
 	offset += 2
 
-	// type all remaining columns as floats and attributes
-	colsToType := []int{}
-	for i := featureCount - 1; i < columnCount; i++ {
-		colsToType = append(colsToType, i)
-	}
-	add := &ColumnUpdate{
-		SemanticTypes: []string{model.TA2AttributeType, model.TA2RealType},
-		Indices:       colsToType,
-	}
-	addUpdate := NewAddSemanticTypeStep(nil, nil, add)
-	wrapperUpdate := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
-	steps = append(steps, addUpdate, wrapperUpdate)
-	offset += 2
+	// mark this is a preprocessing template
+	steps = append(steps, NewInferenceStepData(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}))
+	offset++
 
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{offset - 1, "produce"}}
