@@ -288,6 +288,7 @@ type Metadata struct {
 	SearchResult     string
 	SearchProvenance string
 	SourceDataset    string
+	LearningDataset  string
 	Type             string
 }
 
