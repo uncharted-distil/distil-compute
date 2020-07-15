@@ -132,26 +132,33 @@ func CreateImageClusteringPipeline(name string, description string, imageVariabl
 		cols[i] = v.Index
 	}
 
-	add := &ColumnUpdate{
-		SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/TrueTarget"},
-		Indices:       cols,
-	}
-
-	steps := []Step{
-		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewAddSemanticTypeStep(nil, nil, add),
-		NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, 1, ""),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
-		NewDataframeImageReaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, cols),
-		NewImageTransferStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
-	}
+	var steps []Step
 	if useKMeans {
-		steps = append(steps, NewKMeansCluteringStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
-			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, &StepDataRef{3, "produce"}))
+		steps = []Step{
+			NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
+			NewDataframeImageReaderStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, cols),
+			NewImageTransferStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+			NewKMeansCluteringStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
+		}
 	} else {
-		steps = append(steps, NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
+		add := &ColumnUpdate{
+			SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/TrueTarget"},
+			Indices:       cols,
+		}
+
+		steps = []Step{
+			NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+			NewAddSemanticTypeStep(nil, nil, add),
+			NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, 1, ""),
+			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+			NewDataframeImageReaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, cols),
+			NewImageTransferStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
+			NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
 			NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, []int{-1}),
-			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{3, "produce"}))
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{3, "produce"}),
+		}
 	}
 
 	inputs := []string{"inputs"}
@@ -195,34 +202,45 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 		return nil, errors.Errorf("grouping var with name '%s' not found in supplied variables", grouping.IDCol)
 	}
 
-	addImage := &ColumnUpdate{
-		SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/TrueTarget"},
-		Indices:       []int{imageVar.Index},
-	}
-
 	addGroup := &ColumnUpdate{
 		SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/GroupingKey"},
 		Indices:       []int{groupVar.Index},
 	}
 
-	steps := []Step{
-		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewAddSemanticTypeStep(nil, nil, addGroup),
-		NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, 1, ""),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
-		NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
-		NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, addImage),
-		NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"},
-			[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, "https://metadata.datadrivendiscovery.org/types/FloatVector"}),
-		NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
-	}
+	var steps []Step
 	if useKMeans {
-		steps = append(steps, NewKMeansCluteringStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}),
-			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{8, "produce"}}, []string{"produce"}, &StepDataRef{5, "produce"}))
+		steps = []Step{
+			NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+			NewAddSemanticTypeStep(nil, nil, addGroup),
+			NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, 1, ""),
+			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+			NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"},
+				[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, "https://metadata.datadrivendiscovery.org/types/FloatVector"}),
+			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
+			NewKMeansCluteringStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{3, "produce"}),
+		}
 	} else {
-		steps = append(steps, NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}),
+		addImage := &ColumnUpdate{
+			SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/TrueTarget"},
+			Indices:       []int{imageVar.Index},
+		}
+
+		steps = []Step{
+			NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+			NewAddSemanticTypeStep(nil, nil, addGroup),
+			NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, 1, ""),
+			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+			NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+			NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, addImage),
+			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"},
+				[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, "https://metadata.datadrivendiscovery.org/types/FloatVector"}),
+			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
+			NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}),
 			NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{8, "produce"}}, []string{"produce"}, []int{-1}),
-			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{9, "produce"}}, []string{"produce"}, &StepDataRef{5, "produce"}))
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{9, "produce"}}, []string{"produce"}, &StepDataRef{5, "produce"}),
+		}
 	}
 
 	inputs := []string{"inputs"}
