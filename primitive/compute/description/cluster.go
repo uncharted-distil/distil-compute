@@ -219,7 +219,7 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 				[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, "https://metadata.datadrivendiscovery.org/types/FloatVector"}),
 			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
 			NewKMeansCluteringStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
-			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{3, "produce"}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{4, "produce"}),
 		}
 	} else {
 		addImage := &ColumnUpdate{
