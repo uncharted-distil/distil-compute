@@ -491,7 +491,7 @@ func NewRemoteSensingPretrainedStep(inputs map[string]DataRef, outputMethods []s
 			Digest:     "cf44b2f5af90f10ef9935496655a202bfc8a4a0fa24b8e9d733ee61f096bda87",
 		},
 		outputMethods,
-		map[string]interface{}{"batch_size": 128},
+		map[string]interface{}{"batch_size": 32},
 		inputs,
 	)
 }
