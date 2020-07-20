@@ -181,9 +181,9 @@ type TimeseriesGrouping struct {
 // RemoteSensingGrouping is used for remote sensing grouping information.
 type RemoteSensingGrouping struct {
 	Grouping
-	BandCol       string `json:"bandCol"`
-	CoordinateCol string `json:"coordinateCol"`
-	ImageCol      string `json:"imageCol"`
+	BandCol    string `json:"bandCol"`
+	ImageCol   string `json:"imageCol"`
+	ClusterCol string `json:"clusterCol"`
 }
 
 // GetDataset returns the grouping dataset.
@@ -216,8 +216,13 @@ func (g *Grouping) IsNil() bool {
 	return g == nil
 }
 
-// GetClusterCol returns the cluster column name.
+// GetClusterCol returns the cluster column name for a remote sensing group.
 func (t *TimeseriesGrouping) GetClusterCol() string {
+	return t.ClusterCol
+}
+
+// GetClusterCol returns the cluster column name for a remote sensing group.
+func (t *RemoteSensingGrouping) GetClusterCol() string {
 	return t.ClusterCol
 }
 

@@ -414,7 +414,7 @@ func IsGeoCoordinate(typ string) bool {
 	return typ == GeoCoordinateType
 }
 
-// IsGeoCoordinate indicates whether or not a schema type is a geo coordinate
+// IsGeoBounds indicates whether or not a schema type is a geo coordinate
 // for the purposes of analysis.
 func IsGeoBounds(typ string) bool {
 	return typ == GeoBoundsType

@@ -107,6 +107,7 @@ const (
 	UndefinedMetric = "undefined"
 
 	// Value types accepted by the TA2 level
+
 	// CSVURIValueType denotes a CSV file URI at the TA2 level
 	CSVURIValueType = "CSV_URI"
 	// DatasetURIValueType denotes a D3M dataset file URI at the TA2 level
