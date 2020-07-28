@@ -30,7 +30,7 @@ import (
 
 // VerifyAndUpdate will update the metadata when inconsistentices or errors
 // are found.
-func VerifyAndUpdate(m *model.Metadata, dataPath string) (bool, error) {
+func VerifyAndUpdate(m *model.Metadata, dataPath string, source DatasetSource) (bool, error) {
 	log.Infof("verifying metadata")
 	updated := false
 	// read the data
@@ -75,6 +75,14 @@ func VerifyAndUpdate(m *model.Metadata, dataPath string) (bool, error) {
 			v.Role = []string{model.RoleIndex}
 			v.SelectedRole = model.RoleIndex
 			updated = true
+		}
+	}
+
+	// for imported datasets we want to set the original type to simon type as that there
+	// is no original schema that were comparing to
+	if source == Augmented {
+		for _, v := range m.DataResources[0].Variables {
+			v.OriginalType = v.Type
 		}
 	}
 
