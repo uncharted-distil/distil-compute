@@ -113,7 +113,16 @@ func CreateMultiBandImageFeaturizationPipeline(name string, description string, 
 
 // CreateSlothPipeline creates a pipeline to peform timeseries clustering on a dataset.
 func CreateSlothPipeline(name string, description string, timeColumn string, valueColumn string,
-	timeSeriesFeatures []*model.Variable) (*FullySpecifiedPipeline, error) {
+	timeseriesGrouping *model.TimeseriesGrouping, timeSeriesFeatures []*model.Variable) (*FullySpecifiedPipeline, error) {
+
+	groupingIndices := []int{}
+	if timeseriesGrouping != nil {
+		groupingSet := map[string]bool{}
+		for _, subID := range timeseriesGrouping.SubIDs {
+			groupingSet[strings.ToLower(subID)] = true
+		}
+		groupingIndices = listColumns(timeSeriesFeatures, groupingSet)
+	}
 
 	steps := make([]Step, 0)
 	steps = append(steps, NewTimeseriesFormatterStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}, compute.DefaultResourceID, -1))
@@ -130,7 +139,7 @@ func CreateSlothPipeline(name string, description string, timeColumn string, val
 	steps = append(steps, NewGroupingFieldComposeStep(
 		map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}},
 		[]string{"produce"},
-		[]int{},
+		groupingIndices,
 		"_",
 		"__grouping_key",
 	))

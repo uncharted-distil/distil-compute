@@ -193,13 +193,20 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 	}
 
 	if isTimeseries {
-		// need to read csv data, flatten then concat back to the original pipeline
 		steps = append(steps, NewTimeseriesFormatterStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}, "", -1))
 		steps = append(steps, NewGroupingFieldComposeStep(nil, nil, groupingIndices, "-", "__grouping"))
 		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, ""))
 		steps = append(steps, NewColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType}))
 		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, offset+3, ""))
-		offset += 5
+
+		// add the time indicator type to the time column
+		addTime := NewAddSemanticTypeStep(nil, nil, &ColumnUpdate{
+			SemanticTypes: []string{model.TA2TimeType},
+			Indices:       []int{columnIndices[timeseriesGrouping.XCol]},
+		})
+		steps = append(steps, addTime)
+		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}, offset+5, ""))
+		offset += 7
 	} else {
 		steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}))
 		steps = append(steps, NewColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType}))
