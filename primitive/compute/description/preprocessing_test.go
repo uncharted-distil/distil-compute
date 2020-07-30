@@ -448,7 +448,7 @@ func TestCreateSlothPipeline(t *testing.T) {
 		{Name: "value", Type: "string", OriginalType: "unknown", Index: 1},
 	}
 
-	pipeline, err := CreateSlothPipeline("sloth_test", "test sloth object detection pipeline", "time", "value", timeSeriesVariables)
+	pipeline, err := CreateSlothPipeline("sloth_test", "test sloth object detection pipeline", "time", "value", nil, timeSeriesVariables)
 	assert.NoError(t, err)
 
 	data, err := proto.Marshal(pipeline.Pipeline)

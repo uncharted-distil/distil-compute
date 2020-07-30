@@ -82,7 +82,10 @@ func VerifyAndUpdate(m *model.Metadata, dataPath string, source DatasetSource) (
 	// is no original schema that were comparing to
 	if source == Augmented {
 		for _, v := range m.DataResources[0].Variables {
-			v.OriginalType = v.Type
+			if v.Type != v.OriginalType {
+				v.OriginalType = v.Type
+				updated = true
+			}
 		}
 	}
 

@@ -167,6 +167,8 @@ const (
 	TA2TargetType = "https://metadata.datadrivendiscovery.org/types/Target"
 	// TA2GroupingKeyType is the semantic type indicating a grouping key
 	TA2GroupingKeyType = "https://metadata.datadrivendiscovery.org/types/GroupingKey"
+	// TA2SuggestedGroupingType is the semantic type indicating a suggested grouping key
+	TA2SuggestedGroupingType = "https://metadata.datadrivendiscovery.org/types/SuggestedGroupingKey"
 
 	// Lincoln Labs D3M Dataset Type Keys - these are the types used in the D3M dataset format.
 	// These should not be used/stored internally, but instead translated into the Distil
