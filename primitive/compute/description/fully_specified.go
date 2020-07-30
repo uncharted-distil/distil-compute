@@ -115,13 +115,16 @@ func CreateMultiBandImageFeaturizationPipeline(name string, description string, 
 func CreateSlothPipeline(name string, description string, timeColumn string, valueColumn string,
 	timeseriesGrouping *model.TimeseriesGrouping, timeSeriesFeatures []*model.Variable) (*FullySpecifiedPipeline, error) {
 
+	// get the grouping columns to create the groupings in the pipeline
 	groupingIndices := []int{}
+	timeCols := []int{}
 	if timeseriesGrouping != nil {
 		groupingSet := map[string]bool{}
 		for _, subID := range timeseriesGrouping.SubIDs {
 			groupingSet[strings.ToLower(subID)] = true
 		}
 		groupingIndices = listColumns(timeSeriesFeatures, groupingSet)
+		timeCols = listColumns(timeSeriesFeatures, map[string]bool{timeseriesGrouping.XCol: true})
 	}
 
 	steps := make([]Step, 0)
@@ -143,7 +146,17 @@ func CreateSlothPipeline(name string, description string, timeColumn string, val
 		"_",
 		"__grouping_key",
 	))
-	steps = append(steps, NewSlothStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}))
+	offset += 2
+
+	// add the time indicator type to the time column
+	addTime := NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, &ColumnUpdate{
+		SemanticTypes: []string{model.TA2TimeType},
+		Indices:       timeCols,
+	})
+	steps = append(steps, addTime)
+	offset++
+
+	steps = append(steps, NewSlothStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}

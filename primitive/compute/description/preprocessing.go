@@ -206,7 +206,15 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 		})
 		steps = append(steps, addTime)
 		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}, offset+5, ""))
-		offset += 7
+
+		// add the suggested grouping key type to the id columns
+		addGroupingKey := NewAddSemanticTypeStep(nil, nil, &ColumnUpdate{
+			SemanticTypes: []string{model.TA2SuggestedGroupingType},
+			Indices:       groupingIndices,
+		})
+		steps = append(steps, addGroupingKey)
+		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 6, "produce"}}, []string{"produce"}, offset+7, ""))
+		offset += 9
 	} else {
 		steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}))
 		steps = append(steps, NewColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType}))
