@@ -136,7 +136,8 @@ const (
 )
 
 var (
-	nameRegex = regexp.MustCompile("[^a-zA-Z0-9]")
+	nameRegex     = regexp.MustCompile("[^a-zA-Z0-9]")
+	truncateRegex = regexp.MustCompile(`(.*)(_\d+$)`)
 )
 
 // BaseGrouping provides access to the basic grouping information.
@@ -337,7 +338,14 @@ func NormalizeDatasetID(id string) string {
 	// truncate so that name is not longer than allowed table name limit - need to leave space
 	// for name suffixes as well
 	if len(normalized) > datasetIDSizeLimit {
-		normalized = normalized[:datasetIDSizeLimit]
+		// Standard approach to deconflicting names in the system is to append `_N`.  We need to make
+		// sure we don't truncate that portion.
+		matches := truncateRegex.FindStringSubmatch(normalized)
+		if len(matches) != 3 {
+			return normalized[:datasetIDSizeLimit]
+		}
+		body_length := datasetIDSizeLimit - len(matches[2])
+		normalized = fmt.Sprintf("%s%s", matches[1][:body_length], matches[2])
 	}
 	return normalized
 }
