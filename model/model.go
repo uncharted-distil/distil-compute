@@ -295,6 +295,7 @@ type Metadata struct {
 	SearchProvenance string
 	SourceDataset    string
 	LearningDataset  string
+	ExplainDataset   string
 	Type             string
 }
 
