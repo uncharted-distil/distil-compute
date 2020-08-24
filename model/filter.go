@@ -24,6 +24,8 @@ const (
 	DefaultFilterSize = 100
 	// FilterSizeLimit represents the largest filter size.
 	FilterSizeLimit = 1000
+	// GeoBoundsFilter represents a geobound filter type.
+	GeoBoundsFilter = "geobounds"
 	// CategoricalFilter represents a categorical filter type.
 	CategoricalFilter = "categorical"
 	// ClusterFilter represents a cluster filter type.
