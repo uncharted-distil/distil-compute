@@ -137,6 +137,21 @@ func NewBivariateFilter(key string, mode string, minX float64, maxX float64, min
 	}
 }
 
+// NewGeoBoundsFilter instantiates a geobounds filter.
+func NewGeoBoundsFilter(key string, mode string, minX float64, maxX float64, minY float64, maxY float64) *Filter {
+	return &Filter{
+		Key:  key,
+		Type: GeoBoundsFilter,
+		Mode: mode,
+		Bounds: &Bounds{
+			MinX: minX,
+			MaxX: maxX,
+			MinY: minY,
+			MaxY: maxY,
+		},
+	}
+}
+
 // NewCategoricalFilter instantiates a categorical filter.
 func NewCategoricalFilter(key string, mode string, categories []string) *Filter {
 	sort.Strings(categories)
