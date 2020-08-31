@@ -263,6 +263,56 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 	return fullySpecified, nil
 }
 
+// CreatePreFeaturizedMultiBandImageClusteringPipeline creates a fully specified pipeline that will
+// cluster multiband images together, returning a column with the resulting cluster.
+func CreatePreFeaturizedMultiBandImageClusteringPipeline(name string, description string, variables []*model.Variable, useKMeans bool) (*FullySpecifiedPipeline, error) {
+	var steps []Step
+	var imageVar *model.Variable
+	if useKMeans {
+		steps = []Step{
+			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"},
+				[]string{model.TA2RealType}),
+			NewKMeansCluteringStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
+		}
+	} else {
+		addImage := &ColumnUpdate{
+			SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/TrueTarget"},
+			Indices:       []int{imageVar.Index},
+		}
+
+		steps = []Step{
+			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+			NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, addImage),
+			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"},
+				[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType}),
+			NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+			NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, []int{-1}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, &StepDataRef{2, "produce"}),
+		}
+	}
+
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipelineJSON},
+	}
+	return fullySpecified, nil
+}
+
 // NewExtractColumnsBySemanticTypeStep extracts columns by supplied semantic types.
 func NewExtractColumnsBySemanticTypeStep(inputs map[string]DataRef, outputMethods []string, semanticTypes []string) *StepData {
 	return NewStepData(
