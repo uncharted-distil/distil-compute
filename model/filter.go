@@ -24,6 +24,8 @@ const (
 	DefaultFilterSize = 100
 	// FilterSizeLimit represents the largest filter size.
 	FilterSizeLimit = 1000
+	// GeoBoundsFilter represents a geobound filter type.
+	GeoBoundsFilter = "geobounds"
 	// CategoricalFilter represents a categorical filter type.
 	CategoricalFilter = "categorical"
 	// ClusterFilter represents a cluster filter type.
@@ -125,6 +127,21 @@ func NewBivariateFilter(key string, mode string, minX float64, maxX float64, min
 	return &Filter{
 		Key:  key,
 		Type: BivariateFilter,
+		Mode: mode,
+		Bounds: &Bounds{
+			MinX: minX,
+			MaxX: maxX,
+			MinY: minY,
+			MaxY: maxY,
+		},
+	}
+}
+
+// NewGeoBoundsFilter instantiates a geobounds filter.
+func NewGeoBoundsFilter(key string, mode string, minX float64, maxX float64, minY float64, maxY float64) *Filter {
+	return &Filter{
+		Key:  key,
+		Type: GeoBoundsFilter,
 		Mode: mode,
 		Bounds: &Bounds{
 			MinX: minX,

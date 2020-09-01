@@ -574,8 +574,8 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 	}
 
 	varOriginalName := ""
-	if v.Path("varOriginalName").Data() != nil {
-		varOriginalName = v.Path("varOriginalName").Data().(string)
+	if v.Path("colOriginalName").Data() != nil {
+		varOriginalName = v.Path("colOriginalName").Data().(string)
 	}
 
 	varOriginalType := ""

@@ -126,13 +126,14 @@ const (
 	DatasetPrefix = "d_"
 
 	// Database data types
-	dataTypeText    = "TEXT"
-	dataTypeDouble  = "double precision"
-	dataTypeFloat   = "FLOAT8"
-	dataTypeVector  = "FLOAT8[]"
-	dataTypeInteger = "INTEGER"
-	dataTypeDate    = "TIMESTAMP"
-	dateFormat      = "2006-01-02T15:04:05Z"
+	dataTypeText     = "TEXT"
+	dataTypeDouble   = "double precision"
+	dataTypeFloat    = "FLOAT8"
+	dataTypeVector   = "FLOAT8[]"
+	dataTypeGeometry = "geometry"
+	dataTypeInteger  = "INTEGER"
+	dataTypeDate     = "TIMESTAMP"
+	dateFormat       = "2006-01-02T15:04:05Z"
 )
 
 var (
@@ -509,7 +510,9 @@ func MapD3MTypeToPostgresType(typ string) string {
 		return dataTypeText
 	case DateTimeType:
 		return dataTypeDate
-	case RealVectorType, RealListType, GeoBoundsType:
+	case GeoBoundsType:
+		return dataTypeGeometry
+	case RealVectorType, RealListType:
 		return dataTypeVector
 	default:
 		return dataTypeText
@@ -527,7 +530,9 @@ func DefaultPostgresValueFromD3MType(typ string) interface{} {
 		return int(0)
 	case DateTimeType:
 		return fmt.Sprintf("'%s'", time.Time{}.Format(dateFormat))
-	case RealVectorType, RealListType, GeoBoundsType:
+	case GeoBoundsType:
+		return "'POLYGON EMPTY'"
+	case RealVectorType, RealListType:
 		return "'{}'"
 	default:
 		return "''"
