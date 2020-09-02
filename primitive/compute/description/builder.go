@@ -36,7 +36,6 @@ type PipelineBuilder struct {
 	outputs     []DataRef
 	steps       []Step
 	compiled    bool
-	inferred    bool
 }
 
 // NewPipelineBuilder creates a new pipeline builder instance.  All of the source nodes in the pipeline

@@ -267,29 +267,32 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 // cluster multiband images together, returning a column with the resulting cluster.
 func CreatePreFeaturizedMultiBandImageClusteringPipeline(name string, description string, variables []*model.Variable, useKMeans bool) (*FullySpecifiedPipeline, error) {
 	var steps []Step
-	var imageVar *model.Variable
 	if useKMeans {
 		steps = []Step{
 			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"},
-				[]string{model.TA2RealType}),
+			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, []string{model.TA2RealType}),
 			NewKMeansCluteringStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}),
 			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
 		}
 	} else {
-		addImage := &ColumnUpdate{
-			SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/TrueTarget"},
-			Indices:       []int{imageVar.Index},
-		}
-
 		steps = []Step{
 			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-			NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, addImage),
-			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"},
-				[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType}),
+			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, []string{model.TA2RealType}),
+			NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"},
+				[]string{
+					"float",         // python type
+					"numpy.float32", // numpy types
+					"numpy.float64",
+				}),
 			NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
 			NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, []int{-1}),
-			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, &StepDataRef{2, "produce"}),
+			// Needs to be added since the input dataset doesn't have a target, and hdbscan doesn't set the target itself.  Without this being
+			// set the subsequent ConstructPredictions step doesn't work.
+			NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, &ColumnUpdate{
+				Indices:       []int{0},
+				SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/PredictedTarget"},
+			}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
 		}
 	}
 
@@ -325,6 +328,22 @@ func NewExtractColumnsBySemanticTypeStep(inputs map[string]DataRef, outputMethod
 		},
 		outputMethods,
 		map[string]interface{}{"semantic_types": semanticTypes},
+		inputs,
+	)
+}
+
+// NewExtractColumnsByStructuralTypeStep extracts columns by supplied semantic types.
+func NewExtractColumnsByStructuralTypeStep(inputs map[string]DataRef, outputMethods []string, structuralTypes []string) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "79674d68-9b93-4359-b385-7b5f60645b06",
+			Version:    "0.1.0",
+			Name:       "Extracts columns by structural type",
+			PythonPath: "d3m.primitives.data_transformation.extract_columns_by_structural_types.Common",
+			Digest:     "cb8c16484f5b1fb04ea24ee269b6394b715d3cc4fe3fb7a03aa5894e8e53b80b",
+		},
+		outputMethods,
+		map[string]interface{}{"structural_types": structuralTypes},
 		inputs,
 	)
 }
