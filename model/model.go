@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/Jeffail/gabs/v2"
 )
@@ -496,62 +495,6 @@ func (v *Variable) IsMediaReference() bool {
 // IsGrouping returns true if the variable is a grouping.
 func (v *Variable) IsGrouping() bool {
 	return v.Grouping != nil && !v.Grouping.IsNil()
-}
-
-// MapD3MTypeToPostgresType generates a postgres type from a d3m type.
-func MapD3MTypeToPostgresType(typ string) string {
-	// Integer types can be returned as floats.
-	switch typ {
-	case IndexType:
-		return dataTypeInteger
-	case IntegerType, LongitudeType, LatitudeType, RealType, TimestampType:
-		return dataTypeFloat
-	case OrdinalType, CategoricalType, StringType:
-		return dataTypeText
-	case DateTimeType:
-		return dataTypeDate
-	case GeoBoundsType:
-		return dataTypeGeometry
-	case RealVectorType, RealListType:
-		return dataTypeVector
-	default:
-		return dataTypeText
-	}
-}
-
-// DefaultPostgresValueFromD3MType generates a default postgres value from a d3m type.
-func DefaultPostgresValueFromD3MType(typ string) interface{} {
-	switch typ {
-	case IndexType:
-		return float64(0)
-	case LongitudeType, LatitudeType, RealType:
-		return "'NaN'::double precision"
-	case IntegerType, TimestampType:
-		return int(0)
-	case DateTimeType:
-		return fmt.Sprintf("'%s'", time.Time{}.Format(dateFormat))
-	case GeoBoundsType:
-		return "'POLYGON EMPTY'"
-	case RealVectorType, RealListType:
-		return "'{}'"
-	default:
-		return "''"
-	}
-}
-
-// PostgresValueForFieldType generates the select field value for a given variable type.
-func PostgresValueForFieldType(typ string, field string) string {
-	fieldQuote := fmt.Sprintf("\"%s\"", field)
-	switch typ {
-	case RealListType:
-		return fmt.Sprintf("string_to_array(%s, ',')", fieldQuote)
-	case DateTimeType:
-		// datetime may be only time so need to support both cases
-		// times can have first value missing a 0 so want to first get a time value then add it to epoch time 0
-		return fmt.Sprintf("CASE WHEN length(%[1]s) IN (4, 5) AND position(':' in %[1]s) > 0 THEN CONCAT('1970-01-01 ', to_char(to_timestamp(%[1]s, 'MI:SS'), 'HH24:MI:SS')) ELSE %[1]s END", fieldQuote)
-	default:
-		return fmt.Sprintf("\"%s\"", field)
-	}
 }
 
 // IsTA2Field indicates whether or not a particular variable is recognized by a TA2.
