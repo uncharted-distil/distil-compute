@@ -123,16 +123,6 @@ const (
 
 	// DatasetPrefix is the prefix used for a normalized dataset id
 	DatasetPrefix = "d_"
-
-	// Database data types
-	dataTypeText     = "TEXT"
-	dataTypeDouble   = "double precision"
-	dataTypeFloat    = "FLOAT8"
-	dataTypeVector   = "FLOAT8[]"
-	dataTypeGeometry = "geometry"
-	dataTypeInteger  = "INTEGER"
-	dataTypeDate     = "TIMESTAMP"
-	dateFormat       = "2006-01-02T15:04:05Z"
 )
 
 var (
@@ -344,8 +334,8 @@ func NormalizeDatasetID(id string) string {
 		if len(matches) != 3 {
 			return normalized[:datasetIDSizeLimit]
 		}
-		body_length := datasetIDSizeLimit - len(matches[2])
-		normalized = fmt.Sprintf("%s%s", matches[1][:body_length], matches[2])
+		bodyLength := datasetIDSizeLimit - len(matches[2])
+		normalized = fmt.Sprintf("%s%s", matches[1][:bodyLength], matches[2])
 	}
 	return normalized
 }
