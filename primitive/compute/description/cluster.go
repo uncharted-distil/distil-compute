@@ -91,7 +91,7 @@ func CreateGeneralClusteringPipeline(name string, description string, datasetDes
 	offset = offset + 1
 
 	if useKMeans {
-		steps = append(steps, NewKMeansCluteringStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+		steps = append(steps, NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 		offset = offset + 1
 	} else {
 		steps = append(steps, NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
@@ -139,7 +139,7 @@ func CreateImageClusteringPipeline(name string, description string, imageVariabl
 			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 			NewDataframeImageReaderStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, cols),
 			NewImageTransferStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
-			NewKMeansCluteringStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+			NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
 			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
 		}
 	} else {
@@ -218,7 +218,7 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"},
 				[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, "https://metadata.datadrivendiscovery.org/types/FloatVector"}),
 			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
-			NewKMeansCluteringStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
+			NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
 			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{4, "produce"}),
 		}
 	} else {
@@ -270,14 +270,14 @@ func CreatePreFeaturizedMultiBandImageClusteringPipeline(name string, descriptio
 	if useKMeans {
 		steps = []Step{
 			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, []string{model.TA2RealType}),
-			NewKMeansCluteringStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}),
+			NewDistilColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, []string{model.TA2RealType}),
+			NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}),
 			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
 		}
 	} else {
 		steps = []Step{
 			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, []string{model.TA2RealType}),
+			NewDistilColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, []string{model.TA2RealType}),
 			NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"},
 				[]string{
 					"float",         // python type
