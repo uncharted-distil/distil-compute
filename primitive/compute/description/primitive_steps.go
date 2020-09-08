@@ -69,8 +69,8 @@ func NewImageTransferStep(inputs map[string]DataRef, outputMethods []string) *St
 	)
 }
 
-// NewKMeansCluteringStep clusters the input using a siple k-means clustering.
-func NewKMeansCluteringStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+// NewKMeansClusteringStep clusters the input using a siple k-means clustering.
+func NewKMeansClusteringStep(inputs map[string]DataRef, outputMethods []string) *StepData {
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "3b09024e-a83b-418c-8ff4-cf3d30a9609e",
@@ -485,6 +485,24 @@ func NewColumnParserStep(inputs map[string]DataRef, outputMethods []string, type
 		},
 		outputMethods,
 		map[string]interface{}{"parse_semantic_types": types, "parse_categorical_target_columns": true},
+		inputs,
+	)
+}
+
+// NewDistilColumnParserStep takes obj/string columns in a datafram and parsaer them into raw python types
+// based on their metadata.  Avoids some performance issues present in the common ColumnParser but does not
+// support as many data types.
+func NewDistilColumnParserStep(inputs map[string]DataRef, outputMethods []string, types []string) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "e8e78214-9770-4c26-9eae-a45bd0ede91a",
+			Version:    "0.4.1",
+			Name:       "Parses strings into their types",
+			PythonPath: "d3m.primitives.data_transformation.DistilColumnParser",
+			Digest:     "d95eb0ea8a5e6f9abc0965a97e9c4f5d8f74a3df591c11c4145faea3e581cd06",
+		},
+		outputMethods,
+		map[string]interface{}{"parsing_semantics": types},
 		inputs,
 	)
 }
