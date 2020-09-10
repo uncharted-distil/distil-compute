@@ -544,7 +544,7 @@ func NewSatelliteImageLoaderStep(inputs map[string]DataRef, outputMethods []stri
 			Digest:     "cf44b2f5af90f10ef9935496655a202bfc8a4a0fa24b8e9d733ee61f096bda87",
 		},
 		outputMethods,
-		map[string]interface{}{"return_result": "replace"},
+		map[string]interface{}{"return_result": "replace", "compress_data": true},
 		inputs,
 	)
 }
@@ -560,7 +560,7 @@ func NewRemoteSensingPretrainedStep(inputs map[string]DataRef, outputMethods []s
 			Digest:     "cf44b2f5af90f10ef9935496655a202bfc8a4a0fa24b8e9d733ee61f096bda87",
 		},
 		outputMethods,
-		map[string]interface{}{"batch_size": 32},
+		map[string]interface{}{"batch_size": 32, "decompress_data": true},
 		inputs,
 	)
 }
