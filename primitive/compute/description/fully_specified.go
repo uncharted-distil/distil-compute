@@ -84,12 +84,6 @@ func CreateMultiBandImageFeaturizationPipeline(name string, description string, 
 	offset++
 
 	steps = append(steps, NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
-	offset++
-
-	steps = append(steps, NewRemoveColumnsStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, []int{imageCol.Index}))
-	offset++
-
-	steps = append(steps, NewHorizontalConcatStep(map[string]DataRef{"left": &StepDataRef{offset, "produce"}, "right": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, true, true))
 
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
