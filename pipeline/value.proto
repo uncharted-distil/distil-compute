@@ -108,5 +108,7 @@ message Value {
         bytes pickle_blob = 6;
         // 20 bytes of Plasma ObjectID of the value.
         bytes plasma_id = 7;
+        // A URI pointing to a parquet file produced by call to pandas.to_parquet
+        string parquet_uri = 8;
     }
 }
