@@ -181,18 +181,22 @@ func (c *Client) Hello() error {
 	if err != nil {
 		return err
 	}
+
+        // Get the API version
+        version := helloResponse.GetVersion()
+
 	log.Infof("ta2 user agent: %s", helloResponse.GetUserAgent())
-	log.Infof("ta2 API version: %s", helloResponse.GetVersion())
+	log.Infof("ta2 API version: %s", version)
 	log.Infof("ta2 Allowed value types: %+v", helloResponse.GetAllowedValueTypes())
 	log.Infof("ta2 extensions: %+v", helloResponse.GetSupportedExtensions())
 
-	if !strings.EqualFold(GetAPIVersion(), helloResponse.GetVersion()) {
-		log.Warnf("ta2 API version '%s' does not match expected version '%s", helloResponse.GetVersion(), GetAPIVersion())
+	if !strings.EqualFold(GetAPIVersion(), version) {
+		log.Warnf("ta2 API version '%s' does not match expected version '%s", version, GetAPIVersion())
 	}
 
 	log.Infof("connected to %s", c.conn.Target())
 
-	return nil
+	return version
 }
 
 // Close the connection to the solution service
