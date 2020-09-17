@@ -175,11 +175,11 @@ func NewRunner(runnerAddr string, trace bool, userAgent string, pullTimeout time
 }
 
 // Hello does the hello message exchange to check for basic connectivity.
-func (c *Client) Hello() error {
+func (c *Client) Hello() (string, error) {
 	// check for basic ta2 connectivity
 	helloResponse, err := c.client.Hello(context.Background(), &pipeline.HelloRequest{})
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	// Get the API version
@@ -196,7 +196,7 @@ func (c *Client) Hello() error {
 
 	log.Infof("connected to %s", c.conn.Target())
 
-	return version
+	return version, nil
 }
 
 // Close the connection to the solution service
