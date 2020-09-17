@@ -175,24 +175,28 @@ func NewRunner(runnerAddr string, trace bool, userAgent string, pullTimeout time
 }
 
 // Hello does the hello message exchange to check for basic connectivity.
-func (c *Client) Hello() error {
+func (c *Client) Hello() (string, error) {
 	// check for basic ta2 connectivity
 	helloResponse, err := c.client.Hello(context.Background(), &pipeline.HelloRequest{})
 	if err != nil {
-		return err
+		return "", err
 	}
+
+	// Get the API version
+	version := helloResponse.GetVersion()
+
 	log.Infof("ta2 user agent: %s", helloResponse.GetUserAgent())
-	log.Infof("ta2 API version: %s", helloResponse.GetVersion())
+	log.Infof("ta2 API version: %s", version)
 	log.Infof("ta2 Allowed value types: %+v", helloResponse.GetAllowedValueTypes())
 	log.Infof("ta2 extensions: %+v", helloResponse.GetSupportedExtensions())
 
-	if !strings.EqualFold(GetAPIVersion(), helloResponse.GetVersion()) {
-		log.Warnf("ta2 API version '%s' does not match expected version '%s", helloResponse.GetVersion(), GetAPIVersion())
+	if !strings.EqualFold(GetAPIVersion(), version) {
+		log.Warnf("ta2 API version '%s' does not match expected version '%s", version, GetAPIVersion())
 	}
 
 	log.Infof("connected to %s", c.conn.Target())
 
-	return nil
+	return version, nil
 }
 
 // Close the connection to the solution service
