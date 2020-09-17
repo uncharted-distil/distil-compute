@@ -182,8 +182,8 @@ func (c *Client) Hello() error {
 		return err
 	}
 
-        // Get the API version
-        version := helloResponse.GetVersion()
+	// Get the API version
+	version := helloResponse.GetVersion()
 
 	log.Infof("ta2 user agent: %s", helloResponse.GetUserAgent())
 	log.Infof("ta2 API version: %s", version)
