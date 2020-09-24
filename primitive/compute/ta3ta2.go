@@ -112,6 +112,8 @@ const (
 	CSVURIValueType = "CSV_URI"
 	// DatasetURIValueType denotes a D3M dataset file URI at the TA2 level
 	DatasetURIValueType = "DATASET_URI"
+	// ParquetURIValueType denotes a parquet file URI at the TA2 level
+	ParquetURIValueType = "PARQUET_URI"
 	// RawValueType denotes a raw numeric value
 	RawValueType = "RAW"
 
