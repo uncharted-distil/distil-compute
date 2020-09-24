@@ -271,8 +271,14 @@ func CreatePreFeaturizedMultiBandImageClusteringPipeline(name string, descriptio
 		steps = []Step{
 			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
 			NewDistilColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, []string{model.TA2RealType}),
-			NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}),
-			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
+			NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"},
+				[]string{
+					"float",         // python type
+					"numpy.float32", // numpy types
+					"numpy.float64",
+				}),
+			NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
 		}
 	} else {
 		steps = []Step{
