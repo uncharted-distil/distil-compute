@@ -110,7 +110,7 @@ func LoadMetadataFromOriginalSchema(schemaPath string, augmentFromData bool) (*m
 	// the metadata may not specify every variable
 	if augmentFromData {
 		for _, dr := range meta.DataResources {
-			dataPath := path.Join(path.Dir(schemaPath), dr.ResPath)
+			dataPath := model.GetResourcePath(schemaPath, dr)
 
 			// collection data resources need special care since datapath is a folder
 			if dr.IsCollection {
