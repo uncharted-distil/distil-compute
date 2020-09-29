@@ -35,7 +35,7 @@ type ExecPipelineStatus struct {
 	ResultURI string
 }
 
-// ExecPipelineStatusListener defines a funtction type for handling pipeline
+// ExecPipelineStatusListener defines a function type for handling pipeline
 // execution result updates.
 type ExecPipelineStatusListener func(status ExecPipelineStatus)
 
@@ -89,7 +89,7 @@ func (e *ExecPipelineRequest) Listen(listener ExecPipelineStatusListener) error 
 	return <-e.finished
 }
 
-// Dispatch dispatches a pipeline execute request for processing by TA2
+// Dispatch dispatches a pipeline execute request for processing by TA2.
 func (e *ExecPipelineRequest) Dispatch(client *Client, templateRequest *pipeline.SearchSolutionsRequest) error {
 	if templateRequest == nil {
 		templateRequest = &pipeline.SearchSolutionsRequest{
@@ -120,7 +120,7 @@ func (e *ExecPipelineRequest) dispatchRequest(client *Client, requestID string) 
 
 	var firstSolution string
 	var fitCalled bool
-	// Search for solutions, this wont return until the produce finishes or it times out.
+	// Search for solutions, this won't return until the fit finishes or it times out.
 	err := client.SearchSolutions(context.Background(), requestID, func(solution *pipeline.GetSearchSolutionsResultsResponse) {
 		// A complete pipeline specification should result in a single solution being generated.  Consider it an
 		// error condition when that is not the case.
@@ -141,19 +141,13 @@ func (e *ExecPipelineRequest) dispatchRequest(client *Client, requestID string) 
 			e.wg.Done()
 		} else {
 			// search is actively running or has completed - safe to call fit at this point, but we should
-			// only do so once.  A status update with no actual solution ID is valid in the API.
+			// only do so once.  A status update with no actual solution ID is valid in the API.  We rely on
+			// the fact that the a Fit request will also generate results, and don't rely on a separate produce
+			// step.
 			e.notifyStatus(e.statusChannel, requestID, RequestRunningStatus)
 			if solution.GetSolutionId() != "" && !fitCalled {
 				fitCalled = true
-				fittedSolutionID := e.dispatchFit(e.statusChannel, client, requestID, solution.GetSolutionId())
-				if fittedSolutionID == "" {
-					e.wg.Done()
-					return
-				}
-
-				// fit complete, safe to produce results
-				e.notifyStatus(e.statusChannel, requestID, RequestRunningStatus)
-				e.dispatchProduce(e.statusChannel, client, requestID, fittedSolutionID)
+				e.dispatchFit(e.statusChannel, client, requestID, solution.GetSolutionId())
 				e.wg.Done()
 			}
 
@@ -171,52 +165,27 @@ func (e *ExecPipelineRequest) dispatchRequest(client *Client, requestID string) 
 	e.finished <- client.EndSearch(context.Background(), requestID)
 }
 
-func (e *ExecPipelineRequest) dispatchFit(statusChan chan ExecPipelineStatus, client *Client, requestID string, solutionID string) string {
-	// run produce - this blocks until all responses are returned
-	responses, err := client.GenerateSolutionFit(context.Background(), solutionID, e.datasetURIs)
-	if err != nil {
-		e.notifyError(statusChan, requestID, err)
-		return ""
-	}
-
-	// find the completed response
-	var completed *pipeline.GetFitSolutionResultsResponse
-	for _, response := range responses {
-		if response.Progress.State == pipeline.ProgressState_COMPLETED {
-			completed = response
-			break
-		}
-	}
-	if completed == nil {
-		err := errors.Errorf("no completed response found")
-		e.notifyError(statusChan, requestID, err)
-		return ""
-	}
-	return completed.GetFittedSolutionId()
-}
-
-func (e *ExecPipelineRequest) createProduceSolutionRequest(datasetURIs []string, solutionID string) *pipeline.ProduceSolutionRequest {
-	return &pipeline.ProduceSolutionRequest{
-		FittedSolutionId: solutionID,
+func (e *ExecPipelineRequest) createFitSolutionRequest(datasetURIs []string, solutionID string) *pipeline.FitSolutionRequest {
+	return &pipeline.FitSolutionRequest{
+		SolutionId:       solutionID,
 		Inputs:           createInputValues(datasetURIs),
 		ExposeOutputs:    []string{defaultExposedOutputKey},
 		ExposeValueTypes: []string{CSVURIValueType},
 	}
 }
 
-func (e *ExecPipelineRequest) dispatchProduce(statusChan chan ExecPipelineStatus, client *Client, requestID string, fittedSolutionID string) {
-	// generate predictions
-	produceRequest := e.createProduceSolutionRequest(e.datasetURIsProduce, fittedSolutionID)
+func (e *ExecPipelineRequest) dispatchFit(statusChan chan ExecPipelineStatus, client *Client, requestID string, solutionID string) {
+	// run fit - this blocks until all responses are returned
+	fitRequest := e.createFitSolutionRequest(e.datasetURIs, solutionID)
 
-	// run produce - this blocks until all responses are returned
-	_, responses, err := client.GeneratePredictions(context.Background(), produceRequest)
+	responses, err := client.GenerateSolutionFit(context.Background(), fitRequest)
 	if err != nil {
 		e.notifyError(statusChan, requestID, err)
 		return
 	}
 
 	// find the completed response
-	var completed *pipeline.GetProduceSolutionResultsResponse
+	var completed *pipeline.GetFitSolutionResultsResponse
 	for _, response := range responses {
 		if response.Progress.State == pipeline.ProgressState_COMPLETED {
 			completed = response
