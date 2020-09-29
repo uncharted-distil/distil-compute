@@ -295,10 +295,12 @@ func CreateGroupingFieldComposePipeline(name string, description string, colIndi
 // CreatePCAFeaturesPipeline creates a pipeline to run feature ranking on an input dataset.
 func CreatePCAFeaturesPipeline(name string, description string) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{1, "produce_metafeatures"}}
+	outputs := []DataRef{&StepDataRef{3, "produce_metafeatures"}}
 
 	steps := []Step{
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+		NewProfilerStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
+		NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, []string{}),
 		NewPCAFeaturesStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce_metafeatures"}),
 	}
 

@@ -124,6 +124,22 @@ func NewPCAFeaturesStep(inputs map[string]DataRef, outputMethods []string) *Step
 	)
 }
 
+// NewProfilerStep creates a profile primitive that infers the columns type using rules
+func NewProfilerStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "e193afa1-b45e-4d29-918f-5bb1fa3b88a7",
+			Version:    "0.2.0",
+			Name:       "Determine missing semantic types for columns automatically",
+			PythonPath: "d3m.primitives.schema_discovery.profiler.Common",
+			Digest:     "b602026372cab83090708ad7f1c8e8e9d48cd03b1841f59b52b59244727a4aa0",
+		},
+		outputMethods,
+		map[string]interface{}{},
+		inputs,
+	)
+}
+
 // NewTargetRankingStep creates a target ranking call that can be added to
 // a pipeline. Ranking is based on mutual information between features and a selected
 // target.  Returns a DataFrame containing (col_idx, col_name, score) tuples for
