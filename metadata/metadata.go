@@ -390,7 +390,7 @@ func LoadImportance(m *model.Metadata, importanceFile string) error {
 		for index, v := range m.DataResources[0].Variables {
 			// geocoded variables added after ranking on ingest
 			if index < len(metric) {
-				v.Importance = int(metric[index].Data().(float64)) + 1
+				v.Importance = float64(metric[index].Data().(float64))
 			}
 		}
 	}
