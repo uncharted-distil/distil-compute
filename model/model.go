@@ -229,7 +229,7 @@ type Variable struct {
 	DistilRole       string                 `json:"distilRole,omitempty"`
 	OriginalVariable string                 `json:"colOriginalName"`
 	DisplayName      string                 `json:"colDisplayName,omitempty"`
-	Importance       int                    `json:"importance"`
+	Importance       float64                `json:"importance"`
 	Index            int                    `json:"colIndex"`
 	SuggestedTypes   []*SuggestedType       `json:"suggestedTypes,omitempty"`
 	RefersTo         map[string]interface{} `json:"refersTo,omitempty"`

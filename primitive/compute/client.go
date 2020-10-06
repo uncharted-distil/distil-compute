@@ -316,13 +316,8 @@ func (c *Client) GenerateSolutionScores(ctx context.Context, solutionID string, 
 }
 
 // GenerateSolutionFit generates fit for candidate solutions.
-func (c *Client) GenerateSolutionFit(ctx context.Context, solutionID string, datasetURIs []string) ([]*pipeline.GetFitSolutionResultsResponse, error) {
-	fitSolutionRequest := &pipeline.FitSolutionRequest{
-		SolutionId: solutionID,
-		Inputs:     createInputValues(datasetURIs),
-	}
-
-	fitSolutionResponse, err := c.client.FitSolution(ctx, fitSolutionRequest)
+func (c *Client) GenerateSolutionFit(ctx context.Context, request *pipeline.FitSolutionRequest) ([]*pipeline.GetFitSolutionResultsResponse, error) {
+	fitSolutionResponse, err := c.client.FitSolution(ctx, request)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to start solution fitting")
 	}
