@@ -470,10 +470,15 @@ func (dr *DataResource) GenerateHeader() []string {
 
 // GetResourcePath returns the absolute path of the data resource.
 func GetResourcePath(schemaFile string, dataResource *DataResource) string {
+	return GetResourcePathFromFolder(path.Dir(schemaFile), dataResource)
+}
+
+// GetResourcePathFromFolder returns the absolute path of the data resource.
+func GetResourcePathFromFolder(datasetFolder string, dataResource *DataResource) string {
 	// path can either be absolute or relative to the schema file
 	drPath := dataResource.ResPath
 	if len(drPath) > 0 && drPath[0] != '/' {
-		drPath = path.Join(path.Dir(schemaFile), drPath)
+		drPath = path.Join(datasetFolder, drPath)
 	}
 
 	return drPath
