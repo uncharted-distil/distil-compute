@@ -390,12 +390,12 @@ func LoadImportance(m *model.Metadata, importanceFile string) error {
 		for index, v := range m.DataResources[0].Variables {
 			// geocoded variables added after ranking on ingest
 			if index < len(metric) {
-				value, ok := metric[index].Data().(float64);
-				v.Importance = value;
+				value, ok := metric[index].Data().(float64)
+				v.Importance = value
 				if !ok {
 					// set Importance to 0.0
-					v.Importance = 0.0;
-					log.Warnf("PCA rank for Variable %s could not be determined and was set to 0.0", v.Name);
+					v.Importance = 0.0
+					log.Warnf("PCA rank for Variable %s could not be determined and was set to 0.0", v.Name)
 				}
 			}
 		}
