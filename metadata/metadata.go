@@ -110,7 +110,7 @@ func LoadMetadataFromOriginalSchema(schemaPath string, augmentFromData bool) (*m
 	// the metadata may not specify every variable
 	if augmentFromData {
 		for _, dr := range meta.DataResources {
-			dataPath := path.Join(path.Dir(schemaPath), dr.ResPath)
+			dataPath := model.GetResourcePath(schemaPath, dr)
 
 			// collection data resources need special care since datapath is a folder
 			if dr.IsCollection {
@@ -390,12 +390,12 @@ func LoadImportance(m *model.Metadata, importanceFile string) error {
 		for index, v := range m.DataResources[0].Variables {
 			// geocoded variables added after ranking on ingest
 			if index < len(metric) {
-				value, ok := metric[index].Data().(float64);
-				v.Importance = value;
+				value, ok := metric[index].Data().(float64)
+				v.Importance = value
 				if !ok {
 					// set Importance to 0.0
-					v.Importance = 0.0;
-					log.Warnf("PCA rank for Variable %s could not be determined and was set to 0.0", v.Name);
+					v.Importance = 0.0
+					log.Warnf("PCA rank for Variable %s could not be determined and was set to 0.0", v.Name)
 				}
 			}
 		}

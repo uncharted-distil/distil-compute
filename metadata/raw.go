@@ -47,7 +47,11 @@ func (r *Raw) Parse(res *gabs.Container) (*model.DataResource, error) {
 		return nil, err
 	}
 
-	dr, err := loadRawVariables(path.Join(r.rootPath, resPath))
+	// make sure the path is absolute
+	if len(resPath) > 0 && resPath[0] != '/' {
+		resPath = path.Join(r.rootPath, resPath)
+	}
+	dr, err := loadRawVariables(resPath)
 	if err != nil {
 		return nil, err
 	}

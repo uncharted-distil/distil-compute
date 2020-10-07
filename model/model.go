@@ -17,6 +17,7 @@ package model
 
 import (
 	"fmt"
+	"path"
 	"regexp"
 	"strings"
 
@@ -465,6 +466,22 @@ func (dr *DataResource) GenerateHeader() []string {
 	}
 
 	return header
+}
+
+// GetResourcePath returns the absolute path of the data resource.
+func GetResourcePath(schemaFile string, dataResource *DataResource) string {
+	return GetResourcePathFromFolder(path.Dir(schemaFile), dataResource)
+}
+
+// GetResourcePathFromFolder returns the absolute path of the data resource.
+func GetResourcePathFromFolder(datasetFolder string, dataResource *DataResource) string {
+	// path can either be absolute or relative to the schema file
+	drPath := dataResource.ResPath
+	if len(drPath) > 0 && drPath[0] != '/' {
+		drPath = path.Join(datasetFolder, drPath)
+	}
+
+	return drPath
 }
 
 // IsMediaReference returns true if a variable is a reference to a media resource.
