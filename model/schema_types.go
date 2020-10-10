@@ -78,8 +78,6 @@ const (
 	GeoCoordinateType = "geocoordinate"
 	// GeoBoundsType is the schema type for geocoordinate values
 	GeoBoundsType = "geobounds"
-	// RemoteSensingType is the schema type for remote sensing values
-	RemoteSensingType = "remote_sensing"
 	// TimestampType is the schema type for timestamp values
 	TimestampType = "timestamp"
 	// UnknownType is the schema type for unknown values
@@ -414,12 +412,6 @@ func IsGeoCoordinate(typ string) bool {
 // for the purposes of analysis.
 func IsGeoBounds(typ string) bool {
 	return typ == GeoBoundsType
-}
-
-// IsRemoteSensing indicates whether or not a schema type is a remote sensing
-// for the purposes of analysis.
-func IsRemoteSensing(typ string) bool {
-	return typ == RemoteSensingType
 }
 
 // IsTimestamp indicates whether or not a schema type is a timestamp for the purposes

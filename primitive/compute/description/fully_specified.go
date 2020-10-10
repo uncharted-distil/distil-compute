@@ -45,11 +45,11 @@ func MarshalSteps(step *pipeline.PipelineDescription) (string, error) {
 // CreateMultiBandImageFeaturizationPipeline creates a pipline that will featurize multiband images.
 func CreateMultiBandImageFeaturizationPipeline(name string, description string, variables []*model.Variable) (*FullySpecifiedPipeline, error) {
 	// add semantic types to variables that are images and group ids
-	var grouping *model.RemoteSensingGrouping
+	var grouping *model.MultiBandImageGrouping
 	variableMap := map[string]*model.Variable{}
 	for _, v := range variables {
-		if v.IsGrouping() && model.IsRemoteSensing(v.Grouping.GetType()) {
-			grouping = v.Grouping.(*model.RemoteSensingGrouping)
+		if v.IsGrouping() && model.IsMultiBandImage(v.Grouping.GetType()) {
+			grouping = v.Grouping.(*model.MultiBandImageGrouping)
 		}
 		variableMap[v.Name] = v
 	}

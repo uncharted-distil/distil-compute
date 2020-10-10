@@ -223,16 +223,16 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, offset+3, ""))
 		offset += 5
 
-		remoteSensingGrouping := getRemoteSensingGrouping(datasetDescription)
-		if remoteSensingGrouping != nil {
-			selectedSet[remoteSensingGrouping.Name] = true
+		multiBandImageGrouping := getMultiBandImageGrouping(datasetDescription)
+		if multiBandImageGrouping != nil {
+			selectedSet[multiBandImageGrouping.Name] = true
 			attribs := &ColumnUpdate{
 				SemanticTypes: []string{model.TA2GroupingKeyType},
-				Indices:       []int{remoteSensingGrouping.Index},
+				Indices:       []int{multiBandImageGrouping.Index},
 			}
-			remoteSensingUpdate := NewAddSemanticTypeStep(nil, nil, attribs)
-			remoteSensingWrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
-			steps = append(steps, remoteSensingUpdate, remoteSensingWrapper)
+			multiBandImageUpdate := NewAddSemanticTypeStep(nil, nil, attribs)
+			multiBandImageWrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+			steps = append(steps, multiBandImageUpdate, multiBandImageWrapper)
 			offset += 2
 		}
 	}
@@ -276,17 +276,17 @@ func getTimeseriesGrouping(datasetDescription *UserDatasetDescription) *model.Ti
 	return nil
 }
 
-func getRemoteSensingGrouping(datasetDescription *UserDatasetDescription) *model.Variable {
-	// multiband image type identifies remote sensing dataset
-	isRemoteSensing := false
+func getMultiBandImageGrouping(datasetDescription *UserDatasetDescription) *model.Variable {
+	// multiband image type identifies multi-band image dataset
+	isMultiBandImage := false
 	for _, v := range datasetDescription.AllFeatures {
-		if model.IsRemoteSensing(v.Type) {
-			isRemoteSensing = true
+		if model.IsMultiBandImage(v.Type) {
+			isMultiBandImage = true
 			break
 		}
 	}
 
-	if !isRemoteSensing {
+	if !isMultiBandImage {
 		return nil
 	}
 
