@@ -178,6 +178,12 @@ type MultiBandImageGrouping struct {
 	ClusterCol string `json:"clusterCol"`
 }
 
+type GeoBoundsGrouping struct {
+	Grouping
+	CoordinatesCol string `json:"coordinatesCol"`
+	PolygonCol     string `json:"polygonCol"`
+}
+
 // GetDataset returns the grouping dataset.
 func (g *Grouping) GetDataset() string {
 	return g.Dataset
@@ -216,6 +222,10 @@ func (t *TimeseriesGrouping) GetClusterCol() string {
 // GetClusterCol returns the cluster column name for a remote sensing group.
 func (t *MultiBandImageGrouping) GetClusterCol() string {
 	return t.ClusterCol
+}
+
+func (t *GeoBoundsGrouping) GetPolygonCol() string {
+	return t.PolygonCol
 }
 
 // Variable represents a single variable description.
