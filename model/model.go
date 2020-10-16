@@ -170,8 +170,8 @@ type TimeseriesGrouping struct {
 	YCol       string `json:"yCol"`
 }
 
-// RemoteSensingGrouping is used for remote sensing grouping information.
-type RemoteSensingGrouping struct {
+// MultiBandImageGrouping is used for remote sensing grouping information.
+type MultiBandImageGrouping struct {
 	Grouping
 	BandCol    string `json:"bandCol"`
 	ImageCol   string `json:"imageCol"`
@@ -214,7 +214,7 @@ func (t *TimeseriesGrouping) GetClusterCol() string {
 }
 
 // GetClusterCol returns the cluster column name for a remote sensing group.
-func (t *RemoteSensingGrouping) GetClusterCol() string {
+func (t *MultiBandImageGrouping) GetClusterCol() string {
 	return t.ClusterCol
 }
 

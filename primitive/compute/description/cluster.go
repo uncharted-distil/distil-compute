@@ -184,7 +184,7 @@ func CreateImageClusteringPipeline(name string, description string, imageVariabl
 // CreateMultiBandImageClusteringPipeline creates a fully specified pipeline that will
 // cluster multiband images together, returning a column with the resulting cluster.
 func CreateMultiBandImageClusteringPipeline(name string, description string,
-	grouping *model.RemoteSensingGrouping, variables []*model.Variable, useKMeans bool) (*FullySpecifiedPipeline, error) {
+	grouping *model.MultiBandImageGrouping, variables []*model.Variable, useKMeans bool) (*FullySpecifiedPipeline, error) {
 
 	var imageVar *model.Variable
 	var groupVar *model.Variable
