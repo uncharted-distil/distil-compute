@@ -60,12 +60,11 @@ func CreatePreFeaturizedDatasetPipeline(name string, description string, dataset
 		if model.IsTA2Field(v.DistilRole, v.SelectedRole) {
 			featureSet[strings.ToLower(v.Name)] = v.Index
 			featureCount++
-			// for now, drop all non featurized columns
-			//if !selectedSet[v.Name] {
-			if v.Index != datasetDescription.TargetFeature.Index && !model.IsIndexRole(v.SelectedRole) {
-				colsToDrop = append(colsToDrop, v.Index)
+			if !selectedSet[v.Name] {
+				if v.Index != datasetDescription.TargetFeature.Index && !model.IsIndexRole(v.SelectedRole) {
+					colsToDrop = append(colsToDrop, v.Index)
+				}
 			}
-			//}
 		}
 	}
 
