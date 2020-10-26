@@ -363,6 +363,14 @@ func CreateTargetRankingPipeline(name string, description string, target string,
 		return nil, errors.Errorf("can't find var '%s'", name)
 	}
 
+	// don't rank group features or any included metadata features
+	selectedFeatures := []*model.Variable{}
+	for _, v := range features {
+		if v.Grouping == nil && v.DistilRole != model.VarDistilRoleMetadata {
+			selectedFeatures = append(selectedFeatures, v)
+		}
+	}
+
 	offset := 0
 	steps := []Step{
 		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
@@ -371,7 +379,7 @@ func CreateTargetRankingPipeline(name string, description string, target string,
 
 	// ranking is dependent on user updated semantic types, so we need to make sure we apply
 	// those to the original data
-	updateSemanticTypeStep, err := createUpdateSemanticTypes(target, features, map[string]bool{}, offset)
+	updateSemanticTypeStep, err := createUpdateSemanticTypes(target, selectedFeatures, map[string]bool{}, offset)
 	if err != nil {
 		return nil, err
 	}
