@@ -22,6 +22,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/uncharted-distil/distil-compute/model"
 	"github.com/uncharted-distil/distil-compute/pipeline"
+
+	log "github.com/unchartedsoftware/plog"
 )
 
 // UserDatasetDescription contains the basic parameters needs to generate
@@ -492,6 +494,15 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int, off
 			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
 			filterSteps = append(filterSteps, filter, wrapper)
 			offset += 2
+
+		case model.DatetimeFilter:
+			filter = NewDateTimeRangeFilterStep(nil, nil, colIndex, inclusive, *f.Min, *f.Max, false)
+			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+			filterSteps = append(filterSteps, filter, wrapper)
+			offset += 2
+
+		case model.GeoBoundsFilter:
+			log.Warn("GeoBoundsFilter skipped - not yet mapped to pipeline.")
 		}
 
 	}

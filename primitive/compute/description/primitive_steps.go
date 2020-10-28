@@ -624,6 +624,30 @@ func NewNumericRangeFilterStep(inputs map[string]DataRef, outputMethods []string
 	)
 }
 
+// NewDateTimeRangeFilterStep creates a primitive step that filters dataset rows based on an
+// included/excluded date/time range.  Inclusion of boundaries is controlled by the strict flag.
+// Min and Max values are a unix timestamp expressed as floats.
+func NewDateTimeRangeFilterStep(inputs map[string]DataRef, outputMethods []string, colindex int, inclusive bool, min float64, max float64, strict bool) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "487e5a58-19e9-432c-ac61-fe05c024e42c",
+			Version:    "0.2.0",
+			Name:       "Datetime range filter",
+			PythonPath: "d3m.primitives.data_preprocessing.datetime_range_filter.Common",
+			Digest:     "031e249edabb35dbd4e6d7453d1e149774678603dfc186d0a1a03c153b132101",
+		},
+		outputMethods,
+		map[string]interface{}{
+			"column":    colindex,
+			"inclusive": inclusive,
+			"min":       min,
+			"max":       max,
+			"strict":    strict,
+		},
+		inputs,
+	)
+}
+
 // NewGoatForwardStep creates a GOAT forward geocoding primitive.  A string column
 // containing a place name or address is passed in, and the primitive will
 // return a DataFrame containing the lat/lon coords of the place.  If location could
