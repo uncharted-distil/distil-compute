@@ -57,6 +57,9 @@ const (
 
 	// Augmented flags a dataset as being ingested from augmented data
 	Augmented DatasetSource = "augmented"
+
+	// Batch flags a dataset as being a batch
+	Batch DatasetSource = "batch"
 )
 
 var (
