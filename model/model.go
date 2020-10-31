@@ -297,6 +297,7 @@ type Metadata struct {
 	SourceDataset    string
 	LearningDataset  string
 	Type             string
+	Digest           string
 }
 
 // ClassificationData contains semantic type information by column index.
