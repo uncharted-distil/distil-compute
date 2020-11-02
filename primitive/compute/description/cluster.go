@@ -184,7 +184,8 @@ func CreateImageClusteringPipeline(name string, description string, imageVariabl
 // CreateMultiBandImageClusteringPipeline creates a fully specified pipeline that will
 // cluster multiband images together, returning a column with the resulting cluster.
 func CreateMultiBandImageClusteringPipeline(name string, description string,
-	grouping *model.MultiBandImageGrouping, variables []*model.Variable, useKMeans bool) (*FullySpecifiedPipeline, error) {
+	grouping *model.MultiBandImageGrouping, variables []*model.Variable, useKMeans bool,
+	batchSize int, numJobs int) (*FullySpecifiedPipeline, error) {
 
 	var imageVar *model.Variable
 	var groupVar *model.Variable
@@ -214,10 +215,10 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 			NewAddSemanticTypeStep(nil, nil, addGroup),
 			NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, 1, ""),
 			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
-			NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+			NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, numJobs),
 			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"},
 				[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, "https://metadata.datadrivendiscovery.org/types/FloatVector"}),
-			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
+			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, batchSize),
 			NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
 			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{4, "produce"}),
 		}
@@ -232,11 +233,11 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 			NewAddSemanticTypeStep(nil, nil, addGroup),
 			NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, 1, ""),
 			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
-			NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+			NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, numJobs),
 			NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, addImage),
 			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"},
 				[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, "https://metadata.datadrivendiscovery.org/types/FloatVector"}),
-			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
+			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, batchSize),
 			NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}),
 			NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{8, "produce"}}, []string{"produce"}, []int{-1}),
 			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{9, "produce"}}, []string{"produce"}, &StepDataRef{5, "produce"}),
@@ -540,7 +541,7 @@ func NewExtractColumnsStep(inputs map[string]DataRef, outputMethods []string, in
 }
 
 // NewSatelliteImageLoaderStep loads multi band images.
-func NewSatelliteImageLoaderStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+func NewSatelliteImageLoaderStep(inputs map[string]DataRef, outputMethods []string, numJobs int) *StepData {
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "77d20419-aeb6-44f9-8e63-349ea5b654f7",
@@ -550,13 +551,13 @@ func NewSatelliteImageLoaderStep(inputs map[string]DataRef, outputMethods []stri
 			Digest:     "cf44b2f5af90f10ef9935496655a202bfc8a4a0fa24b8e9d733ee61f096bda87",
 		},
 		outputMethods,
-		map[string]interface{}{"return_result": "replace", "compress_data": true},
+		map[string]interface{}{"return_result": "replace", "compress_data": true, "num_jobs": numJobs},
 		inputs,
 	)
 }
 
 // NewRemoteSensingPretrainedStep featurizes a remote sensing column
-func NewRemoteSensingPretrainedStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+func NewRemoteSensingPretrainedStep(inputs map[string]DataRef, outputMethods []string, batchSize int) *StepData {
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "544bb61f-f354-48f5-b055-5c03de71c4fb",
@@ -566,7 +567,7 @@ func NewRemoteSensingPretrainedStep(inputs map[string]DataRef, outputMethods []s
 			Digest:     "cf44b2f5af90f10ef9935496655a202bfc8a4a0fa24b8e9d733ee61f096bda87",
 		},
 		outputMethods,
-		map[string]interface{}{"batch_size": 32, "decompress_data": true},
+		map[string]interface{}{"batch_size": batchSize, "decompress_data": true},
 		inputs,
 	)
 }
