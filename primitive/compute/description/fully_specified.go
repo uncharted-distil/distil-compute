@@ -43,7 +43,9 @@ func MarshalSteps(step *pipeline.PipelineDescription) (string, error) {
 }
 
 // CreateMultiBandImageFeaturizationPipeline creates a pipline that will featurize multiband images.
-func CreateMultiBandImageFeaturizationPipeline(name string, description string, variables []*model.Variable) (*FullySpecifiedPipeline, error) {
+func CreateMultiBandImageFeaturizationPipeline(name string, description string, variables []*model.Variable,
+	numJobs int, batchSize int) (*FullySpecifiedPipeline, error) {
+
 	// add semantic types to variables that are images and group ids
 	var grouping *model.MultiBandImageGrouping
 	variableMap := map[string]*model.Variable{}
@@ -80,10 +82,10 @@ func CreateMultiBandImageFeaturizationPipeline(name string, description string, 
 	steps = append(steps, NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, addGrouping))
 	offset++
 
-	steps = append(steps, NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	steps = append(steps, NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, numJobs))
 	offset++
 
-	steps = append(steps, NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	steps = append(steps, NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, batchSize))
 
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
