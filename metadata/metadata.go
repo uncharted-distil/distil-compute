@@ -60,6 +60,9 @@ const (
 
 	// Batch flags a dataset as being a batch
 	Batch DatasetSource = "batch"
+
+	// Public flags a dataset as being ingested from public data
+	Public DatasetSource = "public"
 )
 
 var (
