@@ -547,7 +547,7 @@ func NewSatelliteImageLoaderStep(inputs map[string]DataRef, outputMethods []stri
 			Id:         "77d20419-aeb6-44f9-8e63-349ea5b654f7",
 			Version:    "0.4.0",
 			Name:       "Columns satellite image loader",
-			PythonPath: "d3m.primitives.data_preprocessing.satellite_image_loader.DistilSatelliteImageLoader",
+			PythonPath: "d3m.primitives.data_transformation.satellite_image_loader.DistilSatelliteImageLoader",
 			Digest:     "cf44b2f5af90f10ef9935496655a202bfc8a4a0fa24b8e9d733ee61f096bda87",
 		},
 		outputMethods,
