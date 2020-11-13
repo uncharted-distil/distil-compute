@@ -60,7 +60,7 @@ func parseCsv(path string, deepParse bool) ([][]interface{}, error) {
 		for _, elem := range line {
 			if deepParse {
 				// parse value into float, int, string, or array
-				record = append(record, parseVal(elem, field))
+				record = append(record, ParseVal(elem, field))
 			} else {
 				record = append(record, elem)
 			}
@@ -70,7 +70,8 @@ func parseCsv(path string, deepParse bool) ([][]interface{}, error) {
 	return results, nil
 }
 
-func parseVal(val string, field *ComplexField) interface{} {
+// ParseVal parses a field value.
+func ParseVal(val string, field *ComplexField) interface{} {
 	// check to see if we can parse the value as an array - if not we leave it as a string
 	arrayVal, err := parseArray(val, field)
 	if err == nil {
