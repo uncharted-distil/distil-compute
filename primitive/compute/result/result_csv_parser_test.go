@@ -44,6 +44,8 @@ func TestCSVResultParser(t *testing.T) {
 	assert.Equal(t, []interface{}{"5", []interface{}{"int"}, []interface{}{"0.989599347114563"}}, result[6])
 	assert.Equal(t, []interface{}{"7", []interface{}{"int", "categorical"}, []interface{}{"0.9885959029197693", "1"}}, result[8])
 	assert.Equal(t, []interface{}{"10", "( ibid )", "hotel"}, result[11])
+	assert.Equal(t, []interface{}{"11", []interface{}{"int"}, []interface{}{[]interface{}{"1", "2", "3"}, []interface{}{"4", "5", "6"}, []interface{}{"7", "8", "9"}}}, result[12])
+	assert.Equal(t, []interface{}{"12", []interface{}{"int"}, []interface{}{[]interface{}{"1", "2", "3"}, []interface{}{"4", "5", "6"}, []interface{}{"7", "8", "9"}}}, result[13])
 }
 
 func TestCSVResultParserShallow(t *testing.T) {
