@@ -27,7 +27,7 @@ item <- array / string / <value> { p.addElement(buffer[begin:end]) }
 string <- dquote_string / squote_string
 dquote_string <- escdquote <(textdata / squote / lf / cr / obracket / cbracket / oparen / cparen / comma)*> escdquote { p.addElement(buffer[begin:end]) }
 squote_string <- squote <(escsquote / escdquote / textdata / lf / cr / obracket / cbracket / oparen / cparen)*> squote { p.addElement(buffer[begin:end]) }
-value <- negative? number+ (decimal_point number+)?
+value <- negative? number+ (decimal_point number+ negative? number*)?
 sep <- comma / lf
 
 # terminals
