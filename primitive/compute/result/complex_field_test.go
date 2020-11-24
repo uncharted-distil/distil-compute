@@ -45,7 +45,7 @@ func TestParserDoubleQuoted(t *testing.T) {
 }
 
 func TestParserValues(t *testing.T) {
-	field := &ComplexField{Buffer: "[10, 20, 30, \"forty  &*\"]"}
+	field := &ComplexField{Buffer: "[10, 20, 30, \"forty  &*\", 4.9e-05, 4.9e05]"}
 	field.Init()
 
 	err := field.Parse()
@@ -53,7 +53,7 @@ func TestParserValues(t *testing.T) {
 	assert.NoError(t, err)
 
 	field.Execute()
-	assert.Equal(t, []interface{}{"10", "20", "30", "forty  &*"}, field.arrayElements.elements)
+	assert.Equal(t, []interface{}{"10", "20", "30", "forty  &*", "4.9e-05", "4.9e05"}, field.arrayElements.elements)
 }
 
 func TestParserFail(t *testing.T) {
