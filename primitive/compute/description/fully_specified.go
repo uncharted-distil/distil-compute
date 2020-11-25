@@ -42,6 +42,51 @@ func MarshalSteps(step *pipeline.PipelineDescription) (string, error) {
 	return string(stepJSON), nil
 }
 
+// CreateImageQueryPipeline creates a pipeline that will perform image retrieval.
+func CreateImageQueryPipeline(name string, description string) (*FullySpecifiedPipeline, error) {
+	steps := []Step{
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+		NewColumnParserStep(
+			map[string]DataRef{"inputs": &StepDataRef{0, "produce"}},
+			[]string{"produce"},
+			[]string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType},
+		),
+		NewExtractColumnsBySemanticTypeStep(
+			map[string]DataRef{"inputs": &StepDataRef{1, "produce"}},
+			[]string{"produce"},
+			[]string{"https://metadata.datadrivendiscovery.org/types/Attribute", "https://metadata.datadrivendiscovery.org/types/PrimaryMultiKey"},
+		),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}),
+		NewImageRetrievalStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}, "outputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+		NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}},
+			[]string{"produce"},
+			&ColumnUpdate{
+				SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/PredictedTarget", "https://metadata.datadrivendiscovery.org/types/Score"},
+				Indices:       []int{1},
+			}),
+		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
+	}
+
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipelineJSON},
+	}
+	return fullySpecified, nil
+}
+
 // CreateMultiBandImageFeaturizationPipeline creates a pipline that will featurize multiband images.
 func CreateMultiBandImageFeaturizationPipeline(name string, description string, variables []*model.Variable,
 	numJobs int, batchSize int) (*FullySpecifiedPipeline, error) {

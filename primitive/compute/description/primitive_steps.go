@@ -759,3 +759,21 @@ func NewTimeseriesFormatterStep(inputs map[string]DataRef, outputMethods []strin
 		inputs,
 	)
 }
+
+// NewImageRetrievalStep creates a step that will rank images based on nearnest
+// to images with the positive label.
+func NewImageRetrievalStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	args := map[string]interface{}{"reduce_dimension": 32}
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "6dd2032c-5558-4621-9bea-ea42403682da",
+			Version:    "1.0.0",
+			Name:       "ImageRetrieval",
+			PythonPath: "d3m.primitives.similarity_modeling.iterative_labeling.ImageRetrieval",
+			Digest:     "",
+		},
+		outputMethods,
+		args,
+		inputs,
+	)
+}
