@@ -46,7 +46,7 @@ func CreateGeneralClusteringPipeline(name string, description string, datasetDes
 	steps = append(steps, NewColumnParserStep(
 		map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}},
 		[]string{"produce"},
-		[]string{model.TA2IntegerType, "https://metadata.datadrivendiscovery.org/types/FloatVector", model.TA2RealType},
+		[]string{model.TA2IntegerType, model.TA2RealVectorType, model.TA2RealType},
 	))
 	offset = offset + 1
 	parseStep := offset
@@ -217,7 +217,7 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
 			NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, numJobs),
 			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"},
-				[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, "https://metadata.datadrivendiscovery.org/types/FloatVector"}),
+				[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType}),
 			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, batchSize),
 			NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
 			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{4, "produce"}),
@@ -236,7 +236,7 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 			NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, numJobs),
 			NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, addImage),
 			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"},
-				[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, "https://metadata.datadrivendiscovery.org/types/FloatVector"}),
+				[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType}),
 			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, batchSize),
 			NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}),
 			NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{8, "produce"}}, []string{"produce"}, []int{-1}),
