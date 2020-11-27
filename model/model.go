@@ -78,6 +78,8 @@ const (
 	Variables = "variables"
 	// VarNameField is the field name for the variable name.
 	VarNameField = "colName"
+	// VarStorageNameField is the field name for the variable storage name.
+	VarStorageNameField = "storageName"
 	// VarIndexField is the field name for the variable index.
 	VarIndexField = "colIndex"
 	// VarRoleField is the field name for the variable role.
