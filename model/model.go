@@ -232,7 +232,8 @@ func (t *GeoBoundsGrouping) GetPolygonCol() string {
 
 // Variable represents a single variable description.
 type Variable struct {
-	Name             string                 `json:"colName"`
+	StorageName      string                 `json:"storageName"`
+	HeaderName       string                 `json:"colName"`
 	Type             string                 `json:"colType,omitempty"`
 	Description      string                 `json:"colDescription,omitempty"`
 	OriginalType     string                 `json:"colOriginalType,omitempty"`
@@ -365,7 +366,7 @@ func NormalizeVariableName(name string) string {
 
 func doesNameAlreadyExist(name string, existingVariables []*Variable) bool {
 	for _, v := range existingVariables {
-		if v != nil && v.Name == name {
+		if v != nil && v.StorageName == name {
 			return true
 		}
 	}
@@ -388,7 +389,7 @@ func ensureUniqueName(name string, existingVariables []*Variable) string {
 }
 
 // NewVariable creates a new variable.
-func NewVariable(index int, name, displayName, originalName, typ, originalType, description string, role []string, distilRole string, refersTo map[string]interface{}, existingVariables []*Variable, normalizeName bool) *Variable {
+func NewVariable(index int, name, displayName, headerName, originalName, typ, originalType, description string, role []string, distilRole string, refersTo map[string]interface{}, existingVariables []*Variable, normalizeName bool) *Variable {
 	normalized := name
 	if normalizeName {
 		// normalize name
@@ -412,12 +413,15 @@ func NewVariable(index int, name, displayName, originalName, typ, originalType, 
 	if displayName == "" {
 		displayName = name
 	}
+	if headerName == "" {
+		headerName = name
+	}
 	if originalType == "" {
 		originalType = typ
 	}
 
 	return &Variable{
-		Name:             normalized,
+		StorageName:      normalized,
 		Index:            index,
 		Type:             typ,
 		Description:      description,
@@ -427,6 +431,7 @@ func NewVariable(index int, name, displayName, originalName, typ, originalType, 
 		DistilRole:       distilRole,
 		OriginalVariable: originalName,
 		DisplayName:      displayName,
+		HeaderName:       headerName,
 		RefersTo:         refersTo,
 		SuggestedTypes:   make([]*SuggestedType, 0),
 	}
@@ -434,7 +439,7 @@ func NewVariable(index int, name, displayName, originalName, typ, originalType, 
 
 // AddVariable creates and add a new variable to the data resource.
 func (dr *DataResource) AddVariable(name string, originalName string, typ string, description string, role []string, distilRole string) {
-	v := NewVariable(len(dr.Variables), name, "", originalName, typ, typ, description, role, distilRole, nil, dr.Variables, false)
+	v := NewVariable(len(dr.Variables), name, "", name, originalName, typ, typ, description, role, distilRole, nil, dr.Variables, false)
 	dr.Variables = append(dr.Variables, v)
 }
 
@@ -443,7 +448,7 @@ func (m *Metadata) GetMainDataResource() *DataResource {
 	// main data resource has d3m index variable
 	for _, dr := range m.DataResources {
 		for _, v := range dr.Variables {
-			if v.Name == D3MIndexName {
+			if v.StorageName == D3MIndexName {
 				return dr
 			}
 		}
@@ -475,7 +480,7 @@ func (dr *DataResource) GenerateHeader() []string {
 
 	// iterate over the fields
 	for hIndex, field := range dr.Variables {
-		header[hIndex] = field.Name
+		header[hIndex] = field.HeaderName
 	}
 
 	return header

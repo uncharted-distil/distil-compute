@@ -190,9 +190,9 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 	var imageVar *model.Variable
 	var groupVar *model.Variable
 	for _, v := range variables {
-		if v.Name == grouping.ImageCol {
+		if v.StorageName == grouping.ImageCol {
 			imageVar = v
-		} else if v.Name == grouping.IDCol {
+		} else if v.StorageName == grouping.IDCol {
 			groupVar = v
 		}
 	}

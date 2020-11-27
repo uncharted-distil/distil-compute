@@ -67,7 +67,7 @@ func CreateImageQueryPipeline(name string, description string) (*FullySpecifiedP
 		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
 	}
 
-	inputs := []string{"inputs"}
+	inputs := []string{"inputs.0", "inputs.1"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
@@ -98,7 +98,7 @@ func CreateMultiBandImageFeaturizationPipeline(name string, description string, 
 		if v.IsGrouping() && model.IsMultiBandImage(v.Grouping.GetType()) {
 			grouping = v.Grouping.(*model.MultiBandImageGrouping)
 		}
-		variableMap[v.Name] = v
+		variableMap[v.StorageName] = v
 	}
 
 	if grouping == nil {
@@ -401,7 +401,7 @@ func CreateTargetRankingPipeline(name string, description string, target string,
 	// compute index associated with column name
 	targetIdx := -1
 	for _, f := range features {
-		if strings.EqualFold(target, f.Name) {
+		if strings.EqualFold(target, f.StorageName) {
 			targetIdx = f.Index
 			break
 		}
