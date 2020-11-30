@@ -182,6 +182,7 @@ type MultiBandImageGrouping struct {
 	ClusterCol string `json:"clusterCol"`
 }
 
+// GeoBoundsGrouping is used for geo bounds groups.
 type GeoBoundsGrouping struct {
 	Grouping
 	CoordinatesCol string `json:"coordinatesCol"`
@@ -228,6 +229,7 @@ func (t *MultiBandImageGrouping) GetClusterCol() string {
 	return t.ClusterCol
 }
 
+// GetPolygonCol returns the polygon representation of the geo bounds group.
 func (t *GeoBoundsGrouping) GetPolygonCol() string {
 	return t.PolygonCol
 }

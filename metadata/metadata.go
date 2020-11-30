@@ -549,11 +549,9 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 	}
 	headerName := v.Path("colName").Data().(string)
 
-	storageName := ""
+	storageName := headerName
 	if v.Path("storageName").Data() != nil {
 		storageName = v.Path("storageName").Data().(string)
-	} else {
-		storageName = headerName
 	}
 
 	varDisplayName := ""
@@ -598,12 +596,10 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 		varOriginalName = v.Path("colOriginalName").Data().(string)
 	}
 
-	varOriginalType := ""
+	varOriginalType := varType
 	if v.Path("colOriginalType").Data() != nil {
 		varOriginalType = v.Path("colOriginalType").Data().(string)
 		varOriginalType = model.MapLLType(varOriginalType)
-	} else {
-		varOriginalType = varType
 	}
 
 	// parse the refersTo fields to properly serialize it if necessary
@@ -640,8 +636,8 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 	variable := model.NewVariable(
 		varIndex,
 		storageName,
-		headerName,
 		varDisplayName,
+		headerName,
 		varOriginalName,
 		varType,
 		varOriginalType,
