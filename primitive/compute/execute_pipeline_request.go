@@ -169,7 +169,7 @@ func (e *ExecPipelineRequest) createFitSolutionRequest(datasetURIs []string, sol
 	return &pipeline.FitSolutionRequest{
 		SolutionId:       solutionID,
 		Inputs:           createInputValues(datasetURIs),
-		ExposeOutputs:    []string{defaultExposedOutputKey},
+		ExposeOutputs:    []string{DefaultExposedOutputKey},
 		ExposeValueTypes: []string{CSVURIValueType},
 	}
 }
@@ -199,7 +199,7 @@ func (e *ExecPipelineRequest) dispatchFit(statusChan chan ExecPipelineStatus, cl
 	}
 
 	// make sure the exposed output is what was asked for
-	output, ok := completed.ExposedOutputs[defaultExposedOutputKey]
+	output, ok := completed.ExposedOutputs[DefaultExposedOutputKey]
 	if !ok {
 		err := errors.Errorf("output is missing from response")
 		e.notifyError(statusChan, requestID, err)

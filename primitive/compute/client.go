@@ -34,16 +34,23 @@ import (
 
 const (
 	// DefaultResourceID is the default name of the main resource id in a schema.
-	DefaultResourceID       = "learningData"
-	defaultExposedOutputKey = "outputs.0"
+	DefaultResourceID = "learningData"
+	// DefaultExposedOutputKey is the standard output key applied to pipelines.
+	DefaultExposedOutputKey = "outputs.0"
 	// SolutionPendingStatus represents that the solution request has been acknoledged by not yet sent to the API
 	SolutionPendingStatus = "SOLUTION_PENDING"
-	// SolutionRunningStatus represents that the solution request has been sent to the API.
-	SolutionRunningStatus = "SOLUTION_RUNNING"
+	// SolutionFittingStatus represents that the solution request has been sent to the API.
+	SolutionFittingStatus = "SOLUTION_FITTING"
+	// SolutionScoringStatus represents that the solution request has been sent to the API.
+	SolutionScoringStatus = "SOLUTION_SCORING"
+	// SolutionProducingStatus represents that the solution request has been sent to the API.
+	SolutionProducingStatus = "SOLUTION_PRODUCING"
 	// SolutionErroredStatus represents that the solution request has terminated with an error.
 	SolutionErroredStatus = "SOLUTION_ERRORED"
 	// SolutionCompletedStatus represents that the solution request has completed successfully.
 	SolutionCompletedStatus = "SOLUTION_COMPLETED"
+	// SolutionCancelledStatus represents that the solution request was intentionally cancelled.
+	SolutionCancelledStatus = "SOLUTION_CANCELLED"
 	// RequestPendingStatus represents that the solution request has been acknoledged by not yet sent to the API
 	RequestPendingStatus = "REQUEST_PENDING"
 	// RequestRunningStatus represents that the solution request has been sent to the API.
@@ -78,7 +85,6 @@ type Client struct {
 	client            pipeline.CoreClient
 	conn              *grpc.ClientConn
 	runner            *grpc.ClientConn
-	mu                *sync.Mutex
 	UserAgent         string
 	PullTimeout       time.Duration
 	PullMax           int
@@ -115,63 +121,6 @@ func NewClient(serverAddr string, trace bool, userAgent string, label string,
 	}
 
 	return &client, nil
-}
-
-// NewClientWithRunner creates a new pipline request dispatcher instance. This will establish
-// the connection to the solution server or return an error on fail
-func NewClientWithRunner(serverAddr string, runnerAddr string, trace bool, userAgent string,
-	pullTimeout time.Duration, pullMax int, skipPreprocessing bool, logger middleware.MethodLogger) (*Client, error) {
-
-	client, err := NewClient(serverAddr, trace, userAgent, "TA2", pullTimeout, pullMax, skipPreprocessing, logger)
-	if err != nil {
-		return nil, err
-	}
-
-	log.Infof("connecting to ta2 runner at %s", runnerAddr)
-
-	runner, err := grpc.Dial(
-		runnerAddr,
-		grpc.WithInsecure(),
-		grpc.WithBlock(),
-		grpc.WithUnaryInterceptor(middleware.GenerateUnaryClientInterceptor("RUNNER", trace, logger)),
-		grpc.WithStreamInterceptor(middleware.GenerateStreamClientInterceptor(trace, logger)),
-	)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to connect to %s", runnerAddr)
-	}
-
-	log.Infof("connected to %s", runnerAddr)
-
-	client.runner = runner
-	return client, nil
-}
-
-// NewRunner creates a new pipline request dispatcher instance. This will establish
-// the connection to the solution server or return an error on fail
-func NewRunner(runnerAddr string, trace bool, userAgent string, pullTimeout time.Duration, pullMax int, skipPreprocessing bool) (*Client, error) {
-
-	client := &Client{
-		UserAgent:         userAgent,
-		PullTimeout:       pullTimeout,
-		PullMax:           pullMax,
-		SkipPreprocessing: skipPreprocessing,
-	}
-
-	log.Infof("connecting to ta2 runner at %s", runnerAddr)
-
-	runner, err := grpc.Dial(
-		runnerAddr,
-		grpc.WithInsecure(),
-		grpc.WithBlock(),
-	)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to connect to %s", runnerAddr)
-	}
-
-	log.Infof("connected to %s", runnerAddr)
-
-	client.runner = runner
-	return client, nil
 }
 
 // Hello does the hello message exchange to check for basic connectivity.
@@ -340,7 +289,7 @@ func (c *Client) GenerateSolutionFit(ctx context.Context, request *pipeline.FitS
 		}
 
 		if err != nil {
-			return errors.Wrap(err, "failed to receving solution fitting result")
+			return errors.Wrap(err, "failed to receive solution fitting result")
 		}
 		solutionResultResponses = append(solutionResultResponses, solutionResultResponse)
 		return nil
