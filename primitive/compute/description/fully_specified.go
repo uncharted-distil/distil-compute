@@ -46,25 +46,35 @@ func MarshalSteps(step *pipeline.PipelineDescription) (string, error) {
 func CreateImageQueryPipeline(name string, description string) (*FullySpecifiedPipeline, error) {
 	steps := []Step{
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewColumnParserStep(
+		NewRemoveColumnsStep(
 			map[string]DataRef{"inputs": &StepDataRef{0, "produce"}},
+			[]string{"produce"},
+			[]int{1, 2, 3, 4},
+		),
+		NewDistilColumnParserStep(
+			map[string]DataRef{"inputs": &StepDataRef{1, "produce"}},
 			[]string{"produce"},
 			[]string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType},
 		),
 		NewExtractColumnsBySemanticTypeStep(
-			map[string]DataRef{"inputs": &StepDataRef{1, "produce"}},
+			map[string]DataRef{"inputs": &StepDataRef{2, "produce"}},
 			[]string{"produce"},
 			[]string{"https://metadata.datadrivendiscovery.org/types/Attribute", "https://metadata.datadrivendiscovery.org/types/PrimaryMultiKey"},
 		),
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}),
-		NewImageRetrievalStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}, "outputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
-		NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}},
+		NewDistilColumnParserStep(
+			map[string]DataRef{"inputs": &StepDataRef{4, "produce"}},
+			[]string{"produce"},
+			[]string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType},
+		),
+		NewImageRetrievalStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}, "outputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
+		NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}},
 			[]string{"produce"},
 			&ColumnUpdate{
 				SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/PredictedTarget", "https://metadata.datadrivendiscovery.org/types/Score"},
 				Indices:       []int{1},
 			}),
-		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
+		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{2, "produce"}),
 	}
 
 	inputs := []string{"inputs.0", "inputs.1"}
