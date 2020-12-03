@@ -61,6 +61,8 @@ const (
 	RequestCompletedStatus = "REQUEST_COMPLETED"
 	// D3MLearningData provides the name of the training csv file as defined in the D3M schema
 	D3MLearningData = "learningData.csv"
+	// DistilParquetLearningData provides the name of the training parquet file introduced by Distil
+	DistilParquetLearningData = "learningData.parquet"
 	// D3MDataFolder provides the name of the directory containing the dataset
 	D3MDataFolder = "tables"
 	// D3MDataSchema provides the name of the D3M data schema file
@@ -71,6 +73,8 @@ const (
 	D3MResourceType = "table"
 	// D3MResourceFormat is the resource format of persisted dataset
 	D3MResourceFormat = "text/csv"
+	// DistilParquesetResourceFormat is the parquet resource format of persisted dataset introduced by Distil
+	DistilParquetResourceFormat = "application/parquet"
 
 	defaultTrainTestRatio = 0.8
 )
