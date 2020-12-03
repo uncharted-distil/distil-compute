@@ -83,7 +83,7 @@ func SetTypeProbabilityThreshold(threshold float64) {
 // IsMetadataVariable indicates whether or not a variable is additional metadata
 // added to the source.
 func IsMetadataVariable(v *model.Variable) bool {
-	return strings.HasPrefix(v.Name, "_")
+	return strings.HasPrefix(v.StorageName, "_")
 }
 
 // LoadMetadataFromOriginalSchema loads metadata from a schema file.
@@ -306,7 +306,7 @@ func addClassificationTypes(m *model.Metadata, classificationPath string) error 
 
 	for index, variable := range m.DataResources[0].Variables {
 		// get suggested types
-		suggestedTypes, err := parseSuggestedTypes(m, variable.Name, index, classification.Labels, classification.Probabilities)
+		suggestedTypes, err := parseSuggestedTypes(m, variable.StorageName, index, classification.Labels, classification.Probabilities)
 		if err != nil {
 			return err
 		}
@@ -340,6 +340,7 @@ func loadRawVariables(datasetPath string) (*model.DataResource, error) {
 		variable := model.NewVariable(
 			index,
 			v,
+			"",
 			"",
 			"",
 			model.UnknownType,
@@ -401,7 +402,7 @@ func LoadImportance(m *model.Metadata, importanceFile string) error {
 				if !ok {
 					// set Importance to 0.0
 					v.Importance = 0.0
-					log.Warnf("PCA rank for Variable %s could not be determined and was set to 0.0", v.Name)
+					log.Warnf("PCA rank for Variable %s could not be determined and was set to 0.0", v.StorageName)
 				}
 			}
 		}
@@ -546,7 +547,12 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 	if v.Path("colName").Data() == nil {
 		return nil, fmt.Errorf("unable to parse column name")
 	}
-	varName := v.Path("colName").Data().(string)
+	headerName := v.Path("colName").Data().(string)
+
+	storageName := headerName
+	if v.Path("storageName").Data() != nil {
+		storageName = v.Path("storageName").Data().(string)
+	}
 
 	varDisplayName := ""
 	if v.Path("colDisplayName").Data() != nil {
@@ -590,12 +596,10 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 		varOriginalName = v.Path("colOriginalName").Data().(string)
 	}
 
-	varOriginalType := ""
+	varOriginalType := varType
 	if v.Path("colOriginalType").Data() != nil {
 		varOriginalType = v.Path("colOriginalType").Data().(string)
 		varOriginalType = model.MapLLType(varOriginalType)
-	} else {
-		varOriginalType = varType
 	}
 
 	// parse the refersTo fields to properly serialize it if necessary
@@ -631,8 +635,9 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 	}
 	variable := model.NewVariable(
 		varIndex,
-		varName,
+		storageName,
 		varDisplayName,
+		headerName,
 		varOriginalName,
 		varType,
 		varOriginalType,
@@ -761,7 +766,7 @@ func AugmentVariablesFromHeader(dr *model.DataResource, header []string) []*mode
 		if i < len(augmentedVars) {
 			v := metaVars[i]
 			if v == nil {
-				v = model.NewVariable(i, c, c, c, model.UnknownType, model.UnknownType, "", []string{"attribute"}, model.VarDistilRoleData, nil, augmentedVars, true)
+				v = model.NewVariable(i, c, c, c, c, model.UnknownType, model.UnknownType, "", []string{"attribute"}, model.VarDistilRoleData, nil, augmentedVars, true)
 			}
 			augmentedVars[i] = v
 		}
@@ -884,7 +889,7 @@ func loadClassificationVariables(m *model.Metadata, normalizeVariableNames bool)
 			}
 		}
 		if !loaded {
-			suggestedTypes, err := parseSuggestedTypes(m, variable.Name, index, m.Classification.Labels, m.Classification.Probabilities)
+			suggestedTypes, err := parseSuggestedTypes(m, variable.StorageName, index, m.Classification.Labels, m.Classification.Probabilities)
 			if err != nil {
 				return err
 			}
@@ -991,7 +996,7 @@ func DatasetMatches(m *model.Metadata, variables []string) bool {
 
 	// Make sure every existing variable is present.
 	for _, v := range m.DataResources[0].Variables {
-		if !newVariable[v.Name] {
+		if !newVariable[v.StorageName] {
 			return false
 		}
 	}

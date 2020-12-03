@@ -42,6 +42,62 @@ func MarshalSteps(step *pipeline.PipelineDescription) (string, error) {
 	return string(stepJSON), nil
 }
 
+// CreateImageQueryPipeline creates a pipeline that will perform image retrieval.
+func CreateImageQueryPipeline(name string, description string) (*FullySpecifiedPipeline, error) {
+	steps := []Step{
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+		NewDistilColumnParserStep(
+			map[string]DataRef{"inputs": &StepDataRef{0, "produce"}},
+			[]string{"produce"},
+			[]string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType},
+		),
+		NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"},
+			[]string{
+				"float",         // python type
+				"numpy.float32", // numpy types
+				"numpy.float64",
+			}),
+		NewExtractColumnsBySemanticTypeStep(
+			map[string]DataRef{"inputs": &StepDataRef{2, "produce"}},
+			[]string{"produce"},
+			[]string{"https://metadata.datadrivendiscovery.org/types/Attribute", "https://metadata.datadrivendiscovery.org/types/PrimaryMultiKey"},
+		),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}),
+		NewDistilColumnParserStep(
+			map[string]DataRef{"inputs": &StepDataRef{4, "produce"}},
+			[]string{"produce"},
+			[]string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType},
+		),
+		NewImageRetrievalStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}, "outputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
+		NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}},
+			[]string{"produce"},
+			&ColumnUpdate{
+				SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/PredictedTarget", "https://metadata.datadrivendiscovery.org/types/Score"},
+				Indices:       []int{1},
+			}),
+		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{2, "produce"}),
+	}
+
+	inputs := []string{"inputs.0", "inputs.1"}
+	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipelineJSON},
+	}
+	return fullySpecified, nil
+}
+
 // CreateMultiBandImageFeaturizationPipeline creates a pipline that will featurize multiband images.
 func CreateMultiBandImageFeaturizationPipeline(name string, description string, variables []*model.Variable,
 	numJobs int, batchSize int) (*FullySpecifiedPipeline, error) {
@@ -53,7 +109,7 @@ func CreateMultiBandImageFeaturizationPipeline(name string, description string, 
 		if v.IsGrouping() && model.IsMultiBandImage(v.Grouping.GetType()) {
 			grouping = v.Grouping.(*model.MultiBandImageGrouping)
 		}
-		variableMap[v.Name] = v
+		variableMap[v.StorageName] = v
 	}
 
 	if grouping == nil {
@@ -356,7 +412,7 @@ func CreateTargetRankingPipeline(name string, description string, target string,
 	// compute index associated with column name
 	targetIdx := -1
 	for _, f := range features {
-		if strings.EqualFold(target, f.Name) {
+		if strings.EqualFold(target, f.StorageName) {
 			targetIdx = f.Index
 			break
 		}

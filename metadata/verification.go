@@ -71,7 +71,7 @@ func VerifyAndUpdate(m *model.Metadata, dataPath string, source DatasetSource) (
 	for _, v := range m.DataResources[0].Variables {
 		// if the type is index, then set the role to index as well
 		if v.Type == model.IndexType && !model.IsIndexRole(v.SelectedRole) {
-			log.Infof("updating %s role to index to match identified type", v.Name)
+			log.Infof("updating %s role to index to match identified type", v.StorageName)
 			v.Role = []string{model.RoleIndex}
 			v.SelectedRole = model.RoleIndex
 			updated = true
@@ -100,7 +100,7 @@ func checkTypes(m *model.Metadata, row []string) (bool, error) {
 	for _, v := range m.DataResources[0].Variables {
 		// set the type to text if the data doesn't match the metadata
 		if !typeMatchesData(v, row) {
-			log.Infof("updating %s type to text from %s since the data did not match", v.Name, v.Type)
+			log.Infof("updating %s type to text from %s since the data did not match", v.StorageName, v.Type)
 			v.Type = model.StringType
 			updated = true
 		}
