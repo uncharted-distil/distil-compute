@@ -46,16 +46,17 @@ func MarshalSteps(step *pipeline.PipelineDescription) (string, error) {
 func CreateImageQueryPipeline(name string, description string) (*FullySpecifiedPipeline, error) {
 	steps := []Step{
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewRemoveColumnsStep(
-			map[string]DataRef{"inputs": &StepDataRef{0, "produce"}},
-			[]string{"produce"},
-			[]int{1, 2, 3, 4},
-		),
 		NewDistilColumnParserStep(
-			map[string]DataRef{"inputs": &StepDataRef{1, "produce"}},
+			map[string]DataRef{"inputs": &StepDataRef{0, "produce"}},
 			[]string{"produce"},
 			[]string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType},
 		),
+		NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"},
+			[]string{
+				"float",         // python type
+				"numpy.float32", // numpy types
+				"numpy.float64",
+			}),
 		NewExtractColumnsBySemanticTypeStep(
 			map[string]DataRef{"inputs": &StepDataRef{2, "produce"}},
 			[]string{"produce"},
