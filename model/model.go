@@ -112,6 +112,8 @@ const (
 	VarDistilRoleMetadata = "metadata"
 	// VarDeleted flags whether the variable is deleted.
 	VarDeleted = "deleted"
+	// VarImmutable flags whether the variable is immutable.
+	VarImmutable = "immutable"
 	// VarGroupingField is the field name for the variable grouping.
 	VarGroupingField = "grouping"
 	// VarMinField is the field name for the min value.
@@ -251,6 +253,7 @@ type Variable struct {
 	SuggestedTypes   []*SuggestedType       `json:"suggestedTypes,omitempty"`
 	RefersTo         map[string]interface{} `json:"refersTo,omitempty"`
 	Deleted          bool                   `json:"deleted"`
+	Immutable        bool                   `json:"immutable"`
 	Grouping         BaseGrouping           `json:"grouping"`
 	Min              float64                `json:"min"`
 	Max              float64                `json:"max"`
@@ -305,6 +308,8 @@ type Metadata struct {
 	LearningDataset  string
 	Type             string
 	Digest           string
+	Immutable        bool
+	Clone            bool
 }
 
 // ClassificationData contains semantic type information by column index.
