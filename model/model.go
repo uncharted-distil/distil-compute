@@ -112,8 +112,8 @@ const (
 	VarDistilRoleMetadata = "metadata"
 	// VarDeleted flags whether the variable is deleted.
 	VarDeleted = "deleted"
-	// VarImmutable flags whether the variable is immutable.
-	VarImmutable = "immutable"
+	// VarImmutableField is the name for the flag indicating whether the variable is immutable.
+	VarImmutableField = "immutable"
 	// VarGroupingField is the field name for the variable grouping.
 	VarGroupingField = "grouping"
 	// VarMinField is the field name for the min value.
