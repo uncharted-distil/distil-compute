@@ -16,14 +16,13 @@
 package description
 
 import (
+	"math"
 	"sort"
 	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/uncharted-distil/distil-compute/model"
 	"github.com/uncharted-distil/distil-compute/pipeline"
-
-	log "github.com/unchartedsoftware/plog"
 )
 
 // UserDatasetDescription contains the basic parameters needs to generate
@@ -74,7 +73,7 @@ func CreatePreFeaturizedDatasetPipeline(name string, description string, dataset
 	offset := 0
 
 	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
-	steps = append(steps, NewColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType}))
+	steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType, model.TA2RealVectorType}))
 	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, ""))
 	steps = append(steps, NewDataCleaningStep(nil, nil))
 	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, offset+3, ""))
@@ -218,7 +217,7 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 		offset += 9
 	} else {
 		steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}))
-		steps = append(steps, NewColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType}))
+		steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType, model.TA2RealVectorType}))
 		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, ""))
 		steps = append(steps, NewDataCleaningStep(nil, nil))
 		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, offset+3, ""))
@@ -502,7 +501,30 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int, off
 			offset += 2
 
 		case model.GeoBoundsFilter:
-			log.Warn("GeoBoundsFilter skipped - not yet mapped to pipeline.")
+			// This is a two-step filter, and assumes to be working on a vector that contains 4 points defining a geographic area.  The vector
+			// is defined as [x0, y0, x1, y1, x2, y2, x3, y3], where (x0, y0) is the LL corner of the bounds, and the points are ordered in a
+			// clockwise fashion.  The first filter removes rows with x values outside the bounds, and the 2nd remove rows with y values
+			// outside the desired bounds.
+			inf := math.Inf(1)
+			negInf := math.Inf(-1)
+
+			minX := f.Bounds.MinX
+			maxX := f.Bounds.MaxX
+			minXValues := []float64{minX, negInf, minX, negInf, minX, negInf, minX, negInf}
+			maxXValues := []float64{maxX, inf, maxX, inf, maxX, inf, maxX, inf}
+			filter = NewVectorBoundsFilterStep(nil, nil, colIndex, inclusive, minXValues, maxXValues, false)
+			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+			filterSteps = append(filterSteps, filter, wrapper)
+
+			minY := f.Bounds.MinY
+			maxY := f.Bounds.MaxY
+			minYValues := []float64{negInf, minY, negInf, minY, negInf, minY, negInf, minY}
+			maxYValues := []float64{inf, maxY, inf, maxY, inf, maxY, inf, maxY, inf, maxY}
+			filter = NewVectorBoundsFilterStep(nil, nil, colIndex, inclusive, minYValues, maxYValues, false)
+			wrapper = NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+			filterSteps = append(filterSteps, filter, wrapper)
+
+			offset += 4
 		}
 
 	}
