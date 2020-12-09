@@ -540,6 +540,14 @@ func loadAbout(m *model.Metadata) error {
 		m.Redacted = m.Schema.Path("about.redacted").Data().(bool)
 	}
 
+	if m.Schema.Path("about.immutable").Data() != nil {
+		m.Immutable = m.Schema.Path("about.immutable").Data().(bool)
+	}
+
+	if m.Schema.Path("about.clone").Data() != nil {
+		m.Clone = m.Schema.Path("about.clone").Data().(bool)
+	}
+
 	return nil
 }
 
@@ -952,6 +960,8 @@ func WriteMergedSchema(m *model.Metadata, path string, mergedDataResource *model
 			"license":              license,
 			"rawData":              m.Raw,
 			"redacted":             m.Redacted,
+			"immutable":            m.Immutable,
+			"clone":                m.Clone,
 			"mergedSchema":         "true",
 		},
 		"dataResources": []*model.DataResource{mergedDataResource},
