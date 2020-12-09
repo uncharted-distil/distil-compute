@@ -53,6 +53,7 @@ func CreateImageQueryPipeline(name string, description string) (*FullySpecifiedP
 		),
 		NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"},
 			[]string{
+				"int",
 				"float",         // python type
 				"numpy.float32", // numpy types
 				"numpy.float64",
