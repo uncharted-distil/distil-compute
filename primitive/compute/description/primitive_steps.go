@@ -648,6 +648,30 @@ func NewDateTimeRangeFilterStep(inputs map[string]DataRef, outputMethods []strin
 	)
 }
 
+// NewVectorBoundsFilterStep creates a primitive that will allow for a vector of values to be filtered included/excluded value range.
+// The input min and max ranges are specified as lists, where the i'th element of the min/max lists are applied to the i'th value of the target vectors
+// as the filter.
+func NewVectorBoundsFilterStep(inputs map[string]DataRef, outputMethods []string, column int, inclusive bool, min []float64, max []float64, strict bool) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "c2fa34c0-2d1b-42af-91d2-515da4a27752",
+			Version:    "0.5.1",
+			Name:       "Vector bounds filter",
+			PythonPath: "d3m.primitives.data_transformation.vector_bounds_filter.DistilVectorBoundsFilter",
+			Digest:     "face2225a76870fe1d29ddb83be06f19ecadab52532c0b7ec011f2f469c70321",
+		},
+		outputMethods,
+		map[string]interface{}{
+			"column":    column,
+			"inclusive": inclusive,
+			"mins":      min,
+			"maxs":      max,
+			"strict":    strict,
+		},
+		inputs,
+	)
+}
+
 // NewGoatForwardStep creates a GOAT forward geocoding primitive.  A string column
 // containing a place name or address is passed in, and the primitive will
 // return a DataFrame containing the lat/lon coords of the place.  If location could
