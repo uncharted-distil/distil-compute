@@ -218,7 +218,7 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 			NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, numJobs),
 			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"},
 				[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType}),
-			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, batchSize),
+			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, batchSize, true),
 			NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
 			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{4, "produce"}),
 		}
@@ -237,7 +237,7 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 			NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, addImage),
 			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"},
 				[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType}),
-			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, batchSize),
+			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, batchSize, true),
 			NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}),
 			NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{8, "produce"}}, []string{"produce"}, []int{-1}),
 			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{9, "produce"}}, []string{"produce"}, &StepDataRef{5, "produce"}),
@@ -557,7 +557,7 @@ func NewSatelliteImageLoaderStep(inputs map[string]DataRef, outputMethods []stri
 }
 
 // NewRemoteSensingPretrainedStep featurizes a remote sensing column
-func NewRemoteSensingPretrainedStep(inputs map[string]DataRef, outputMethods []string, batchSize int) *StepData {
+func NewRemoteSensingPretrainedStep(inputs map[string]DataRef, outputMethods []string, batchSize int, pool bool) *StepData {
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "544bb61f-f354-48f5-b055-5c03de71c4fb",
@@ -567,7 +567,7 @@ func NewRemoteSensingPretrainedStep(inputs map[string]DataRef, outputMethods []s
 			Digest:     "cf44b2f5af90f10ef9935496655a202bfc8a4a0fa24b8e9d733ee61f096bda87",
 		},
 		outputMethods,
-		map[string]interface{}{"batch_size": batchSize, "decompress_data": true},
+		map[string]interface{}{"batch_size": batchSize, "decompress_data": true, "pool_features": pool},
 		inputs,
 	)
 }

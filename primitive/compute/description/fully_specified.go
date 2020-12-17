@@ -141,7 +141,7 @@ func CreateMultiBandImageFeaturizationPipeline(name string, description string, 
 	steps = append(steps, NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, numJobs))
 	offset++
 
-	steps = append(steps, NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, batchSize))
+	steps = append(steps, NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, batchSize, false))
 
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
