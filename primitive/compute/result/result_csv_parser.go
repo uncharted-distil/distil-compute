@@ -44,7 +44,9 @@ func parseCsv(path string, deepParse bool) ([][]interface{}, error) {
 
 	// instantiate the parser
 	field := &ComplexField{}
-	field.Init()
+	if err := field.Init(); err != nil {
+		return nil, errors.Wrap(err, "failed to initialize complex field parser")
+	}
 
 	csvReader := csv.NewReader(csvFile)
 	results := [][]interface{}{}

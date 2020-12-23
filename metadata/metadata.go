@@ -65,19 +65,9 @@ const (
 	Public DatasetSource = "public"
 )
 
-var (
-	typeProbabilityThreshold = 0.8
-)
-
 // SummaryResult captures the output of a summarization primitive.
 type SummaryResult struct {
 	Summary string `json:"summary"`
-}
-
-// SetTypeProbabilityThreshold below which a suggested type is not used as
-// variable type
-func SetTypeProbabilityThreshold(threshold float64) {
-	typeProbabilityThreshold = threshold
 }
 
 // IsMetadataVariable indicates whether or not a variable is additional metadata
@@ -132,7 +122,12 @@ func LoadMetadataFromOriginalSchema(schemaPath string, augmentFromData bool) (*m
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to open raw data file")
 			}
-			defer csvFile.Close()
+			defer func() {
+				err := csvFile.Close()
+				if err != nil {
+					log.Warn(errors.Wrap(err, "failed to close csv file"))
+				}
+			}()
 
 			reader := csv.NewReader(csvFile)
 			header, err := reader.Read()
@@ -323,7 +318,11 @@ func loadRawVariables(datasetPath string) (*model.DataResource, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open raw data file")
 	}
-	defer csvFile.Close()
+	defer func() {
+		if err := csvFile.Close(); err != nil {
+			log.Warn(errors.Wrap(err, "failed to close csv file"))
+		}
+	}()
 
 	reader := csv.NewReader(csvFile)
 	fields, err := reader.Read()
@@ -428,7 +427,9 @@ func LoadSummaryFromDescription(m *model.Metadata, summaryFile string) {
 	// set summary
 	m.Summary = summary
 	// cache summary file
-	writeSummaryFile(summaryFile, m.Summary)
+	if err := writeSummaryFile(summaryFile, m.Summary); err != nil {
+		log.Warn("failed to write summary file")
+	}
 }
 
 // LoadSummary loads a description summary
@@ -714,20 +715,6 @@ func cleanVarType(m *model.Metadata, name string, typ string) string {
 	}
 }
 
-func parseClassification(m *model.Metadata, index int, labels []*gabs.Container) (string, error) {
-	// parse classification
-	col := labels[index]
-	varTypeLabels := col.Children()
-	if varTypeLabels == nil {
-		return "", errors.Errorf("failed to parse classification for column `%d`", col)
-	}
-	if len(varTypeLabels) > 0 {
-		// TODO: fix so we don't always just use first classification
-		return varTypeLabels[0].Data().(string), nil
-	}
-	return model.DefaultVarType, nil
-}
-
 func parseSuggestedTypes(m *model.Metadata, name string, index int, labels [][]string, probabilities [][]float64) ([]*model.SuggestedType, error) {
 	// variables added after classification will not have suggested types
 	if index >= len(labels) {
@@ -920,30 +907,6 @@ func getHighestProbablySuggestedType(suggestedTypes []*model.SuggestedType) stri
 		}
 	}
 	return typ
-}
-
-func mergeVariables(m *model.Metadata, left []*gabs.Container, right []*gabs.Container) []*gabs.Container {
-	var res []*gabs.Container
-	added := make(map[string]bool)
-	for _, val := range left {
-		name := val.Path("varName").Data().(string)
-		_, ok := added[name]
-		if ok {
-			continue
-		}
-		res = append(res, val)
-		added[name] = true
-	}
-	for _, val := range right {
-		name := val.Path("varName").Data().(string)
-		_, ok := added[name]
-		if ok {
-			continue
-		}
-		res = append(res, val)
-		added[name] = true
-	}
-	return res
 }
 
 // WriteMergedSchema exports the current meta data as a merged schema file.

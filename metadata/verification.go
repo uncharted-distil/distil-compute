@@ -38,7 +38,11 @@ func VerifyAndUpdate(m *model.Metadata, dataPath string, source DatasetSource) (
 	if err != nil {
 		return false, errors.Wrap(err, "failed to open data file")
 	}
-	defer csvFile.Close()
+	defer func() {
+		if err := csvFile.Close(); err != nil {
+			log.Warn(errors.Wrap(err, "failed to close csv file"))
+		}
+	}()
 	reader := csv.NewReader(csvFile)
 	reader.LazyQuotes = true
 
