@@ -20,7 +20,7 @@ import (
 	"compress/gzip"
 	"io/ioutil"
 
-	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/proto" //nolint need to update to new protobuf api
 	protobuf "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/pkg/errors"
 	log "github.com/unchartedsoftware/plog"
@@ -323,9 +323,9 @@ func GetAPIVersion() string {
 	}
 
 	// Get the raw file descriptor bytes
-	fileDesc := proto.FileDescriptor(pipeline.E_ProtocolVersion.Filename)
+	fileDesc := proto.FileDescriptor(pipeline.E_ProtocolVersion.Filename) //nolint need to update to new protobuf api
 	if fileDesc == nil {
-		log.Warnf("failed to find file descriptor for %v", pipeline.E_ProtocolVersion.Filename)
+		log.Warnf("failed to find file descriptor for %v", pipeline.E_ProtocolVersion.Filename) //nolint need to update to new protobuf api
 		return unknownAPIVersion
 	}
 
