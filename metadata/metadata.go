@@ -122,12 +122,7 @@ func LoadMetadataFromOriginalSchema(schemaPath string, augmentFromData bool) (*m
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to open raw data file")
 			}
-			defer func() {
-				err := csvFile.Close()
-				if err != nil {
-					log.Warn(errors.Wrap(err, "failed to close csv file"))
-				}
-			}()
+			defer csvFile.Close()
 
 			reader := csv.NewReader(csvFile)
 			header, err := reader.Read()
@@ -318,11 +313,7 @@ func loadRawVariables(datasetPath string) (*model.DataResource, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open raw data file")
 	}
-	defer func() {
-		if err := csvFile.Close(); err != nil {
-			log.Warn(errors.Wrap(err, "failed to close csv file"))
-		}
-	}()
+	defer csvFile.Close()
 
 	reader := csv.NewReader(csvFile)
 	fields, err := reader.Read()

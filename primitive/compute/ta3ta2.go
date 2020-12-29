@@ -335,11 +335,7 @@ func GetAPIVersion() string {
 		log.Warn(errors.Wrap(err, "failed to open gzip reader"))
 		return unknownAPIVersion
 	}
-	defer func() {
-		if err := r.Close(); err != nil {
-			log.Warn(errors.Wrap(err, "failed to close gzip reader"))
-		}
-	}()
+	defer r.Close()
 
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
