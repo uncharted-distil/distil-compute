@@ -24,7 +24,7 @@ import (
 
 func TestParserSingleQuoted(t *testing.T) {
 	field := &ComplexField{Buffer: "  ['c ar'  , '\\'plane', 'b* oat']"} // single quote can be escaped in python
-	field.Init()
+	assert.NoError(t, field.Init())
 
 	err := field.Parse()
 	assert.NoError(t, err)
@@ -35,7 +35,7 @@ func TestParserSingleQuoted(t *testing.T) {
 
 func TestParserDoubleQuoted(t *testing.T) {
 	field := &ComplexField{Buffer: "[\"&car\"  , \"\\plane\", \"boat's\"]"}
-	field.Init()
+	assert.NoError(t, field.Init())
 
 	err := field.Parse()
 	assert.NoError(t, err)
@@ -46,7 +46,7 @@ func TestParserDoubleQuoted(t *testing.T) {
 
 func TestParserValues(t *testing.T) {
 	field := &ComplexField{Buffer: "[10, 20, 30, \"forty  &*\", 4.9e-05, 4.9e05, 4.9e+05]"}
-	field.Init()
+	assert.NoError(t, field.Init())
 
 	err := field.Parse()
 	field.PrintSyntaxTree()
@@ -58,7 +58,7 @@ func TestParserValues(t *testing.T) {
 
 func TestParserFail(t *testing.T) {
 	field := &ComplexField{Buffer: "[&*&, \"car\"  , \"plane\", \"boat's\"]"}
-	field.Init()
+	assert.NoError(t, field.Init())
 
 	err := field.Parse()
 	assert.Error(t, err)
@@ -66,7 +66,7 @@ func TestParserFail(t *testing.T) {
 
 func TestParserNested(t *testing.T) {
 	field := &ComplexField{Buffer: "[[10, 20, 30, [alpha, bravo]], [40, 50, 60]]"}
-	field.Init()
+	assert.NoError(t, field.Init())
 
 	err := field.Parse()
 	field.PrintSyntaxTree()
@@ -80,7 +80,7 @@ func TestParserNested(t *testing.T) {
 
 func TestParserTuple(t *testing.T) {
 	field := &ComplexField{Buffer: "(10, 20, 30,)"}
-	field.Init()
+	assert.NoError(t, field.Init())
 
 	err := field.Parse()
 	field.PrintSyntaxTree()
@@ -93,7 +93,7 @@ func TestParserTuple(t *testing.T) {
 
 func TestParserTupleFail(t *testing.T) {
 	field := &ComplexField{Buffer: "(10)"}
-	field.Init()
+	assert.NoError(t, field.Init())
 
 	err := field.Parse()
 	field.PrintSyntaxTree()
@@ -102,7 +102,7 @@ func TestParserTupleFail(t *testing.T) {
 
 func TestParserSingleTuple(t *testing.T) {
 	field := &ComplexField{Buffer: "(10, )"}
-	field.Init()
+	assert.NoError(t, field.Init())
 
 	err := field.Parse()
 	field.PrintSyntaxTree()
@@ -115,7 +115,7 @@ func TestParserSingleTuple(t *testing.T) {
 
 func TestParserNestedTuple(t *testing.T) {
 	field := &ComplexField{Buffer: "((10, 20, 30, (alpha, bravo)), (40, 50, 60))"}
-	field.Init()
+	assert.NoError(t, field.Init())
 
 	err := field.Parse()
 	field.PrintSyntaxTree()
@@ -129,7 +129,7 @@ func TestParserNestedTuple(t *testing.T) {
 
 func TestParserNestedMixed(t *testing.T) {
 	field := &ComplexField{Buffer: "([10, 20, 30, (alpha, bravo)], [40, 50, 60])"}
-	field.Init()
+	assert.NoError(t, field.Init())
 
 	err := field.Parse()
 	field.PrintSyntaxTree()
@@ -144,7 +144,7 @@ func TestParserNestedMixed(t *testing.T) {
 func TestParserReset(t *testing.T) {
 	start := time.Now()
 	field := &ComplexField{Buffer: "  ['c ar'  , '\\'plane', 'b* oat']"} // single quote can be escaped in python
-	field.Init()
+	assert.NoError(t, field.Init())
 
 	err := field.Parse()
 	assert.NoError(t, err)

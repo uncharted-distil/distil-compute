@@ -73,7 +73,7 @@ const (
 	D3MResourceType = "table"
 	// D3MResourceFormat is the resource format of persisted dataset
 	D3MResourceFormat = "text/csv"
-	// DistilParquesetResourceFormat is the parquet resource format of persisted dataset introduced by Distil
+	// DistilParquetResourceFormat is the parquet resource format of persisted dataset introduced by Distil
 	DistilParquetResourceFormat = "application/parquet"
 
 	defaultTrainTestRatio = 0.8
@@ -155,7 +155,9 @@ func (c *Client) Hello() (string, error) {
 // Close the connection to the solution service
 func (c *Client) Close() {
 	log.Infof("client connection closed")
-	c.conn.Close()
+	if err := c.conn.Close(); err != nil {
+		log.Warn(errors.Wrap(err, "failed to close ta2 connection"))
+	}
 }
 
 // StartSearch starts a solution search session.

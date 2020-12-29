@@ -22,6 +22,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	protobuf "github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"github.com/pkg/errors"
 	log "github.com/unchartedsoftware/plog"
 
 	"github.com/uncharted-distil/distil-compute/pipeline"
@@ -324,35 +325,35 @@ func GetAPIVersion() string {
 	// Get the raw file descriptor bytes
 	fileDesc := proto.FileDescriptor(pipeline.E_ProtocolVersion.Filename)
 	if fileDesc == nil {
-		log.Errorf("failed to find file descriptor for %v", pipeline.E_ProtocolVersion.Filename)
+		log.Warnf("failed to find file descriptor for %v", pipeline.E_ProtocolVersion.Filename)
 		return unknownAPIVersion
 	}
 
 	// Open a gzip reader and decompress
 	r, err := gzip.NewReader(bytes.NewReader(fileDesc))
 	if err != nil {
-		log.Errorf("failed to open gzip reader: %v", err)
+		log.Warn(errors.Wrap(err, "failed to open gzip reader"))
 		return unknownAPIVersion
 	}
 	defer r.Close()
 
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
-		log.Errorf("failed to decompress descriptor: %v", err)
+		log.Warn(errors.Wrap(err, "failed to decompress descriptor"))
 		return unknownAPIVersion
 	}
 
 	// Unmarshall the bytes from the proto format
 	fd := &protobuf.FileDescriptorProto{}
 	if err := proto.Unmarshal(b, fd); err != nil {
-		log.Errorf("malformed FileDescriptorProto: %v", err)
+		log.Warn(errors.Wrap(err, "malformed FileDescriptorProto"))
 		return unknownAPIVersion
 	}
 
 	// Fetch the extension from the FileDescriptorOptions message
 	ex, err := proto.GetExtension(fd.GetOptions(), pipeline.E_ProtocolVersion)
 	if err != nil {
-		log.Errorf("failed to fetch extension: %v", err)
+		log.Warn(errors.Wrap(err, "failed to fetch extension"))
 		return unknownAPIVersion
 	}
 

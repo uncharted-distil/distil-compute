@@ -27,7 +27,6 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/mgutz/ansi"
 	log "github.com/unchartedsoftware/plog"
-	"github.com/vova616/xxhash"
 )
 
 type requestLogger struct {
@@ -44,11 +43,11 @@ func newRequestLogger() *requestLogger {
 
 func (r *requestLogger) write(color string, format string, args ...interface{}) {
 	if r.colorTTY {
-		fmt.Fprintf(r.buf, color)
+		fmt.Fprint(r.buf, color)
 	}
 	fmt.Fprintf(r.buf, format, args...)
 	if r.colorTTY {
-		fmt.Fprintf(r.buf, ansi.Reset)
+		fmt.Fprint(r.buf, ansi.Reset)
 	}
 }
 
@@ -78,34 +77,6 @@ func (r *requestLogger) request(request string) *requestLogger {
 func (r *requestLogger) message(request proto.Message) *requestLogger {
 	protoString := proto.MarshalTextString(request)
 	r.write(ansi.Green, "\n"+protoString)
-	return r
-}
-
-func (r *requestLogger) params(request string) *requestLogger {
-	urlsplit := strings.Split(request, "?")
-	if len(urlsplit) > 1 {
-		// hash query params
-		r.write(ansi.DefaultFG, "?")
-		hash := xxhash.Checksum32([]byte(urlsplit[1]))
-		r.write(ansi.Green, "%#x ", hash)
-	} else {
-		r.buf.WriteString(" ")
-	}
-	return r
-}
-
-func (r *requestLogger) status(status int) *requestLogger {
-	if status < 200 {
-		r.write(ansi.Blue, "%03d", status)
-	} else if status < 300 {
-		r.write(ansi.Green, "%03d", status)
-	} else if status < 400 {
-		r.write(ansi.Cyan, "%03d", status)
-	} else if status < 500 {
-		r.write(ansi.Yellow, "%03d", status)
-	} else {
-		r.write(ansi.Red, "%03d", status)
-	}
 	return r
 }
 

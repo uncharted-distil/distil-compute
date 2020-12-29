@@ -13,8 +13,7 @@ all:
 	@echo "  install       - install dependencies"
 
 lint:
-	@go vet ./...
-	@go list ./... | grep -v /vendor/ | xargs -L1 golint
+	@golangci-lint run
 
 fmt:
 	@go fmt ./...
@@ -39,5 +38,5 @@ peg:
 
 install:
 	@go get -u github.com/golang/protobuf/protoc-gen-go@d3c38a4eb4970272b87a425ae00ccc4548e2f9bb
-	@go get -u golang.org/x/lint/golint
 	@go get -u github.com/pointlander/peg@21bead84a59870739b2ee9eac3125ff9e5767e00
+	@go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.33.0
