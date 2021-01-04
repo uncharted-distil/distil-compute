@@ -101,7 +101,7 @@ func CreateImageQueryPipeline(name string, description string) (*FullySpecifiedP
 
 // CreateMultiBandImageFeaturizationPipeline creates a pipline that will featurize multiband images.
 func CreateMultiBandImageFeaturizationPipeline(name string, description string, variables []*model.Variable,
-	numJobs int, batchSize int) (*FullySpecifiedPipeline, error) {
+	numJobs int, batchSize int, poolFeatures bool) (*FullySpecifiedPipeline, error) {
 
 	// add semantic types to variables that are images and group ids
 	var grouping *model.MultiBandImageGrouping
@@ -142,7 +142,7 @@ func CreateMultiBandImageFeaturizationPipeline(name string, description string, 
 	steps = append(steps, NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, numJobs))
 	offset++
 
-	steps = append(steps, NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, batchSize, false))
+	steps = append(steps, NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, batchSize, poolFeatures))
 
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
