@@ -75,6 +75,16 @@ type Bounds struct {
 	MaxY float64 `json:"maxY"`
 }
 
+// NewBounds creates a Bounds struct from an origin point and width and height.
+func NewBounds(minX float64, minY float64, width float64, height float64) *Bounds {
+	return &Bounds{
+		MinX: minX,
+		MinY: minY,
+		MaxX: minX + width,
+		MaxY: minY + height,
+	}
+}
+
 // Filter defines a variable filter.
 type Filter struct {
 	Key        string   `json:"key"`
