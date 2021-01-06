@@ -87,15 +87,16 @@ func NewBounds(minX float64, minY float64, width float64, height float64) *Bound
 
 // Filter defines a variable filter.
 type Filter struct {
-	Key        string   `json:"key"`
-	Type       string   `json:"type"`
-	NestedType string   `json:"nestedType"`
-	Mode       string   `json:"mode"`
-	Min        *float64 `json:"min"`
-	Max        *float64 `json:"max"`
-	Bounds     *Bounds  `json:"bounds"`
-	Categories []string `json:"categories"`
-	D3mIndices []string `json:"d3mIndices"`
+	Key              string   `json:"key"`
+	Type             string   `json:"type"`
+	NestedType       string   `json:"nestedType"`
+	Mode             string   `json:"mode"`
+	Min              *float64 `json:"min"`
+	Max              *float64 `json:"max"`
+	Bounds           *Bounds  `json:"bounds"`
+	Categories       []string `json:"categories"`
+	D3mIndices       []string `json:"d3mIndices"`
+	IsBaselineFilter bool     `json:"isBaselineFilter"`
 }
 
 // NewNumericalFilter instantiates a numerical filter.
