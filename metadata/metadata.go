@@ -549,9 +549,9 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 	}
 	headerName := v.Path("colName").Data().(string)
 
-	storageName := headerName
-	if v.Path("storageName").Data() != nil {
-		storageName = v.Path("storageName").Data().(string)
+	key := headerName
+	if v.Path("key").Data() != nil {
+		key = v.Path("key").Data().(string)
 	}
 
 	varDisplayName := ""
@@ -635,7 +635,7 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 	}
 	variable := model.NewVariable(
 		varIndex,
-		storageName,
+		key,
 		varDisplayName,
 		headerName,
 		varOriginalName,

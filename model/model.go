@@ -78,8 +78,8 @@ const (
 	Variables = "variables"
 	// VarNameField is the field name for the variable name.
 	VarNameField = "colName"
-	// VarStorageNameField is the field name for the variable storage name.
-	VarStorageNameField = "storageName"
+	// VarKeyField is the field name for the variable key.
+	VarKeyField = "key"
 	// VarIndexField is the field name for the variable index.
 	VarIndexField = "colIndex"
 	// VarRoleField is the field name for the variable role.
@@ -400,11 +400,11 @@ func ensureUniqueKey(key string, existingVariables []*Variable) string {
 }
 
 // NewVariable creates a new variable.
-func NewVariable(index int, name, displayName, headerName, originalName, typ, originalType, description string, role []string, distilRole string, refersTo map[string]interface{}, existingVariables []*Variable, normalizeName bool) *Variable {
-	normalized := name
+func NewVariable(index int, key, displayName, headerName, originalName, typ, originalType, description string, role []string, distilRole string, refersTo map[string]interface{}, existingVariables []*Variable, normalizeName bool) *Variable {
+	normalized := key
 	if normalizeName {
 		// normalize name
-		normalized = NormalizeVariableName(name)
+		normalized = NormalizeVariableName(key)
 
 		// normalized name needs to be unique
 		normalized = ensureUniqueKey(normalized, existingVariables)
@@ -422,10 +422,10 @@ func NewVariable(index int, name, displayName, headerName, originalName, typ, or
 		originalName = normalized
 	}
 	if displayName == "" {
-		displayName = name
+		displayName = key
 	}
 	if headerName == "" {
-		headerName = name
+		headerName = key
 	}
 	if originalType == "" {
 		originalType = typ
