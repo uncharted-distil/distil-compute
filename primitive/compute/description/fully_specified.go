@@ -110,7 +110,7 @@ func CreateMultiBandImageFeaturizationPipeline(name string, description string, 
 		if v.IsGrouping() && model.IsMultiBandImage(v.Grouping.GetType()) {
 			grouping = v.Grouping.(*model.MultiBandImageGrouping)
 		}
-		variableMap[v.StorageName] = v
+		variableMap[v.Key] = v
 	}
 
 	if grouping == nil {
@@ -413,7 +413,7 @@ func CreateTargetRankingPipeline(name string, description string, target string,
 	// compute index associated with column name
 	targetIdx := -1
 	for _, f := range features {
-		if strings.EqualFold(target, f.StorageName) {
+		if strings.EqualFold(target, f.Key) {
 			targetIdx = f.Index
 			break
 		}

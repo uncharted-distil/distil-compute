@@ -73,7 +73,7 @@ type SummaryResult struct {
 // IsMetadataVariable indicates whether or not a variable is additional metadata
 // added to the source.
 func IsMetadataVariable(v *model.Variable) bool {
-	return strings.HasPrefix(v.StorageName, "_")
+	return strings.HasPrefix(v.Key, "_")
 }
 
 // LoadMetadataFromOriginalSchema loads metadata from a schema file.
@@ -296,7 +296,7 @@ func addClassificationTypes(m *model.Metadata, classificationPath string) error 
 
 	for index, variable := range m.DataResources[0].Variables {
 		// get suggested types
-		suggestedTypes, err := parseSuggestedTypes(m, variable.StorageName, index, classification.Labels, classification.Probabilities)
+		suggestedTypes, err := parseSuggestedTypes(m, variable.Key, index, classification.Labels, classification.Probabilities)
 		if err != nil {
 			return err
 		}
@@ -392,7 +392,7 @@ func LoadImportance(m *model.Metadata, importanceFile string) error {
 				if !ok {
 					// set Importance to 0.0
 					v.Importance = 0.0
-					log.Warnf("PCA rank for Variable %s could not be determined and was set to 0.0", v.StorageName)
+					log.Warnf("PCA rank for Variable %s could not be determined and was set to 0.0", v.Key)
 				}
 			}
 		}
@@ -549,9 +549,9 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 	}
 	headerName := v.Path("colName").Data().(string)
 
-	storageName := headerName
-	if v.Path("storageName").Data() != nil {
-		storageName = v.Path("storageName").Data().(string)
+	key := headerName
+	if v.Path("key").Data() != nil {
+		key = v.Path("key").Data().(string)
 	}
 
 	varDisplayName := ""
@@ -635,7 +635,7 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 	}
 	variable := model.NewVariable(
 		varIndex,
-		storageName,
+		key,
 		varDisplayName,
 		headerName,
 		varOriginalName,
@@ -875,7 +875,7 @@ func loadClassificationVariables(m *model.Metadata, normalizeVariableNames bool)
 			}
 		}
 		if !loaded {
-			suggestedTypes, err := parseSuggestedTypes(m, variable.StorageName, index, m.Classification.Labels, m.Classification.Probabilities)
+			suggestedTypes, err := parseSuggestedTypes(m, variable.Key, index, m.Classification.Labels, m.Classification.Probabilities)
 			if err != nil {
 				return err
 			}
@@ -960,7 +960,7 @@ func DatasetMatches(m *model.Metadata, variables []string) bool {
 
 	// Make sure every existing variable is present.
 	for _, v := range m.DataResources[0].Variables {
-		if !newVariable[v.StorageName] {
+		if !newVariable[v.Key] {
 			return false
 		}
 	}

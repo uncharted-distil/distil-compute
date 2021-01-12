@@ -78,8 +78,8 @@ const (
 	Variables = "variables"
 	// VarNameField is the field name for the variable name.
 	VarNameField = "colName"
-	// VarStorageNameField is the field name for the variable storage name.
-	VarStorageNameField = "storageName"
+	// VarKeyField is the field name for the variable key.
+	VarKeyField = "key"
 	// VarIndexField is the field name for the variable index.
 	VarIndexField = "colIndex"
 	// VarRoleField is the field name for the variable role.
@@ -240,7 +240,7 @@ func (t *GeoBoundsGrouping) GetPolygonCol() string {
 
 // Variable represents a single variable description.
 type Variable struct {
-	StorageName      string                 `json:"storageName"`
+	Key              string                 `json:"key"`
 	HeaderName       string                 `json:"colName"`
 	Type             string                 `json:"colType,omitempty"`
 	Description      string                 `json:"colDescription,omitempty"`
@@ -375,39 +375,39 @@ func NormalizeVariableName(name string) string {
 	return nameNormalized
 }
 
-func doesNameAlreadyExist(name string, existingVariables []*Variable) bool {
+func doesKeyAlreadyExist(key string, existingVariables []*Variable) bool {
 	for _, v := range existingVariables {
-		if v != nil && v.StorageName == name {
+		if v != nil && v.Key == key {
 			return true
 		}
 	}
 	return false
 }
 
-func ensureUniqueNameRecursive(name string, existingVariables []*Variable, count int) string {
-	newName := fmt.Sprintf("%s_%d", name, count)
-	if doesNameAlreadyExist(newName, existingVariables) {
-		return ensureUniqueNameRecursive(name, existingVariables, count+1)
+func ensureUniqueKeyRecursive(key string, existingVariables []*Variable, count int) string {
+	newKey := fmt.Sprintf("%s_%d", key, count)
+	if doesKeyAlreadyExist(newKey, existingVariables) {
+		return ensureUniqueKeyRecursive(key, existingVariables, count+1)
 	}
-	return newName
+	return newKey
 }
 
-func ensureUniqueName(name string, existingVariables []*Variable) string {
-	if doesNameAlreadyExist(name, existingVariables) {
-		return ensureUniqueNameRecursive(name, existingVariables, 0)
+func ensureUniqueKey(key string, existingVariables []*Variable) string {
+	if doesKeyAlreadyExist(key, existingVariables) {
+		return ensureUniqueKeyRecursive(key, existingVariables, 0)
 	}
-	return name
+	return key
 }
 
 // NewVariable creates a new variable.
-func NewVariable(index int, name, displayName, headerName, originalName, typ, originalType, description string, role []string, distilRole string, refersTo map[string]interface{}, existingVariables []*Variable, normalizeName bool) *Variable {
-	normalized := name
+func NewVariable(index int, key, displayName, headerName, originalName, typ, originalType, description string, role []string, distilRole string, refersTo map[string]interface{}, existingVariables []*Variable, normalizeName bool) *Variable {
+	normalized := key
 	if normalizeName {
 		// normalize name
-		normalized = NormalizeVariableName(name)
+		normalized = NormalizeVariableName(key)
 
 		// normalized name needs to be unique
-		normalized = ensureUniqueName(normalized, existingVariables)
+		normalized = ensureUniqueKey(normalized, existingVariables)
 	}
 
 	// select the first role by default.
@@ -422,17 +422,17 @@ func NewVariable(index int, name, displayName, headerName, originalName, typ, or
 		originalName = normalized
 	}
 	if displayName == "" {
-		displayName = name
+		displayName = key
 	}
 	if headerName == "" {
-		headerName = name
+		headerName = key
 	}
 	if originalType == "" {
 		originalType = typ
 	}
 
 	return &Variable{
-		StorageName:      normalized,
+		Key:              normalized,
 		Index:            index,
 		Type:             typ,
 		Description:      description,
@@ -459,7 +459,7 @@ func (m *Metadata) GetMainDataResource() *DataResource {
 	// main data resource has d3m index variable
 	for _, dr := range m.DataResources {
 		for _, v := range dr.Variables {
-			if v.StorageName == D3MIndexName {
+			if v.Key == D3MIndexName {
 				return dr
 			}
 		}
