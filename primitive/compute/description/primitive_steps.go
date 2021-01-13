@@ -801,3 +801,20 @@ func NewImageRetrievalStep(inputs map[string]DataRef, outputMethods []string) *S
 		inputs,
 	)
 }
+
+// NewIsolationForestStep returns labels for whether or not a data point is an anomoly
+func NewIsolationForestStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	args := map[string]interface{}{}
+	return NewStepData(
+		&pipeline.Primitive{
+			Id: "793f0b17-7413-4962-9f1d-0b285540b21f",
+			Version: "0.5.1",
+			Name: "IsolationForest",
+			PythonPath: "d3m.primitives.classification.isolation_forest.IsolationForestPrimitive",
+			Digest: "",
+		},
+		outputMethods,
+		args,
+		inputs,
+	)
+}
