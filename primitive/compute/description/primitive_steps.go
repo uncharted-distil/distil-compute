@@ -809,7 +809,24 @@ func NewIsolationForestStep(inputs map[string]DataRef, outputMethods []string) *
 		&pipeline.Primitive{
 			Id: "793f0b17-7413-4962-9f1d-0b285540b21f",
 			Version: "0.5.1",
-			Name: "IsolationForest",
+			Name: "Isolation Forest",
+			PythonPath: "d3m.primitives.classification.isolation_forest.IsolationForestPrimitive",
+			Digest: "",
+		},
+		outputMethods,
+		args,
+		inputs,
+	)
+}
+
+// NewPrefeaturisedPoolingPrimitive takes inputs of non-pooled remote sensing data to pool it
+func NewPrefeaturisedPoolingPrimitive(inputs map[string]DataRef, outputMethods []string) *StepData {
+	args := map[string]interface{}{}
+	return NewStepData(
+		&pipeline.Primitive{
+			Id: "825ea1fb-90b2-442c-9905-efba48872102",
+			Version: "0.5.1",
+			Name: "Prefeaturised Pooler",
 			PythonPath: "d3m.primitives.classification.isolation_forest.IsolationForestPrimitive",
 			Digest: "",
 		},

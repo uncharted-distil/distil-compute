@@ -671,11 +671,9 @@ func CreateDatamartDownloadPipeline(name string, description string, searchResul
 	return fullySpecified, nil
 }
 
-// CreateRemoteSensingOutlierDetectionPipeline makes a pipeline for
+// CreateImageOutlierDetectionPipeline makes a pipeline for
 // outlier detection with remote sensing data
-func CreateRemoteSensingOutlierDetectionPipeline(name string, description string, imageVariables []*model.Variable) (*FullySpecifiedPipeline, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{1, "produce"}}
+func CreateImageOutlierDetectionPipeline(name string, description string, imageVariables []*model.Variable) (*FullySpecifiedPipeline, error) {
 
 	cols := make([]int, len(imageVariables))
 	for i, v := range imageVariables {
@@ -690,6 +688,104 @@ func CreateRemoteSensingOutlierDetectionPipeline(name string, description string
 		NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
 		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
 	}
+
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipelineJSON},
+	}
+	return fullySpecified, nil
+}
+
+
+// CreateMultiBandImageOutlierDetectionPipeline does outlier detection for multiband images
+// for both prefeaturised and featurised
+func CreateMultiBandImageOutlierDetectionPipeline(name string, description string, imageVariables []*model.Variable,
+	prefeaturised bool, pooled bool, grouping *model.MultiBandImageGrouping, batchSize int, numJobs int) (*FullySpecifiedPipeline, error) {
+
+
+	var steps []Step
+	if prefeaturised {
+		steps = []Step{
+			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+			NewDistilColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"},
+				[]string{
+					model.TA2RealType,
+					model.TA2RealVectorType,
+				}),
+			NewExtractColumnsBySemanticTypeStep(
+				map[string]DataRef{"inputs": &StepDataRef{1, "produce"}},
+				[]string{"produce"},
+				[]string{"https://metadata.datadrivendiscovery.org/types/Attribute"},
+			),
+		}
+		offset := 2
+		if pooled {
+			steps = append(steps, NewPrefeaturisedPoolingPrimitive(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+			offset++
+		}
+
+		moreSteps := []Step{
+			NewListEncoderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}),
+			NewEnrichDatesStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}),
+			NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"},
+				[]string{
+					"float",         // python type
+					"numpy.float32", // numpy types
+					"numpy.float64",
+				}),
+				NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{offset + 3, "produce"}}, []string{"produce"}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
+		}
+		steps = append(steps, moreSteps...)
+	} else {
+		var imageVar *model.Variable
+		var groupVar *model.Variable
+		for _, v := range imageVariables {
+			if v.StorageName == grouping.ImageCol {
+				imageVar = v
+			} else if v.StorageName == grouping.IDCol {
+				groupVar = v
+			}
+		}
+		if imageVar == nil {
+			return nil, errors.Errorf("image var with name '%s' not found in supplied variables", grouping.ImageCol)
+		}
+		if groupVar == nil {
+			return nil, errors.Errorf("grouping var with name '%s' not found in supplied variables", grouping.IDCol)
+		}
+		addGroup := &ColumnUpdate{
+			SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/GroupingKey"},
+			Indices:       []int{groupVar.Index},
+		}
+		steps = []Step{
+			NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+			NewAddSemanticTypeStep(nil, nil, addGroup),
+			NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, 1, ""),
+			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+			NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, numJobs),
+			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"},
+				[]string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType}),
+			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, batchSize, true),
+			NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{4, "produce"}),
+		}
+	}
+
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
 	if err != nil {
@@ -712,8 +808,6 @@ func CreateRemoteSensingOutlierDetectionPipeline(name string, description string
 // outlier detection
 func CreateTabularOutlierDetectionPipeline(name string, description string, datasetDescription *UserDatasetDescription,
 	augmentations []*UserDatasetAugmentation) (*FullySpecifiedPipeline, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{1, "produce"}}
 
 	steps, err := generatePrependSteps(datasetDescription, augmentations)
 	if err != nil {
@@ -770,6 +864,8 @@ func CreateTabularOutlierDetectionPipeline(name string, description string, data
 	offset = offset + 1
 	steps = append(steps, NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, &StepDataRef{parseStep, "produce"}))
 	
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
 	if err != nil {
