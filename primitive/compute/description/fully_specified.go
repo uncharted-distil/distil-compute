@@ -754,9 +754,9 @@ func CreateMultiBandImageOutlierDetectionPipeline(name string, description strin
 		var imageVar *model.Variable
 		var groupVar *model.Variable
 		for _, v := range imageVariables {
-			if v.StorageName == grouping.ImageCol {
+			if v.Key == grouping.ImageCol {
 				imageVar = v
-			} else if v.StorageName == grouping.IDCol {
+			} else if v.Key == grouping.IDCol {
 				groupVar = v
 			}
 		}
