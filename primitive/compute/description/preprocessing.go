@@ -59,9 +59,9 @@ func CreatePreFeaturizedDatasetPipeline(name string, description string, dataset
 	colsToDrop := []int{}
 	for _, v := range datasetDescription.AllFeatures {
 		if model.IsTA2Field(v.DistilRole, v.SelectedRole) {
-			featureSet[strings.ToLower(v.StorageName)] = v.Index
+			featureSet[strings.ToLower(v.Key)] = v.Index
 			featureCount++
-			if !selectedSet[v.StorageName] {
+			if !selectedSet[v.Key] {
 				if v.Index != datasetDescription.TargetFeature.Index && !model.IsIndexRole(v.SelectedRole) {
 					colsToDrop = append(colsToDrop, v.Index)
 				}
@@ -79,7 +79,7 @@ func CreatePreFeaturizedDatasetPipeline(name string, description string, dataset
 	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, offset+3, ""))
 	offset += 5
 
-	updateSemanticTypes, err := createUpdateSemanticTypes(datasetDescription.TargetFeature.StorageName, datasetDescription.AllFeatures, selectedSet, offset)
+	updateSemanticTypes, err := createUpdateSemanticTypes(datasetDescription.TargetFeature.Key, datasetDescription.AllFeatures, selectedSet, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +164,7 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 	isTimeseries := false
 	groupingIndices := make([]int, 0)
 	timeseriesGrouping := getTimeseriesGrouping(datasetDescription)
-	targetName := datasetDescription.TargetFeature.StorageName
+	targetName := datasetDescription.TargetFeature.Key
 	if timeseriesGrouping != nil {
 		isTimeseries = true
 		groupingSet := map[string]bool{}
@@ -225,7 +225,7 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 
 		multiBandImageGrouping := getMultiBandImageGrouping(datasetDescription)
 		if multiBandImageGrouping != nil {
-			selectedSet[multiBandImageGrouping.StorageName] = true
+			selectedSet[multiBandImageGrouping.Key] = true
 			attribs := &ColumnUpdate{
 				SemanticTypes: []string{model.TA2GroupingKeyType},
 				Indices:       []int{multiBandImageGrouping.Index},
@@ -304,7 +304,7 @@ func createRemoveFeatures(allFeatures []*model.Variable, selectedSet map[string]
 	// create a list of features to remove
 	removeFeatures := []int{}
 	for _, v := range allFeatures {
-		if !selectedSet[strings.ToLower(v.StorageName)] {
+		if !selectedSet[strings.ToLower(v.Key)] {
 			removeFeatures = append(removeFeatures, v.Index)
 		}
 	}
@@ -339,10 +339,10 @@ func createUpdateSemanticTypes(target string, allFeatures []*model.Variable, sel
 	targetIndex := -1
 	for _, v := range allFeatures {
 		// empty selected set means all selected
-		if len(selectedSet) == 0 || selectedSet[strings.ToLower(v.StorageName)] {
+		if len(selectedSet) == 0 || selectedSet[strings.ToLower(v.Key)] {
 			addType := model.MapTA2Type(v.Type)
 			if addType == "" {
-				return nil, errors.Errorf("variable `%s` internal type `%s` can't be mapped to ta2", v.StorageName, v.Type)
+				return nil, errors.Errorf("variable `%s` internal type `%s` can't be mapped to ta2", v.Key, v.Type)
 			}
 			// unknown type must not be passed to TA2
 			if addType == model.TA2UnknownType {
@@ -351,7 +351,7 @@ func createUpdateSemanticTypes(target string, allFeatures []*model.Variable, sel
 
 			removeType := model.MapTA2Type(v.OriginalType)
 			if removeType == "" {
-				return nil, errors.Errorf("remove variable `%s` internal type `%s` can't be mapped to ta2", v.StorageName, v.OriginalType)
+				return nil, errors.Errorf("remove variable `%s` internal type `%s` can't be mapped to ta2", v.Key, v.OriginalType)
 			}
 
 			// only apply change when types are different
@@ -369,7 +369,7 @@ func createUpdateSemanticTypes(target string, allFeatures []*model.Variable, sel
 
 			// update all non target to attribute
 			if !model.IsIndexRole(v.SelectedRole) {
-				if !strings.EqualFold(v.StorageName, target) {
+				if !strings.EqualFold(v.Key, target) {
 					attributes = append(attributes, v.Index)
 				} else {
 					targetIndex = v.Index
@@ -555,8 +555,8 @@ func mapColumns(allFeatures []*model.Variable, selectedSet map[string]bool) map[
 	colIndices := make(map[string]int)
 	index := 0
 	for _, f := range allFeatures {
-		if selectedSet[strings.ToLower(f.StorageName)] {
-			colIndices[f.StorageName] = index
+		if selectedSet[strings.ToLower(f.Key)] {
+			colIndices[f.Key] = index
 			index = index + 1
 		}
 	}
@@ -567,7 +567,7 @@ func mapColumns(allFeatures []*model.Variable, selectedSet map[string]bool) map[
 func listColumns(allFeatures []*model.Variable, selectedSet map[string]bool) []int {
 	colIndices := make([]int, 0)
 	for i := 0; i < len(allFeatures); i++ {
-		if selectedSet[strings.ToLower(allFeatures[i].StorageName)] {
+		if selectedSet[strings.ToLower(allFeatures[i].Key)] {
 			colIndices = append(colIndices, allFeatures[i].Index)
 		}
 	}

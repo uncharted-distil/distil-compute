@@ -223,25 +223,25 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 
 	variables := []*model.Variable{
 		{
-			StorageName:  "test_var_0",
+			Key:          "test_var_0",
 			OriginalType: "ordinal",
 			Type:         "categorical",
 			Index:        0,
 		},
 		{
-			StorageName:  "test_var_1",
+			Key:          "test_var_1",
 			OriginalType: "categorical",
 			Type:         "integer",
 			Index:        1,
 		},
 		{
-			StorageName:  "test_var_2",
+			Key:          "test_var_2",
 			OriginalType: "categorical",
 			Type:         "integer",
 			Index:        2,
 		},
 		{
-			StorageName:  "test_var_3",
+			Key:          "test_var_3",
 			OriginalType: "categorical",
 			Type:         "integer",
 			Index:        3,
@@ -251,7 +251,7 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 	pipeline, err := CreateUserDatasetPipeline("test_user_pipeline", "a test user pipeline",
 		&UserDatasetDescription{
 			AllFeatures:      variables,
-			TargetFeature:    &model.Variable{StorageName: "test_target"},
+			TargetFeature:    &model.Variable{Key: "test_target"},
 			SelectedFeatures: []string{"test_var_0", "test_var_1", "test_var_3"},
 			Filters:          nil,
 		},
@@ -330,7 +330,7 @@ func TestCreateUserDatasetPipelineMappingError(t *testing.T) {
 
 	variables := []*model.Variable{
 		{
-			StorageName:  "test_var_0",
+			Key:          "test_var_0",
 			OriginalType: "blordinal",
 			Type:         "categorical",
 			Index:        0,
@@ -340,7 +340,7 @@ func TestCreateUserDatasetPipelineMappingError(t *testing.T) {
 	_, err := CreateUserDatasetPipeline("test_user_pipeline", "a test user pipeline",
 		&UserDatasetDescription{
 			AllFeatures:      variables,
-			TargetFeature:    &model.Variable{StorageName: "test_target"},
+			TargetFeature:    &model.Variable{Key: "test_target"},
 			SelectedFeatures: []string{"test_var_0"},
 			Filters:          nil,
 		}, nil)
@@ -351,7 +351,7 @@ func TestCreateUserDatasetEmpty(t *testing.T) {
 
 	variables := []*model.Variable{
 		{
-			StorageName:  "test_var_0",
+			Key:          "test_var_0",
 			OriginalType: "categorical",
 			Type:         "categorical",
 			Index:        0,
@@ -361,7 +361,7 @@ func TestCreateUserDatasetEmpty(t *testing.T) {
 	pipeline, err := CreateUserDatasetPipeline("test_user_pipeline", "a test user pipeline",
 		&UserDatasetDescription{
 			AllFeatures:      variables,
-			TargetFeature:    &model.Variable{StorageName: "test_target"},
+			TargetFeature:    &model.Variable{Key: "test_target"},
 			SelectedFeatures: []string{"test_var_0"},
 			Filters:          nil,
 		}, nil)
@@ -444,8 +444,8 @@ func TestCreateDataCleaningPipeline(t *testing.T) {
 
 func TestCreateSlothPipeline(t *testing.T) {
 	timeSeriesVariables := []*model.Variable{
-		{StorageName: "time", Type: "string", OriginalType: "unknown", Index: 0},
-		{StorageName: "value", Type: "string", OriginalType: "unknown", Index: 1},
+		{Key: "time", Type: "string", OriginalType: "unknown", Index: 0},
+		{Key: "value", Type: "string", OriginalType: "unknown", Index: 1},
 	}
 
 	pipeline, err := CreateSlothPipeline("sloth_test", "test sloth object detection pipeline", "time", "value", nil, timeSeriesVariables)
@@ -474,7 +474,7 @@ func TestCreateDukePipeline(t *testing.T) {
 func TestCreateTargetRankingPipeline(t *testing.T) {
 	vars := []*model.Variable{
 		{
-			StorageName:  "hall_of_fame",
+			Key:          "hall_of_fame",
 			Index:        18,
 			Type:         model.CategoricalType,
 			OriginalType: model.CategoricalType,
@@ -493,8 +493,8 @@ func TestCreateTargetRankingPipeline(t *testing.T) {
 
 func TestCreateGoatForwardPipeline(t *testing.T) {
 	region := &model.Variable{
-		StorageName: "region",
-		Index:       14,
+		Key:   "region",
+		Index: 14,
 	}
 	pipeline, err := CreateGoatForwardPipeline("goat_forward_test", "test goat forward geocoding pipeline", region)
 	assert.NoError(t, err)
@@ -509,12 +509,12 @@ func TestCreateGoatForwardPipeline(t *testing.T) {
 
 func TestCreateGoatReversePipeline(t *testing.T) {
 	lat := &model.Variable{
-		StorageName: "lat",
-		Index:       20,
+		Key:   "lat",
+		Index: 20,
 	}
 	lon := &model.Variable{
-		StorageName: "lon",
-		Index:       21,
+		Key:   "lon",
+		Index: 21,
 	}
 	pipeline, err := CreateGoatReversePipeline("goat_reverse_test", "test goat reverse geocoding pipeline", lat, lon)
 	assert.NoError(t, err)
