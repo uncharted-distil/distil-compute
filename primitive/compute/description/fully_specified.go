@@ -732,7 +732,7 @@ func CreateMultiBandImageOutlierDetectionPipeline(name string, description strin
 			),
 		}
 		offset := 2
-		if pooled {
+		if !pooled {
 			steps = append(steps, NewPrefeaturisedPoolingPrimitive(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 			offset++
 		}
