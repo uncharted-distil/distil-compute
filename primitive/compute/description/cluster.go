@@ -376,7 +376,7 @@ func NewListEncoderStep(inputs map[string]DataRef, outputMethods []string) *Step
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "67f53b00-f936-4bb4-873e-4698c4aaa37f",
-			Version:    "0.4.0",
+			Version:    "0.5.1",
 			Name:       "List encoder",
 			PythonPath: "d3m.primitives.data_transformation.list_to_dataframe.DistilListEncoder",
 			Digest:     "c99a3fc777bcfdebbd1f8c746e79cad71ec181d5978061b4f7cd82f6330daad6",
