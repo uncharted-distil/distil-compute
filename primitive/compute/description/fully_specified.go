@@ -738,16 +738,16 @@ func CreateMultiBandImageOutlierDetectionPipeline(name string, description strin
 		}
 
 		moreSteps := []Step{
-			NewListEncoderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}),
-			NewEnrichDatesStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}),
-			NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"},
+			// NewListEncoderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}),
+			// NewEnrichDatesStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}),
+			NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"},
 				[]string{
 					"float",         // python type
 					"numpy.float32", // numpy types
 					"numpy.float64",
 				}),
-				NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{offset + 3, "produce"}}, []string{"produce"}),
-			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
+				NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, &StepDataRef{2, "produce"}),
 		}
 		steps = append(steps, moreSteps...)
 	} else {
