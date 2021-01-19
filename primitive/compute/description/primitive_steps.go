@@ -512,8 +512,8 @@ func NewDistilColumnParserStep(inputs map[string]DataRef, outputMethods []string
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "e8e78214-9770-4c26-9eae-a45bd0ede91a",
-			Version:    "0.4.1",
-			Name:       "Parses strings into their types",
+			Version:    "0.5.1",
+			Name:       "Column Parser",
 			PythonPath: "d3m.primitives.data_transformation.column_parser.DistilColumnParser",
 			Digest:     "d95eb0ea8a5e6f9abc0965a97e9c4f5d8f74a3df591c11c4145faea3e581cd06",
 		},
