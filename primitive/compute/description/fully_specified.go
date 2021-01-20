@@ -776,11 +776,13 @@ func CreateMultiBandImageOutlierDetectionPipeline(name string, description strin
 			NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, 1, ""),
 			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
 			NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, numJobs),
-			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"},
+			NewDistilColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"},
 				[]string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType}),
-			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, batchSize, true),
-			NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
-			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{4, "produce"}),
+			NewExtractColumnsBySemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"},
+				[]string{"http://schema.org/ImageObject"}),
+			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, batchSize, true),
+			NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{8, "produce"}}, []string{"produce"}, &StepDataRef{4, "produce"}),
 		}
 	}
 
