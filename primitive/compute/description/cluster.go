@@ -331,7 +331,7 @@ func NewExtractColumnsBySemanticTypeStep(inputs map[string]DataRef, outputMethod
 			Version:    "0.4.0",
 			Name:       "Extracts columns by semantic type",
 			PythonPath: "d3m.primitives.data_transformation.extract_columns_by_semantic_types.Common",
-			Digest:     "cf44b2f5af90f10ef9935496655a202bfc8a4a0fa24b8e9d733ee61f096bda87",
+			Digest:     "88f0780f5324d4a881d5d51e29f33fdcdc6d2968acf3b927032cf2d832e10504",
 		},
 		outputMethods,
 		map[string]interface{}{"semantic_types": semanticTypes},
@@ -347,7 +347,7 @@ func NewExtractColumnsByStructuralTypeStep(inputs map[string]DataRef, outputMeth
 			Version:    "0.1.0",
 			Name:       "Extracts columns by structural type",
 			PythonPath: "d3m.primitives.data_transformation.extract_columns_by_structural_types.Common",
-			Digest:     "cb8c16484f5b1fb04ea24ee269b6394b715d3cc4fe3fb7a03aa5894e8e53b80b",
+			Digest:     "46fd01dd704090885e6dd80640a647b5596fbbe597dc1a1f9e5833ae4ab27813",
 		},
 		outputMethods,
 		map[string]interface{}{"structural_types": structuralTypes},
@@ -360,10 +360,10 @@ func NewEnrichDatesStep(inputs map[string]DataRef, outputMethods []string) *Step
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "b1367f5b-bab1-4dfc-a1a9-6a56430e516a",
-			Version:    "0.4.0",
+			Version:    "0.5.1",
 			Name:       "Enrich dates",
-			PythonPath: "d3m.primitives.data_transformation.data_cleaning.DistilEnrichDates",
-			Digest:     "ab9cd162ac1ee1416184f468da8d4786a29727ad61bbba1cf552d741438b365a",
+			PythonPath: "d3m.primitives.data_transformation.enrich_dates.DistilEnrichDates",
+			Digest:     "176228cabb6746d544fc045f43ed02e5ae2a3747c39b492c008b2ce473fac650",
 		},
 		outputMethods,
 		map[string]interface{}{},
@@ -376,10 +376,10 @@ func NewListEncoderStep(inputs map[string]DataRef, outputMethods []string) *Step
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "67f53b00-f936-4bb4-873e-4698c4aaa37f",
-			Version:    "0.4.0",
+			Version:    "0.5.1",
 			Name:       "List encoder",
 			PythonPath: "d3m.primitives.data_transformation.list_to_dataframe.DistilListEncoder",
-			Digest:     "c99a3fc777bcfdebbd1f8c746e79cad71ec181d5978061b4f7cd82f6330daad6",
+			Digest:     "2ab8726ff23664fdc22949ea6d389f29a3ea07355da9c7679f10cff93c9723f6",
 		},
 		outputMethods,
 		map[string]interface{}{},
@@ -392,10 +392,10 @@ func NewReplaceSingletonStep(inputs map[string]DataRef, outputMethods []string) 
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "7cacc8b6-85ad-4c8f-9f75-360e0faee2b8",
-			Version:    "0.4.0",
+			Version:    "0.5.1",
 			Name:       "Replace singeltons",
-			PythonPath: "d3m.primitives.data_transformation.data_cleaning.DistilReplaceSingletons",
-			Digest:     "40dfe842797d1513ad962d81c01a78af405b5a4409aaed82cd90fc4b04ac7e32",
+			PythonPath: "d3m.primitives.data_transformation.replace_singletons.DistilReplaceSingletons",
+			Digest:     "fdb2f8ce03d00243fcdd7279e42a43242d4e05a37674abe4da9d6a1ffdec3c2f",
 		},
 		outputMethods,
 		map[string]interface{}{},
@@ -408,10 +408,10 @@ func NewCategoricalImputerStep(inputs map[string]DataRef, outputMethods []string
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "0a9936f3-7784-4697-82f0-2a5fcc744c16",
-			Version:    "0.4.0",
+			Version:    "0.5.1",
 			Name:       "Categorical imputer",
 			PythonPath: "d3m.primitives.data_transformation.imputer.DistilCategoricalImputer",
-			Digest:     "0ad4182f53c57146b1817c6b91505103d2867fed75d8d934de66ef04705b8c9b",
+			Digest:     "aeab342f3a9a13caccac3fb0c44e3f625dc2ee1ab892aa0762844cad181b90e5",
 		},
 		outputMethods,
 		map[string]interface{}{},
@@ -424,10 +424,10 @@ func NewTextEncoderStep(inputs map[string]DataRef, outputMethods []string) *Step
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "09f252eb-215d-4e0b-9a60-fcd967f5e708",
-			Version:    "0.4.0",
+			Version:    "0.5.1",
 			Name:       "Text encoder",
 			PythonPath: "d3m.primitives.data_transformation.encoder.DistilTextEncoder",
-			Digest:     "67df378139975454858989b666d63a319bf7bf64001971a4a3f601e9b60ad36a",
+			Digest:     "a9e111cf5345e24e293101ddfaf1d001377246bc0f33bcaaef1b9144f13b5563",
 		},
 		outputMethods,
 		map[string]interface{}{},
@@ -440,10 +440,10 @@ func NewOneHotEncoderStep(inputs map[string]DataRef, outputMethods []string) *St
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "d3d421cb-9601-43f0-83d9-91a9c4199a06",
-			Version:    "0.4.0",
+			Version:    "0.5.1",
 			Name:       "One-hot encoder",
 			PythonPath: "d3m.primitives.data_transformation.one_hot_encoder.DistilOneHotEncoder",
-			Digest:     "9ea16f751325297f9347b105c16c0526e8d1294616c3390fb38997a15418a65e",
+			Digest:     "66818496dda8d06badfb1a71f75172b50b9288c312b91952d73c0d4c7408480f",
 		},
 		outputMethods,
 		map[string]interface{}{"max_one_hot": 16},
@@ -456,10 +456,10 @@ func NewBinaryEncoderStep(inputs map[string]DataRef, outputMethods []string) *St
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "d38e2e28-9b18-4ce4-b07c-9d809cd8b915",
-			Version:    "0.4.0",
+			Version:    "0.5.1",
 			Name:       "Binary encoder",
 			PythonPath: "d3m.primitives.data_transformation.encoder.DistilBinaryEncoder",
-			Digest:     "f3874916967418450b3bd5575446219bacdd9bf0679891436d97628da26135ae",
+			Digest:     "2a030799a0cd220d04ae9ccb109f49941e40aa6b6705d74a8ab5136dd5dfb0de",
 		},
 		outputMethods,
 		map[string]interface{}{"min_binary": 17},
@@ -472,10 +472,10 @@ func NewSKImputerStep(inputs map[string]DataRef, outputMethods []string) *StepDa
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "d016df89-de62-3c53-87ed-c06bb6a23cde",
-			Version:    "2020.6.10",
+			Version:    "2020.12.1",
 			Name:       "sklearn.impute.SimpleImputer",
 			PythonPath: "d3m.primitives.data_cleaning.imputer.SKlearn",
-			Digest:     "5cdf2101de052235f8231419be7e2f80190147c213d63c841bc770fdcfffa76f",
+			Digest:     "84bf94c87a745011023da7074c65e1cee1272843d5a11cce1c64c7f20d42e408",
 		},
 		outputMethods,
 		map[string]interface{}{
@@ -492,10 +492,10 @@ func NewSKMissingIndicatorStep(inputs map[string]DataRef, outputMethods []string
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "94c5c918-9ad5-3496-8e52-2359056e0120",
-			Version:    "2020.6.10",
+			Version:    "2020.12.1",
 			Name:       "sklearn.impute.MissingIndicator",
 			PythonPath: "d3m.primitives.data_cleaning.missing_indicator.SKlearn",
-			Digest:     "f390c8e595f48df5848d919aa9db4b4c8791732b368b608320d882e383c4e4eb",
+			Digest:     "def3920732545bbb752d15c9a34e077c7eb7c9462c5025c509decf5b667e9ebc",
 		},
 		outputMethods,
 		map[string]interface{}{
@@ -516,7 +516,7 @@ func NewHDBScanStep(inputs map[string]DataRef, outputMethods []string) *StepData
 			Version:    "1.0.2",
 			Name:       "hdbscan",
 			PythonPath: "d3m.primitives.clustering.hdbscan.Hdbscan",
-			Digest:     "e805ded4d975e125d257a74f8e50f003d782605137dfedbe8f5e567e3607c219",
+			Digest:     "a284fdd5802ec6bb76e78f04ce30c496b42841df2a0e550e6468d709aca3a8ca",
 		},
 		outputMethods,
 		map[string]interface{}{"required_output": "feature", "min_samples": 1, "min_cluster_size": 50, "cluster_selection_method": "leaf"},
@@ -532,7 +532,7 @@ func NewExtractColumnsStep(inputs map[string]DataRef, outputMethods []string, in
 			Version:    "0.1.0",
 			Name:       "Extracts columns",
 			PythonPath: "d3m.primitives.data_transformation.extract_columns.Common",
-			Digest:     "cf44b2f5af90f10ef9935496655a202bfc8a4a0fa24b8e9d733ee61f096bda87",
+			Digest:     "a464aab467ad8b400c6c4d013a7bfa27574d4d0d7bf7333fe067b2e3bf1475e0",
 		},
 		outputMethods,
 		map[string]interface{}{"columns": indices},
@@ -545,10 +545,10 @@ func NewSatelliteImageLoaderStep(inputs map[string]DataRef, outputMethods []stri
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "77d20419-aeb6-44f9-8e63-349ea5b654f7",
-			Version:    "0.4.0",
+			Version:    "0.5.1",
 			Name:       "Columns satellite image loader",
 			PythonPath: "d3m.primitives.data_transformation.satellite_image_loader.DistilSatelliteImageLoader",
-			Digest:     "cf44b2f5af90f10ef9935496655a202bfc8a4a0fa24b8e9d733ee61f096bda87",
+			Digest:     "98856217d8ffe69d27754810f9d3a09ab9fcdaf5029f0f8a2e6a1bc8d7f0975c",
 		},
 		outputMethods,
 		map[string]interface{}{"return_result": "replace", "compress_data": true, "n_jobs": numJobs},
@@ -564,7 +564,7 @@ func NewRemoteSensingPretrainedStep(inputs map[string]DataRef, outputMethods []s
 			Version:    "1.0.0",
 			Name:       "RSPretrained",
 			PythonPath: "d3m.primitives.remote_sensing.remote_sensing_pretrained.RemoteSensingPretrained",
-			Digest:     "cf44b2f5af90f10ef9935496655a202bfc8a4a0fa24b8e9d733ee61f096bda87",
+			Digest:     "a3e089d258d9be2fd08d40554d3f2c6ef0c7660242dbfbf5878905b5d63790d1",
 		},
 		outputMethods,
 		map[string]interface{}{"batch_size": batchSize, "decompress_data": true, "pool_features": pool},
