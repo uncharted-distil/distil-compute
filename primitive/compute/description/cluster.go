@@ -378,7 +378,7 @@ func NewListEncoderStep(inputs map[string]DataRef, outputMethods []string) *Step
 			Id:         "67f53b00-f936-4bb4-873e-4698c4aaa37f",
 			Version:    "0.5.1",
 			Name:       "List encoder",
-			PythonPath: "d3m.primitives.data_transformation.list_to_dataframe.DistilListEncoder",
+			PythonPath: "d3m.primitives.data_transformation.list_to_dataframe.ListEncoderPrimitive",
 			Digest:     "2ab8726ff23664fdc22949ea6d389f29a3ea07355da9c7679f10cff93c9723f6",
 		},
 		outputMethods,
