@@ -738,16 +738,16 @@ func CreateMultiBandImageOutlierDetectionPipeline(name string, description strin
 		}
 
 		moreSteps := []Step{
-			// NewListEncoderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}),
-			// NewEnrichDatesStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}),
-			NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"},
+			NewListEncoderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}),
+			NewEnrichDatesStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}),
+			NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"},
 				[]string{
 					"float",         // python type
 					"numpy.float32", // numpy types
 					"numpy.float64",
 				}),
-				NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}),
-			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, &StepDataRef{2, "produce"}),
+				NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{offset + 3, "produce"}}, []string{"produce"}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}, &StepDataRef{2, "produce"}),
 		}
 		steps = append(steps, moreSteps...)
 	} else {
@@ -778,9 +778,9 @@ func CreateMultiBandImageOutlierDetectionPipeline(name string, description strin
 			NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, numJobs),
 			NewDistilColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"},
 				[]string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType}),
-			NewExtractColumnsBySemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"},
-				[]string{"http://schema.org/ImageObject"}),
-			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, batchSize, true),
+			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, batchSize, true),
+			NewExtractColumnsBySemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"},
+				[]string{"http://schema.org/Float"}),
 			NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}),
 			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{8, "produce"}}, []string{"produce"}, &StepDataRef{4, "produce"}),
 		}
