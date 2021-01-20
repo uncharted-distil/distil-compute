@@ -827,7 +827,7 @@ func NewPrefeaturisedPoolingPrimitive(inputs map[string]DataRef, outputMethods [
 			Id: "825ea1fb-90b2-442c-9905-efba48872102",
 			Version: "0.5.1",
 			Name: "Prefeaturised Pooler",
-			PythonPath: "d3m.primitives.classification.isolation_forest.IsolationForestPrimitive",
+			PythonPath: "d3m.primitives.remote_sensing.remote_sensing_pretrained.PrefeaturisedPooler",
 			Digest: "",
 		},
 		outputMethods,
