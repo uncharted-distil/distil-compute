@@ -34,6 +34,7 @@ import (
 	log "github.com/unchartedsoftware/plog"
 
 	"github.com/uncharted-distil/distil-compute/model"
+	"github.com/uncharted-distil/distil-compute/primitive/compute"
 )
 
 // DatasetSource flags the type of ingest action that created a dataset
@@ -831,21 +832,38 @@ func loadMergedSchemaVariables(m *model.Metadata) error {
 	return nil
 }
 
+func getMainDataResource(schemaResources []*gabs.Container) *gabs.Container {
+	if len(schemaResources) == 1 {
+		return schemaResources[0]
+	}
+
+	// find the learningData schema resource
+	for _, sr := range schemaResources {
+		if sr.Path("resID").Data().(string) == compute.DefaultResourceID {
+			return sr
+		}
+	}
+
+	// return the first one by default
+	return schemaResources[0]
+}
+
 func loadClassificationVariables(m *model.Metadata, normalizeVariableNames bool) error {
 	schemaResources := m.Schema.Path("dataResources").Children()
 	if schemaResources == nil {
 		return errors.New("failed to parse merged resource data")
 	}
 
-	schemaVariables := schemaResources[0].Path("columns").Children()
+	mainDR := getMainDataResource(schemaResources)
+	schemaVariables := mainDR.Path("columns").Children()
 	if schemaVariables == nil {
 		return errors.New("failed to parse merged variable data")
 	}
 
-	resPath := schemaResources[0].Path("resPath").Data().(string)
-	resID := schemaResources[0].Path("resID").Data().(string)
+	resPath := mainDR.Path("resPath").Data().(string)
+	resID := mainDR.Path("resID").Data().(string)
 
-	resFormats, err := parseResFormats(schemaResources[0])
+	resFormats, err := parseResFormats(mainDR)
 	if err != nil {
 		return err
 	}
