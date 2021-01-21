@@ -671,6 +671,221 @@ func CreateDatamartDownloadPipeline(name string, description string, searchResul
 	return fullySpecified, nil
 }
 
+// CreateImageOutlierDetectionPipeline makes a pipeline for
+// outlier detection with remote sensing data
+func CreateImageOutlierDetectionPipeline(name string, description string, imageVariables []*model.Variable) (*FullySpecifiedPipeline, error) {
+
+	cols := make([]int, len(imageVariables))
+	for i, v := range imageVariables {
+		cols[i] = v.Index
+	}
+
+	steps := []Step{
+		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
+		NewDataframeImageReaderStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, cols),
+		NewImageTransferStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+		NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
+	}
+
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipelineJSON},
+	}
+	return fullySpecified, nil
+}
+
+
+// CreateMultiBandImageOutlierDetectionPipeline does outlier detection for multiband images
+// for both prefeaturised and featurised
+func CreateMultiBandImageOutlierDetectionPipeline(name string, description string, imageVariables []*model.Variable,
+	prefeaturised bool, pooled bool, grouping *model.MultiBandImageGrouping, batchSize int, numJobs int) (*FullySpecifiedPipeline, error) {
+
+
+	var steps []Step
+	if prefeaturised {
+		steps = []Step{
+			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+			NewDistilColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"},
+				[]string{
+					model.TA2RealType,
+					model.TA2RealVectorType,
+				}),
+			NewExtractColumnsBySemanticTypeStep(
+				map[string]DataRef{"inputs": &StepDataRef{1, "produce"}},
+				[]string{"produce"},
+				[]string{"https://metadata.datadrivendiscovery.org/types/Attribute"},
+			),
+		}
+		offset := 2
+		if !pooled {
+			steps = append(steps, NewPrefeaturisedPoolingPrimitive(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+			offset++
+		}
+
+		moreSteps := []Step{
+			NewListEncoderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}),
+			NewEnrichDatesStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}),
+			NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"},
+				[]string{
+					"float",         // python type
+					"numpy.float32", // numpy types
+					"numpy.float64",
+				}),
+				NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{offset + 3, "produce"}}, []string{"produce"}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}, &StepDataRef{2, "produce"}),
+		}
+		steps = append(steps, moreSteps...)
+	} else {
+		var imageVar *model.Variable
+		var groupVar *model.Variable
+		for _, v := range imageVariables {
+			if v.Key == grouping.ImageCol {
+				imageVar = v
+			} else if v.Key == grouping.IDCol {
+				groupVar = v
+			}
+		}
+		if imageVar == nil {
+			return nil, errors.Errorf("image var with name '%s' not found in supplied variables", grouping.ImageCol)
+		}
+		if groupVar == nil {
+			return nil, errors.Errorf("grouping var with name '%s' not found in supplied variables", grouping.IDCol)
+		}
+		addGroup := &ColumnUpdate{
+			SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/GroupingKey"},
+			Indices:       []int{groupVar.Index},
+		}
+		steps = []Step{
+			NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+			NewAddSemanticTypeStep(nil, nil, addGroup),
+			NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, 1, ""),
+			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+			NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, numJobs),
+			NewDistilColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"},
+				[]string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType}),
+			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, batchSize, true),
+			NewExtractColumnsBySemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"},
+				[]string{"http://schema.org/Float"}),
+			NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{8, "produce"}}, []string{"produce"}, &StepDataRef{4, "produce"}),
+		}
+	}
+
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipelineJSON},
+	}
+	return fullySpecified, nil
+}
+
+// CreateTabularOutlierDetectionPipeline makes a pipeline for
+// outlier detection
+func CreateTabularOutlierDetectionPipeline(name string, description string, datasetDescription *UserDatasetDescription,
+	augmentations []*UserDatasetAugmentation) (*FullySpecifiedPipeline, error) {
+
+	steps, err := generatePrependSteps(datasetDescription, augmentations)
+	if err != nil {
+		return nil, err
+	}
+	offset := len(steps) - 1
+
+	add := &ColumnUpdate{
+		SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/TrueTarget"},
+		Indices:       []int{datasetDescription.TargetFeature.Index},
+	}
+	steps = append(steps, NewAddSemanticTypeStep(nil, nil, add))
+	offset = offset + 1
+	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
+	offset = offset + 1
+	steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	offset = offset + 1
+	steps = append(steps, NewColumnParserStep(
+			map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}},
+			[]string{"produce"},
+			[]string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType},
+		))
+	offset = offset + 1
+	parseStep := offset
+	steps = append(steps, NewExtractColumnsBySemanticTypeStep(
+			map[string]DataRef{"inputs": &StepDataRef{parseStep, "produce"}},
+			[]string{"produce"},
+			[]string{"https://metadata.datadrivendiscovery.org/types/Attribute"},
+		))
+	offset = offset + 1
+	attributeStep := offset
+	steps = append(steps, NewExtractColumnsBySemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{parseStep, "produce"}}, []string{"produce"}, []string{"https://metadata.datadrivendiscovery.org/types/Target", "https://metadata.datadrivendiscovery.org/types/TrueTarget"}))
+	offset = offset + 1
+	targetStep := offset
+	steps = append(steps, NewEnrichDatesStep(map[string]DataRef{"inputs": &StepDataRef{attributeStep, "produce"}}, []string{"produce"}))
+	offset = offset + 1
+	steps = append(steps, NewListEncoderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	offset = offset + 1
+	steps = append(steps, NewReplaceSingletonStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	offset = offset + 1
+	steps = append(steps, NewCategoricalImputerStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	offset = offset + 1
+	steps = append(steps, NewTextEncoderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}, "outputs": &StepDataRef{targetStep, "produce"}}, []string{"produce"}))
+	offset = offset + 1
+	steps = append(steps, NewOneHotEncoderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	offset = offset + 1
+	steps = append(steps, NewBinaryEncoderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	offset = offset + 1
+	steps = append(steps, NewSKImputerStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	offset = offset + 1
+	steps = append(steps, NewSKMissingIndicatorStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	offset = offset + 1
+	steps = append(steps, NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	offset = offset + 1
+	steps = append(steps, NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, &StepDataRef{parseStep, "produce"}))
+	
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipelineJSON},
+	}
+	return fullySpecified, nil
+}
+
 // CreateDatamartAugmentPipeline creates a pipeline to augment data with datamart data.
 func CreateDatamartAugmentPipeline(name string, description string, searchResult string, systemIdentifier string) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}

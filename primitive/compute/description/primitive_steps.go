@@ -513,7 +513,7 @@ func NewDistilColumnParserStep(inputs map[string]DataRef, outputMethods []string
 		&pipeline.Primitive{
 			Id:         "e8e78214-9770-4c26-9eae-a45bd0ede91a",
 			Version:    "0.5.1",
-			Name:       "Parses strings into their types",
+			Name:       "Column Parser",
 			PythonPath: "d3m.primitives.data_transformation.column_parser.DistilColumnParser",
 			Digest:     "7e1def8c114a73394ab17d0463763f0e11896941b74122681f61e5e34dd3a073",
 		},
@@ -795,6 +795,40 @@ func NewImageRetrievalStep(inputs map[string]DataRef, outputMethods []string) *S
 			Name:       "ImageRetrieval",
 			PythonPath: "d3m.primitives.similarity_modeling.iterative_labeling.ImageRetrieval",
 			Digest:     "84d9b341135142c9bda23b7885516ebc9f552a87ea458712501ac85a29e0dc58",
+		},
+		outputMethods,
+		args,
+		inputs,
+	)
+}
+
+// NewIsolationForestStep returns labels for whether or not a data point is an anomoly
+func NewIsolationForestStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	args := map[string]interface{}{}
+	return NewStepData(
+		&pipeline.Primitive{
+			Id: "793f0b17-7413-4962-9f1d-0b285540b21f",
+			Version: "0.5.1",
+			Name: "Isolation Forest",
+			PythonPath: "d3m.primitives.classification.isolation_forest.IsolationForestPrimitive",
+			Digest: "",
+		},
+		outputMethods,
+		args,
+		inputs,
+	)
+}
+
+// NewPrefeaturisedPoolingPrimitive takes inputs of non-pooled remote sensing data to pool it
+func NewPrefeaturisedPoolingPrimitive(inputs map[string]DataRef, outputMethods []string) *StepData {
+	args := map[string]interface{}{}
+	return NewStepData(
+		&pipeline.Primitive{
+			Id: "825ea1fb-90b2-442c-9905-efba48872102",
+			Version: "0.5.1",
+			Name: "Prefeaturised Pooler",
+			PythonPath: "d3m.primitives.remote_sensing.remote_sensing_pretrained.PrefeaturisedPooler",
+			Digest: "",
 		},
 		outputMethods,
 		args,
