@@ -122,6 +122,8 @@ const (
 	VarMinField = "min"
 	// VarMaxField is the field name for the max value.
 	VarMaxField = "max"
+	// VarValuesField is the field name for the categorical values present in the data.
+	VarValuesField = "values"
 
 	// TypeTypeField is the type field of a suggested type
 	TypeTypeField = "type"
@@ -259,6 +261,7 @@ type Variable struct {
 	Grouping         BaseGrouping           `json:"grouping"`
 	Min              float64                `json:"min"`
 	Max              float64                `json:"max"`
+	Values           []string               `json:"values"`
 }
 
 // DataResource represents a set of variables found in a data asset.
