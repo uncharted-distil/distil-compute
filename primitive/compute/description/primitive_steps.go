@@ -810,11 +810,11 @@ func NewIsolationForestStep(inputs map[string]DataRef, outputMethods []string) *
 	args := map[string]interface{}{}
 	return NewStepData(
 		&pipeline.Primitive{
-			Id: "793f0b17-7413-4962-9f1d-0b285540b21f",
-			Version: "0.5.1",
-			Name: "Isolation Forest",
+			Id:         "793f0b17-7413-4962-9f1d-0b285540b21f",
+			Version:    "0.5.1",
+			Name:       "Isolation Forest",
 			PythonPath: "d3m.primitives.classification.isolation_forest.IsolationForestPrimitive",
-			Digest: "",
+			Digest:     "",
 		},
 		outputMethods,
 		args,
@@ -827,11 +827,11 @@ func NewPrefeaturisedPoolingPrimitive(inputs map[string]DataRef, outputMethods [
 	args := map[string]interface{}{}
 	return NewStepData(
 		&pipeline.Primitive{
-			Id: "825ea1fb-90b2-442c-9905-efba48872102",
-			Version: "0.5.1",
-			Name: "Prefeaturised Pooler",
+			Id:         "825ea1fb-90b2-442c-9905-efba48872102",
+			Version:    "0.5.1",
+			Name:       "Prefeaturised Pooler",
 			PythonPath: "d3m.primitives.remote_sensing.remote_sensing_pretrained.PrefeaturisedPooler",
-			Digest: "",
+			Digest:     "",
 		},
 		outputMethods,
 		args,

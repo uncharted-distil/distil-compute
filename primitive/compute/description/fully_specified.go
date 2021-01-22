@@ -709,12 +709,10 @@ func CreateImageOutlierDetectionPipeline(name string, description string, imageV
 	return fullySpecified, nil
 }
 
-
 // CreateMultiBandImageOutlierDetectionPipeline does outlier detection for multiband images
 // for both prefeaturised and featurised
 func CreateMultiBandImageOutlierDetectionPipeline(name string, description string, imageVariables []*model.Variable,
 	prefeaturised bool, pooled bool, grouping *model.MultiBandImageGrouping, batchSize int, numJobs int) (*FullySpecifiedPipeline, error) {
-
 
 	var steps []Step
 	if prefeaturised {
@@ -746,7 +744,7 @@ func CreateMultiBandImageOutlierDetectionPipeline(name string, description strin
 					"numpy.float32", // numpy types
 					"numpy.float64",
 				}),
-				NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{offset + 3, "produce"}}, []string{"produce"}),
+			NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{offset + 3, "produce"}}, []string{"produce"}),
 			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}, &StepDataRef{2, "produce"}),
 		}
 		steps = append(steps, moreSteps...)
@@ -828,17 +826,17 @@ func CreateTabularOutlierDetectionPipeline(name string, description string, data
 	steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 	offset = offset + 1
 	steps = append(steps, NewColumnParserStep(
-			map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}},
-			[]string{"produce"},
-			[]string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType},
-		))
+		map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}},
+		[]string{"produce"},
+		[]string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType},
+	))
 	offset = offset + 1
 	parseStep := offset
 	steps = append(steps, NewExtractColumnsBySemanticTypeStep(
-			map[string]DataRef{"inputs": &StepDataRef{parseStep, "produce"}},
-			[]string{"produce"},
-			[]string{"https://metadata.datadrivendiscovery.org/types/Attribute"},
-		))
+		map[string]DataRef{"inputs": &StepDataRef{parseStep, "produce"}},
+		[]string{"produce"},
+		[]string{"https://metadata.datadrivendiscovery.org/types/Attribute"},
+	))
 	offset = offset + 1
 	attributeStep := offset
 	steps = append(steps, NewExtractColumnsBySemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{parseStep, "produce"}}, []string{"produce"}, []string{"https://metadata.datadrivendiscovery.org/types/Target", "https://metadata.datadrivendiscovery.org/types/TrueTarget"}))
@@ -865,7 +863,7 @@ func CreateTabularOutlierDetectionPipeline(name string, description string, data
 	steps = append(steps, NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 	offset = offset + 1
 	steps = append(steps, NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, &StepDataRef{parseStep, "produce"}))
-	
+
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
 
