@@ -266,20 +266,36 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 
 // CreatePreFeaturizedMultiBandImageClusteringPipeline creates a fully specified pipeline that will
 // cluster multiband images together, returning a column with the resulting cluster.
-func CreatePreFeaturizedMultiBandImageClusteringPipeline(name string, description string, variables []*model.Variable, useKMeans bool) (*FullySpecifiedPipeline, error) {
+func CreatePreFeaturizedMultiBandImageClusteringPipeline(name string, description string, variables []*model.Variable, useKMeans bool, poolFeatures bool) (*FullySpecifiedPipeline, error) {
 	var steps []Step
 	if useKMeans {
-		steps = []Step{
-			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-			NewDistilColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, []string{model.TA2RealType}),
-			NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"},
-				[]string{
-					"float",         // python type
-					"numpy.float32", // numpy types
-					"numpy.float64",
-				}),
-			NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
-			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
+		if poolFeatures {
+			steps = []Step{
+				NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+				NewDistilColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, []string{model.TA2RealType}),
+				NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"},
+					[]string{
+						"float",         // python type
+						"numpy.float32", // numpy types
+						"numpy.float64",
+					}),
+				NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+				NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
+			}
+		} else {
+			steps = []Step{
+				NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+				NewDistilColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, []string{model.TA2RealType}),
+				NewPrefeaturisedPoolingStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}),
+				NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"},
+					[]string{
+						"float",         // python type
+						"numpy.float32", // numpy types
+						"numpy.float64",
+					}),
+				NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+				NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
+			}
 		}
 	} else {
 		steps = []Step{
