@@ -351,6 +351,54 @@ func CreateGroupingFieldComposePipeline(name string, description string, colIndi
 	return fullySpecified, nil
 }
 
+// CreateDataFilterPipeline creates a pipeline that will filter a dataset.
+func CreateDataFilterPipeline(name string, description string, variables []*model.Variable, filters []*model.Filter) (*FullySpecifiedPipeline, error) {
+	steps := []Step{}
+	offset := 0
+
+	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
+	steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType, model.TA2RealVectorType}))
+	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, ""))
+	steps = append(steps, NewDataCleaningStep(nil, nil))
+	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, offset+3, ""))
+	offset += 5
+
+	updateSemanticTypes, err := createUpdateSemanticTypes("", variables, nil, offset)
+	if err != nil {
+		return nil, err
+	}
+	steps = append(steps, updateSemanticTypes...)
+	offset += len(updateSemanticTypes)
+
+	// apply filters
+	featureSet := map[string]int{}
+	for _, v := range variables {
+		featureSet[v.Key] = v.Index
+	}
+	filterData := createFilterData(filters, featureSet, offset)
+	steps = append(steps, filterData...)
+	offset += len(filterData)
+
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{offset - 1, "produce"}}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipelineJSON},
+	}
+	return fullySpecified, nil
+}
+
 // CreatePCAFeaturesPipeline creates a pipeline to run feature ranking on an input dataset.
 func CreatePCAFeaturesPipeline(name string, description string) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
