@@ -822,8 +822,8 @@ func NewIsolationForestStep(inputs map[string]DataRef, outputMethods []string) *
 	)
 }
 
-// NewPrefeaturisedPoolingPrimitive takes inputs of non-pooled remote sensing data to pool it
-func NewPrefeaturisedPoolingPrimitive(inputs map[string]DataRef, outputMethods []string) *StepData {
+// NewPrefeaturisedPoolingStep takes inputs of non-pooled remote sensing data to pool it
+func NewPrefeaturisedPoolingStep(inputs map[string]DataRef, outputMethods []string) *StepData {
 	args := map[string]interface{}{}
 	return NewStepData(
 		&pipeline.Primitive{
