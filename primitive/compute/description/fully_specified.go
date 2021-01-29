@@ -357,11 +357,9 @@ func CreateDataFilterPipeline(name string, description string, variables []*mode
 	offset := 0
 
 	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
-	steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType, model.TA2RealVectorType}))
-	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, ""))
 	steps = append(steps, NewDataCleaningStep(nil, nil))
-	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"}, offset+3, ""))
-	offset += 5
+	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, ""))
+	offset += 3
 
 	updateSemanticTypes, err := createUpdateSemanticTypes("", variables, nil, offset)
 	if err != nil {
@@ -379,8 +377,22 @@ func CreateDataFilterPipeline(name string, description string, variables []*mode
 	steps = append(steps, filterData...)
 	offset += len(filterData)
 
+	// drop metadata columns since we do not want them in the final output
+	colsToDrop := []int{}
+	for _, v := range variables {
+		if v.DistilRole == model.VarDistilRoleMetadata {
+			colsToDrop = append(colsToDrop, v.Index)
+		}
+	}
+	featureSelect := NewRemoveColumnsStep(nil, nil, colsToDrop)
+	wrapperRemove := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+	steps = append(steps, featureSelect, wrapperRemove)
+	offset += 2
+
+	steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}))
+
 	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{offset - 1, "produce"}}
+	outputs := []DataRef{&StepDataRef{offset, "produce"}}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
 	if err != nil {
