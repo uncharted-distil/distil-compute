@@ -90,13 +90,16 @@ func (e *ExecPipelineRequest) Listen(listener ExecPipelineStatusListener) error 
 }
 
 // Dispatch dispatches a pipeline execute request for processing by TA2.
-func (e *ExecPipelineRequest) Dispatch(client *Client, templateRequest *pipeline.SearchSolutionsRequest) error {
+func (e *ExecPipelineRequest) Dispatch(client *Client, templateRequest *pipeline.SearchSolutionsRequest, allowedValueTypes []string) error {
+	if allowedValueTypes == nil {
+		allowedValueTypes = []string{CSVURIValueType}
+	}
 	if templateRequest == nil {
 		templateRequest = &pipeline.SearchSolutionsRequest{
 			Version:           GetAPIVersion(),
 			UserAgent:         client.UserAgent,
 			Template:          e.pipelineDesc,
-			AllowedValueTypes: []string{CSVURIValueType},
+			AllowedValueTypes: allowedValueTypes,
 			Inputs:            createInputValues(e.datasetURIs),
 		}
 	}
