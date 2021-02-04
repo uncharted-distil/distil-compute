@@ -111,12 +111,12 @@ func (e *ExecPipelineRequest) Dispatch(client *Client, templateRequest *pipeline
 	}
 
 	// dispatch search request
-	go e.dispatchRequest(client, requestID)
+	go e.dispatchRequest(client, requestID, allowedValueTypes)
 
 	return nil
 }
 
-func (e *ExecPipelineRequest) dispatchRequest(client *Client, requestID string) {
+func (e *ExecPipelineRequest) dispatchRequest(client *Client, requestID string, allowedValueTypes []string) {
 
 	// Update request status
 	e.notifyStatus(e.statusChannel, requestID, RequestPendingStatus)
@@ -150,7 +150,7 @@ func (e *ExecPipelineRequest) dispatchRequest(client *Client, requestID string) 
 			e.notifyStatus(e.statusChannel, requestID, RequestRunningStatus)
 			if solution.GetSolutionId() != "" && !fitCalled {
 				fitCalled = true
-				e.dispatchFit(e.statusChannel, client, requestID, solution.GetSolutionId())
+				e.dispatchFit(e.statusChannel, client, requestID, solution.GetSolutionId(), allowedValueTypes)
 				e.wg.Done()
 			}
 
@@ -168,18 +168,18 @@ func (e *ExecPipelineRequest) dispatchRequest(client *Client, requestID string) 
 	e.finished <- client.EndSearch(context.Background(), requestID)
 }
 
-func (e *ExecPipelineRequest) createFitSolutionRequest(datasetURIs []string, solutionID string) *pipeline.FitSolutionRequest {
+func (e *ExecPipelineRequest) createFitSolutionRequest(datasetURIs []string, solutionID string, allowedValueTypes []string) *pipeline.FitSolutionRequest {
 	return &pipeline.FitSolutionRequest{
 		SolutionId:       solutionID,
 		Inputs:           createInputValues(datasetURIs),
 		ExposeOutputs:    []string{DefaultExposedOutputKey},
-		ExposeValueTypes: []string{CSVURIValueType},
+		ExposeValueTypes: allowedValueTypes,
 	}
 }
 
-func (e *ExecPipelineRequest) dispatchFit(statusChan chan ExecPipelineStatus, client *Client, requestID string, solutionID string) {
+func (e *ExecPipelineRequest) dispatchFit(statusChan chan ExecPipelineStatus, client *Client, requestID string, solutionID string, allowedValueTypes []string) {
 	// run fit - this blocks until all responses are returned
-	fitRequest := e.createFitSolutionRequest(e.datasetURIs, solutionID)
+	fitRequest := e.createFitSolutionRequest(e.datasetURIs, solutionID, allowedValueTypes)
 
 	responses, err := client.GenerateSolutionFit(context.Background(), fitRequest)
 	if err != nil {
