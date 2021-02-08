@@ -351,6 +351,66 @@ func CreateGroupingFieldComposePipeline(name string, description string, colIndi
 	return fullySpecified, nil
 }
 
+// CreateDataFilterPipeline creates a pipeline that will filter a dataset.
+func CreateDataFilterPipeline(name string, description string, variables []*model.Variable, filters []*model.Filter) (*FullySpecifiedPipeline, error) {
+	steps := []Step{}
+	offset := 0
+
+	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
+	steps = append(steps, NewDataCleaningStep(nil, nil))
+	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, ""))
+	offset += 3
+
+	updateSemanticTypes, err := createUpdateSemanticTypes("", variables, nil, offset)
+	if err != nil {
+		return nil, err
+	}
+	steps = append(steps, updateSemanticTypes...)
+	offset += len(updateSemanticTypes)
+
+	// apply filters
+	featureSet := map[string]int{}
+	for _, v := range variables {
+		featureSet[v.Key] = v.Index
+	}
+	filterData := createFilterData(filters, featureSet, offset)
+	steps = append(steps, filterData...)
+	offset += len(filterData)
+
+	// drop metadata columns since we do not want them in the final output
+	colsToDrop := []int{}
+	for _, v := range variables {
+		if v.DistilRole == model.VarDistilRoleMetadata {
+			colsToDrop = append(colsToDrop, v.Index)
+		}
+	}
+	featureSelect := NewRemoveColumnsStep(nil, nil, colsToDrop)
+	wrapperRemove := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+	steps = append(steps, featureSelect, wrapperRemove)
+	offset += 2
+
+	steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}))
+
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{offset, "produce"}}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipelineJSON},
+	}
+	return fullySpecified, nil
+}
+
 // CreatePCAFeaturesPipeline creates a pipeline to run feature ranking on an input dataset.
 func CreatePCAFeaturesPipeline(name string, description string) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
