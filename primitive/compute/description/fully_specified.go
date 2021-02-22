@@ -42,8 +42,10 @@ func MarshalSteps(step *pipeline.PipelineDescription) (string, error) {
 	return string(stepJSON), nil
 }
 
-// CreateImageQueryPipeline creates a pipeline that will perform image retrieval.
-func CreateImageQueryPipeline(name string, description string) (*FullySpecifiedPipeline, error) {
+// CreateImageQueryPipeline creates a pipeline that will perform image retrieval.  The cacheLocation parameter
+// is passed down to the image retrieval primitive, and is used to cache dot products across query operations.
+// When a new dataset is being labelled, the cache location should be updated.
+func CreateImageQueryPipeline(name string, description string, cacheLocation string) (*FullySpecifiedPipeline, error) {
 	steps := []Step{
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
 		NewDistilColumnParserStep(
@@ -69,7 +71,12 @@ func CreateImageQueryPipeline(name string, description string) (*FullySpecifiedP
 			[]string{"produce"},
 			[]string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType},
 		),
-		NewImageRetrievalStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}, "outputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
+		NewImageRetrievalStep(map[string]DataRef{
+			"inputs":  &StepDataRef{3, "produce"},
+			"outputs": &StepDataRef{5, "produce"}},
+			[]string{"produce"},
+			cacheLocation,
+		),
 		NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}},
 			[]string{"produce"},
 			&ColumnUpdate{

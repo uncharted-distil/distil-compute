@@ -786,10 +786,11 @@ func NewTimeseriesFormatterStep(inputs map[string]DataRef, outputMethods []strin
 
 // NewImageRetrievalStep creates a step that will rank images based on nearnest
 // to images with the positive label.
-func NewImageRetrievalStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+func NewImageRetrievalStep(inputs map[string]DataRef, outputMethods []string, cacheLocation string) *StepData {
 	args := map[string]interface{}{
-		"reduce_dimension": 1024,
-		"gem_p":            4,
+		"reduce_dimension":   1024,
+		"gem_p":              4,
+		"dot_products_cache": cacheLocation,
 	}
 	return NewStepData(
 		&pipeline.Primitive{
