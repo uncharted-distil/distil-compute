@@ -199,7 +199,7 @@ func NewTextFilter(key string, mode string, categories []string) *Filter {
 // NewRowFilter instantiates a row filter.
 func NewRowFilter(mode string, d3mIndices []string) *Filter {
 	return &Filter{
-		Key:        "d3mIndex",
+		Key:        D3MIndexFieldName,
 		Type:       RowFilter,
 		Mode:       mode,
 		D3mIndices: d3mIndices,
