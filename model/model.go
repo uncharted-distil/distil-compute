@@ -25,8 +25,6 @@ import (
 )
 
 const (
-	// D3MIndexName is the variable name for the d3m index column
-	D3MIndexName = "d3mIndex"
 	// ExplainValues is the variable that holds the col name for the explain values
 	ExplainValues = "explain_values"
 	// SchemaSourceClassification was loaded via classification
@@ -462,7 +460,7 @@ func (m *Metadata) GetMainDataResource() *DataResource {
 	// main data resource has d3m index variable
 	for _, dr := range m.DataResources {
 		for _, v := range dr.Variables {
-			if v.Key == D3MIndexName {
+			if v.Key == D3MIndexFieldName {
 				return dr
 			}
 		}
