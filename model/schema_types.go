@@ -452,7 +452,7 @@ func MapSchemaType(typ string) string {
 func MapLLType(typ string) string {
 	mapped := llTypeMap[typ]
 	if mapped == "" {
-		log.Warnf("D3M dataset doc type '%s' has no mappping to Distl type defined and will be passed through", typ)
+		log.Warnf("D3M dataset doc type '%s' has no mappping to Distil type defined and will be passed through", typ)
 		mapped = typ
 	}
 
