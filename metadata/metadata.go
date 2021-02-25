@@ -695,7 +695,7 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 
 func cleanVarType(m *model.Metadata, name string, typ string) string {
 	// set the d3m index to int regardless of what gets returned
-	if name == model.D3MIndexName {
+	if name == model.D3MIndexFieldName {
 		return "index"
 	}
 	// map types
