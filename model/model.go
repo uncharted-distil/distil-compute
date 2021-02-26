@@ -538,7 +538,7 @@ func (v *Variable) IsGrouping() bool {
 func (v *Variable) Clone() *Variable {
 	// HACK: RefersTo and Grouping are not doing deep copies
 	clone := &Variable{}
-	clone.Role = append(clone.Role, v.Role...)
+	clone.Role = append([]string{}, v.Role...)
 	clone.Values = append(clone.Values, v.Values...)
 	for _, s := range v.SuggestedTypes {
 		cs := *s
