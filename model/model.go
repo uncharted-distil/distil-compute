@@ -534,6 +534,44 @@ func (v *Variable) IsGrouping() bool {
 	return v.Grouping != nil && !v.Grouping.IsNil()
 }
 
+// Clone clones a variable into a new variable.
+func (v *Variable) Clone() *Variable {
+	// HACK: RefersTo and Grouping are not doing deep copies
+	clone := &Variable{}
+	clone.Role = append([]string{}, v.Role...)
+	clone.Values = append(clone.Values, v.Values...)
+	for _, s := range v.SuggestedTypes {
+		cs := *s
+		clone.SuggestedTypes = append(clone.SuggestedTypes, &cs)
+	}
+	if v.RefersTo != nil {
+		v.RefersTo = map[string]interface{}{}
+		for k, t := range v.RefersTo {
+			clone.RefersTo[k] = t
+		}
+	}
+	if v.Grouping != nil {
+		clone.Grouping = v.Grouping
+	}
+	clone.Key = v.Key
+	clone.HeaderName = v.HeaderName
+	clone.Type = v.Type
+	clone.Description = v.Description
+	clone.OriginalType = v.OriginalType
+	clone.SelectedRole = v.SelectedRole
+	clone.DistilRole = v.DistilRole
+	clone.OriginalVariable = v.OriginalVariable
+	clone.DisplayName = v.DisplayName
+	clone.Importance = v.Importance
+	clone.Index = v.Index
+	clone.Deleted = v.Deleted
+	clone.Immutable = v.Immutable
+	clone.Min = v.Min
+	clone.Max = v.Max
+
+	return clone
+}
+
 // IsTA2Field indicates whether or not a particular variable is recognized by a TA2.
 func IsTA2Field(distilRole string, selectedRole string) bool {
 	if distilRole == VarDistilRoleData || distilRole == VarDistilRoleIndex {
