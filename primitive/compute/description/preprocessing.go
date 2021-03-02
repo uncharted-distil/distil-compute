@@ -58,8 +58,9 @@ func CreatePreFeaturizedDatasetPipeline(name string, description string, dataset
 	colsToDrop := []int{}
 	for _, v := range datasetDescription.AllFeatures {
 		if model.IsTA2Field(v.DistilRole, v.SelectedRole) {
-			featureSet[strings.ToLower(v.Key)] = v.Index
-			if !selectedSet[v.Key] {
+			variableKey := strings.ToLower(v.Key)
+			featureSet[variableKey] = v.Index
+			if !selectedSet[variableKey] {
 				if v.Index != datasetDescription.TargetFeature.Index && !model.IsIndexRole(v.SelectedRole) {
 					colsToDrop = append(colsToDrop, v.Index)
 				}
@@ -85,7 +86,10 @@ func CreatePreFeaturizedDatasetPipeline(name string, description string, dataset
 	offset += len(updateSemanticTypes)
 
 	// apply filters
-	filterData := createFilterData(datasetDescription.Filters, featureSet, offset)
+	filterData, err := createFilterData(datasetDescription.Filters, featureSet, offset)
+	if err != nil {
+		return nil, err
+	}
 	steps = append(steps, filterData...)
 	offset += len(filterData)
 
@@ -249,7 +253,10 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 	offset += len(removeFeatures)
 
 	// add filter primitives
-	filterData := createFilterData(datasetDescription.Filters, columnIndices, offset)
+	filterData, err := createFilterData(datasetDescription.Filters, columnIndices, offset)
+	if err != nil {
+		return nil, err
+	}
 	steps = append(steps, filterData...)
 
 	// If neither have any content, we'll skip the template altogether.
@@ -441,14 +448,18 @@ func createUpdateSemanticTypes(target string, allFeatures []*model.Variable, sel
 	return semanticTypeUpdates, nil
 }
 
-func createFilterData(filters []*model.Filter, columnIndices map[string]int, offset int) []Step {
+func createFilterData(filters []*model.Filter, columnIndices map[string]int, offset int) ([]Step, error) {
 
 	// Map the fiters to pipeline primitives
 	filterSteps := []Step{}
 	for _, f := range filters {
 		var filter Step
 		inclusive := f.Mode == model.IncludeFilter
-		colIndex := columnIndices[f.Key]
+		filterKey := strings.ToLower(f.Key)
+		colIndex, ok := columnIndices[filterKey]
+		if !ok {
+			return nil, errors.Errorf("filter field %s not found in columns", filterKey)
+		}
 
 		switch f.Type {
 		case model.NumericalFilter:
@@ -464,7 +475,7 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int, off
 			offset += 2
 
 		case model.BivariateFilter:
-			split := strings.Split(f.Key, ":")
+			split := strings.Split(filterKey, ":")
 			xCol := split[0]
 			yCol := split[1]
 			xColIndex := columnIndices[xCol]
@@ -526,7 +537,7 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int, off
 		}
 
 	}
-	return filterSteps
+	return filterSteps, nil
 }
 
 func getSemanticTypeUpdates(v *model.Variable, inputIndex int, offset int) []Step {
