@@ -378,9 +378,12 @@ func CreateDataFilterPipeline(name string, description string, variables []*mode
 	// apply filters
 	featureSet := map[string]int{}
 	for _, v := range variables {
-		featureSet[v.Key] = v.Index
+		featureSet[strings.ToLower(v.Key)] = v.Index
 	}
-	filterData := createFilterData(filters, featureSet, offset)
+	filterData, err := createFilterData(filters, featureSet, offset)
+	if err != nil {
+		return nil, err
+	}
 	steps = append(steps, filterData...)
 	offset += len(filterData)
 
