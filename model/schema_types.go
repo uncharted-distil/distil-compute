@@ -28,6 +28,8 @@ const (
 
 	// AddressType is the schema type for address values
 	AddressType = "address"
+	// BivariateType is the schema type for lat long point
+	BivariateType = "bivariate"
 	// IndexType is the schema type for index values
 	IndexType = "index"
 	// IntegerType is the schema type for int values
@@ -259,6 +261,7 @@ var (
 		RealVectorType:     TA2RealVectorType,
 		RealListType:       TA2RealVectorType,
 		GeoBoundsType:      TA2RealVectorType,
+		BivariateType:      TA2RealVectorType,
 	}
 
 	// Maps from Distil internal type to D3M dataset doc type
@@ -412,6 +415,12 @@ func IsGeoCoordinate(typ string) bool {
 // for the purposes of analysis.
 func IsGeoBounds(typ string) bool {
 	return typ == GeoBoundsType
+}
+
+// IsBivariate indicates where or not a schema type is a bivariate
+// for the purposes of analysis
+func IsBivariate(typ string) bool {
+	return typ == BivariateType
 }
 
 // IsTimestamp indicates whether or not a schema type is a timestamp for the purposes
