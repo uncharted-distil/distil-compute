@@ -110,7 +110,9 @@ const (
 	VarDistilRoleGrouping = "grouping"
 	// VarDistilRoleMetadata is the distil role for metadata variables
 	VarDistilRoleMetadata = "metadata"
-	// VarDeleted flags whether the variable is deleted.
+	// VarDistilRoleAugmented is the distil role for variables created for UX, not for model creation. i.e. Outliers detection
+        VarDistilRoleAugmented = "augmented"
+        // VarDeleted flags whether the variable is deleted.
 	VarDeleted = "deleted"
 	// VarImmutableField is the name for the flag indicating whether the variable is immutable.
 	VarImmutableField = "immutable"
