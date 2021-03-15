@@ -139,6 +139,15 @@ func CreateImageFeaturizationPipeline(name string, description string, variables
 	offset++
 
 	steps = append(steps, NewImageTransferStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	offset++
+	transferStep := offset
+
+	steps = append(steps, NewRemoveColumnsStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, []int{imageCol.Index}))
+	offset++
+
+	steps = append(steps, NewHorizontalConcatStep(
+		map[string]DataRef{"left": &StepDataRef{offset, "produce"}, "right": &StepDataRef{transferStep, "produce"}},
+		[]string{"produce"}, false, true))
 
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
