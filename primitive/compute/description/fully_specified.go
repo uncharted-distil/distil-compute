@@ -107,8 +107,7 @@ func CreateImageQueryPipeline(name string, description string, cacheLocation str
 }
 
 // CreateImageFeaturizationPipeline creates a pipline that will featurize images.
-func CreateImageFeaturizationPipeline(name string, description string, variables []*model.Variable,
-	numJobs int, batchSize int, poolFeatures bool) (*FullySpecifiedPipeline, error) {
+func CreateImageFeaturizationPipeline(name string, description string, variables []*model.Variable) (*FullySpecifiedPipeline, error) {
 
 	// add semantic types to variables that are images
 	var imageCol *model.Variable
