@@ -106,6 +106,69 @@ func CreateImageQueryPipeline(name string, description string, cacheLocation str
 	return fullySpecified, nil
 }
 
+// CreateImageFeaturizationPipeline creates a pipline that will featurize images.
+func CreateImageFeaturizationPipeline(name string, description string, variables []*model.Variable) (*FullySpecifiedPipeline, error) {
+
+	// add semantic types to variables that are images
+	var imageCol *model.Variable
+	vars := map[string]*model.Variable{}
+	for _, v := range variables {
+		if model.IsImage(v.Type) {
+			imageCol = v
+		}
+		vars[v.Key] = v
+	}
+	if imageCol == nil {
+		return nil, errors.Errorf("no image found in dataset variables")
+	}
+
+	steps := []Step{
+		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
+	}
+	offset := 1
+
+	addImage := &ColumnUpdate{
+		SemanticTypes: []string{model.TA2ImageType},
+		Indices:       []int{imageCol.Index},
+	}
+	steps = append(steps, NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, addImage))
+	offset++
+
+	steps = append(steps, NewDataframeImageReaderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, []int{vars[model.D3MIndexFieldName].Index, imageCol.Index}))
+	offset++
+
+	steps = append(steps, NewImageTransferStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	offset++
+	transferStep := offset
+
+	steps = append(steps, NewRemoveColumnsStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, []int{imageCol.Index}))
+	offset++
+
+	steps = append(steps, NewHorizontalConcatStep(
+		map[string]DataRef{"left": &StepDataRef{offset, "produce"}, "right": &StepDataRef{transferStep, "produce"}},
+		[]string{"produce"}, false, true))
+
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipelineJSON},
+	}
+	return fullySpecified, nil
+}
+
 // CreateMultiBandImageFeaturizationPipeline creates a pipline that will featurize multiband images.
 func CreateMultiBandImageFeaturizationPipeline(name string, description string, variables []*model.Variable,
 	numJobs int, batchSize int, poolFeatures bool) (*FullySpecifiedPipeline, error) {
