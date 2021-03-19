@@ -16,7 +16,6 @@
 package description
 
 import (
-	"math"
 	"sort"
 	"strings"
 
@@ -510,30 +509,21 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int, off
 			offset += 2
 
 		case model.GeoBoundsFilter:
-			// This is a two-step filter, and assumes to be working on a vector that contains 4 points defining a geographic area.  The vector
+			// This is a filter that assumes to be working on a vector that contains 4 points defining a geographic area.  The vector
 			// is defined as [x0, y0, x1, y1, x2, y2, x3, y3], where (x0, y0) is the LL corner of the bounds, and the points are ordered in a
-			// clockwise fashion.  The first filter removes rows with x values outside the bounds, and the 2nd remove rows with y values
-			// outside the desired bounds.
-			inf := math.Inf(1)
-			negInf := math.Inf(-1)
+			// clockwise fashion.
 
 			minX := f.Bounds.MinX
 			maxX := f.Bounds.MaxX
-			minXValues := []float64{minX, negInf, minX, negInf, minX, negInf, minX, negInf}
-			maxXValues := []float64{maxX, inf, maxX, inf, maxX, inf, maxX, inf}
-			filter = NewVectorBoundsFilterStep(nil, nil, colIndex, inclusive, minXValues, maxXValues, false)
+			minY := f.Bounds.MinY
+			maxY := f.Bounds.MaxY
+			minValues := [][]float64{{minX, minY, minX, minY, minX, minY, minX, minY}}
+			maxValues := [][]float64{{maxX, maxY, maxX, maxY, maxX, maxY, maxX, maxY}}
+			filter = NewVectorBoundsFilterStep(nil, nil, colIndex, inclusive, minValues, maxValues, false)
 			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
 			filterSteps = append(filterSteps, filter, wrapper)
 
-			minY := f.Bounds.MinY
-			maxY := f.Bounds.MaxY
-			minYValues := []float64{negInf, minY, negInf, minY, negInf, minY, negInf, minY}
-			maxYValues := []float64{inf, maxY, inf, maxY, inf, maxY, inf, maxY, inf, maxY}
-			filter = NewVectorBoundsFilterStep(nil, nil, colIndex, inclusive, minYValues, maxYValues, false)
-			wrapper = NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
-			filterSteps = append(filterSteps, filter, wrapper)
-
-			offset += 4
+			offset += 2
 		}
 
 	}
