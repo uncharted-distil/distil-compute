@@ -517,8 +517,8 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int, off
 			maxX := f.Bounds.MaxX
 			minY := f.Bounds.MinY
 			maxY := f.Bounds.MaxY
-			minValues := [][]float64{{minX, minY, minX, minY, minX, minY, minX, minY}}
-			maxValues := [][]float64{{maxX, maxY, maxX, maxY, maxX, maxY, maxX, maxY}}
+			minValues := []float64{minX, minY, minX, minY, minX, minY, minX, minY}
+			maxValues := []float64{maxX, maxY, maxX, maxY, maxX, maxY, maxX, maxY}
 			filter = NewVectorBoundsFilterStep(nil, nil, colIndex, inclusive, minValues, maxValues, false)
 			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
 			filterSteps = append(filterSteps, filter, wrapper)

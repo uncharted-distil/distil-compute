@@ -651,7 +651,7 @@ func NewDateTimeRangeFilterStep(inputs map[string]DataRef, outputMethods []strin
 // NewVectorBoundsFilterStep creates a primitive that will allow for a vector of values to be filtered included/excluded value range.
 // The input min and max ranges are specified as lists, where the i'th element of the min/max lists are applied to the i'th value of the target vectors
 // as the filter.
-func NewVectorBoundsFilterStep(inputs map[string]DataRef, outputMethods []string, column int, inclusive bool, min [][]float64, max [][]float64, strict bool) *StepData {
+func NewVectorBoundsFilterStep(inputs map[string]DataRef, outputMethods []string, column int, inclusive bool, min []float64, max []float64, strict bool) *StepData {
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "c2fa34c0-2d1b-42af-91d2-515da4a27752",
