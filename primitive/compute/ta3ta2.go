@@ -268,7 +268,7 @@ func GetDefaultTaskMetricsTA3(taskKeywords []string) []string {
 }
 
 // ConvertMetricsFromTA3ToTA2 converts metrics from TA3 to TA2 values.
-func ConvertMetricsFromTA3ToTA2(metrics []string) []*pipeline.ProblemPerformanceMetric {
+func ConvertMetricsFromTA3ToTA2(metrics []string, posLabel string) []*pipeline.ProblemPerformanceMetric {
 	var res []*pipeline.ProblemPerformanceMetric
 	for _, metric := range metrics {
 		ta2Metric := ConvertProblemMetricToTA2(metric)
@@ -278,6 +278,7 @@ func ConvertMetricsFromTA3ToTA2(metrics []string) []*pipeline.ProblemPerformance
 		}
 		res = append(res, &pipeline.ProblemPerformanceMetric{
 			Metric: ta2Metric,
+			PosLabel: posLabel,
 		})
 	}
 	return res

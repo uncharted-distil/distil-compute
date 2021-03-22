@@ -217,7 +217,7 @@ func (c *Client) SearchSolutions(ctx context.Context, searchID string, solutionH
 }
 
 // GenerateSolutionScores generates scrores for candidate solutions.
-func (c *Client) GenerateSolutionScores(ctx context.Context, solutionID string, datasetURI string, metrics []string) ([]*pipeline.GetScoreSolutionResultsResponse, error) {
+func (c *Client) GenerateSolutionScores(ctx context.Context, solutionID string, datasetURI string, metrics []string, posLabel string) ([]*pipeline.GetScoreSolutionResultsResponse, error) {
 
 	scoreSolutionRequest := &pipeline.ScoreSolutionRequest{
 		SolutionId: solutionID,
@@ -228,7 +228,7 @@ func (c *Client) GenerateSolutionScores(ctx context.Context, solutionID string, 
 				},
 			},
 		},
-		PerformanceMetrics: ConvertMetricsFromTA3ToTA2(metrics),
+		PerformanceMetrics: ConvertMetricsFromTA3ToTA2(metrics, posLabel),
 		Configuration: &pipeline.ScoringConfiguration{
 			Method:         HoldoutEvaluationMethod,
 			TrainTestRatio: defaultTrainTestRatio,
