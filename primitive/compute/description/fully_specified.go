@@ -541,27 +541,20 @@ func CreateDenormalizePipeline(name string, description string) (*FullySpecified
 }
 
 // CreateTargetRankingPipeline creates a pipeline to run feature ranking on an input dataset.
-func CreateTargetRankingPipeline(name string, description string, target string, features []*model.Variable) (*FullySpecifiedPipeline, error) {
+func CreateTargetRankingPipeline(name string, description string, target *model.Variable,
+	features []*model.Variable, selectedFeatures map[string]bool) (*FullySpecifiedPipeline, error) {
 
-	// compute index associated with column name
-	targetIdx := -1
-	for _, f := range features {
-		if strings.EqualFold(target, f.Key) {
-			targetIdx = f.Index
-			break
-		}
-	}
-	if targetIdx < 0 {
-		return nil, errors.Errorf("can't find var '%s'", name)
-	}
-
-	// don't rank group features or any included metadata features
-	selectedFeatures := []*model.Variable{}
+	// ignore group and metadata variables - they are system-only variables that aren't part of the
+	// dataset that is passed into the pipeline
+	datasetFeatures := []*model.Variable{}
 	for _, v := range features {
 		if v.Grouping == nil && v.DistilRole != model.VarDistilRoleMetadata {
-			selectedFeatures = append(selectedFeatures, v)
+			datasetFeatures = append(datasetFeatures, v)
 		}
 	}
+
+	// recompute indices based on selected data subset
+	columnIndices := mapColumns(datasetFeatures, selectedFeatures)
 
 	offset := 0
 	steps := []Step{
@@ -571,14 +564,19 @@ func CreateTargetRankingPipeline(name string, description string, target string,
 
 	// ranking is dependent on user updated semantic types, so we need to make sure we apply
 	// those to the original data
-	updateSemanticTypeStep, err := createUpdateSemanticTypes(target, selectedFeatures, map[string]bool{}, offset)
+	updateSemanticTypeStep, err := createUpdateSemanticTypes(target.Key, datasetFeatures, selectedFeatures, offset)
 	if err != nil {
 		return nil, err
 	}
-
 	steps = append(steps, updateSemanticTypeStep...)
-
 	offset += len(updateSemanticTypeStep)
+
+	// Remove types we don't want to run ranking on
+	removeFeatures := createRemoveFeatures(datasetFeatures, selectedFeatures, offset)
+	steps = append(steps, removeFeatures...)
+	offset += len(removeFeatures)
+
+	// Extract from dataset, convert column types
 	steps = append(steps,
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}),
 		NewColumnParserStep(
@@ -587,9 +585,13 @@ func CreateTargetRankingPipeline(name string, description string, target string,
 			// inlcude categorical because the parser will hash all the values into ints, which the MIRanking primitive can handle
 			[]string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType, model.TA2CategoricalType},
 		),
-		NewTargetRankingStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}, targetIdx),
 	)
-	offset += 3
+	offset += 2
+
+	// Apply target ranking
+	targetIdx := columnIndices[strings.ToLower(target.Key)]
+	steps = append(steps, NewTargetRankingStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, targetIdx))
+	offset++
 
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{offset - 1, "produce"}}

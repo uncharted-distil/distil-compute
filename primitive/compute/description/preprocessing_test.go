@@ -480,7 +480,7 @@ func TestCreateTargetRankingPipeline(t *testing.T) {
 			OriginalType: model.CategoricalType,
 		},
 	}
-	pipeline, err := CreateTargetRankingPipeline("target_ranking_test", "test target_ranking pipeline", "hall_of_fame", vars)
+	pipeline, err := CreateTargetRankingPipeline("target_ranking_test", "test target_ranking pipeline", vars[0], vars, map[string]bool{"hall_of_fame": true})
 	assert.NoError(t, err)
 
 	data, err := proto.Marshal(pipeline.Pipeline)
