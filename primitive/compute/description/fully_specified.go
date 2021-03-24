@@ -589,7 +589,7 @@ func CreateTargetRankingPipeline(name string, description string, target *model.
 	offset += 2
 
 	// Apply target ranking
-	targetIdx := columnIndices[strings.ToLower(target.Key)]
+	targetIdx := columnIndices[target.Key]
 	steps = append(steps, NewTargetRankingStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, targetIdx))
 	offset++
 
