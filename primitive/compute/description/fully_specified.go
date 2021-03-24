@@ -880,7 +880,7 @@ func CreateMultiBandImageOutlierDetectionPipeline(name string, description strin
 					"numpy.float64",
 				}),
 			NewIsolationForestStep(map[string]DataRef{"inputs": &StepDataRef{offset + 3, "produce"}}, []string{"produce"}),
-			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}, &StepDataRef{2, "produce"}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
 		}
 		steps = append(steps, moreSteps...)
 	} else {
