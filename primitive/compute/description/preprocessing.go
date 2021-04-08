@@ -146,7 +146,7 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 	// filter out group variables
 	datasetFeatures := []*model.Variable{}
 	for _, v := range datasetDescription.AllFeatures {
-		if v.Grouping == nil && v.DistilRole != model.VarDistilRoleMetadata {
+		if v.Grouping == nil && !model.ExcludedDistilRoles[v.DistilRole] {
 			datasetFeatures = append(datasetFeatures, v)
 		}
 	}

@@ -587,6 +587,13 @@ func IsTA2Field(distilRole string, selectedRole string) bool {
 	return false
 }
 
+// DistilRoles that are excluded from processing by the TA2
+var ExcludedDistilRoles = map[string]bool{
+	VarDistilRoleAugmented:  true,
+	VarDistilRoleMetadata:   true,
+	VarDistilRoleSystemData: true,
+}
+
 // IsIndexRole returns true if the d3m role is an index role.
 func IsIndexRole(role string) bool {
 	return role == RoleIndex || role == RoleMultiIndex
