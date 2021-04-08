@@ -450,10 +450,10 @@ func CreateDataFilterPipeline(name string, description string, variables []*mode
 	steps = append(steps, filterData...)
 	offset += len(filterData)
 
-	// drop metadata columns since we do not want them in the final output
+	// drop excluded distil roles columns since we do not want them in the final output
 	colsToDrop := []int{}
 	for _, v := range variables {
-		if v.DistilRole == model.VarDistilRoleMetadata {
+		if model.ExcludedDistilRoles[v.DistilRole] {
 			colsToDrop = append(colsToDrop, v.Index)
 		}
 	}
@@ -548,7 +548,7 @@ func CreateTargetRankingPipeline(name string, description string, target *model.
 	// dataset that is passed into the pipeline
 	datasetFeatures := []*model.Variable{}
 	for _, v := range features {
-		if v.Grouping == nil && v.DistilRole != model.VarDistilRoleMetadata {
+		if v.Grouping == nil && !model.ExcludedDistilRoles[v.DistilRole] {
 			datasetFeatures = append(datasetFeatures, v)
 		}
 	}
