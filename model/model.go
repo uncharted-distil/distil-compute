@@ -587,7 +587,7 @@ func IsTA2Field(distilRole string, selectedRole string) bool {
 	return false
 }
 
-// DistilRoles that are excluded from processing by the TA2
+// ExcludedDistilRoles are Distil roles that are excluded from processing by the TA2.
 var ExcludedDistilRoles = map[string]bool{
 	VarDistilRoleAugmented:  true,
 	VarDistilRoleMetadata:   true,
