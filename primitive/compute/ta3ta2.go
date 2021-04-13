@@ -277,7 +277,7 @@ func ConvertMetricsFromTA3ToTA2(metrics []string, posLabel string) []*pipeline.P
 			ta2Metric = UndefinedMetric
 		}
 		res = append(res, &pipeline.ProblemPerformanceMetric{
-			Metric: ta2Metric,
+			Metric:   ta2Metric,
 			PosLabel: posLabel,
 		})
 	}

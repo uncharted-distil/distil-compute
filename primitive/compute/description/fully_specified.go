@@ -692,7 +692,7 @@ func CreateJoinPipeline(name string, description string, leftJoinCol *model.Vari
 	steps = append(steps, NewJoinStep(
 		map[string]DataRef{"left": &StepDataRef{offsetLeft, "produce"}, "right": &StepDataRef{offsetRight, "produce"}},
 		[]string{"produce"},
-		leftJoinCol.DisplayName, rightJoinCol.DisplayName, accuracy,
+		[]string{leftJoinCol.HeaderName}, []string{rightJoinCol.HeaderName}, accuracy,
 	))
 	steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 
