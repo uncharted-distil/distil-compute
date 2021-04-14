@@ -666,7 +666,7 @@ func CreateGoatReversePipeline(name string, description string, lonSource *model
 
 // CreateJoinPipeline creates a pipeline that joins two input datasets using a caller supplied column.
 // Accuracy is a normalized value that controls how exact the join has to be.
-func CreateJoinPipeline(name string, description string, leftJoinCol *model.Variable, rightJoinCol *model.Variable, accuracy float32) (*FullySpecifiedPipeline, error) {
+func CreateJoinPipeline(name string, description string, leftJoinCols []*model.Variable, rightJoinCols []*model.Variable, accuracy float32) (*FullySpecifiedPipeline, error) {
 	steps := make([]Step, 0)
 	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
 	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}))
@@ -674,25 +674,47 @@ func CreateJoinPipeline(name string, description string, leftJoinCol *model.Vari
 	offsetLeft := 0
 	offsetRight := 1
 
-	// update semantic types as needed
-	if leftJoinCol.Type != leftJoinCol.OriginalType {
-		stepsRetype := getSemanticTypeUpdates(leftJoinCol, 0, offset)
-		steps = append(steps, stepsRetype...)
-		offset += len(stepsRetype)
+	// update semantic types as needed and parse vector types
+	stepsRetype, err := createUpdateSemanticTypes("", leftJoinCols, nil, offset)
+	if err != nil {
+		return nil, err
+	}
+	steps = append(steps, stepsRetype...)
+	offset += len(stepsRetype)
+	if len(stepsRetype) > 0 {
 		offsetLeft = offset - 1
 	}
-	if rightJoinCol.Type != rightJoinCol.OriginalType {
-		stepsRetype := getSemanticTypeUpdates(rightJoinCol, 1, offset)
-		steps = append(steps, stepsRetype...)
-		offset += len(stepsRetype)
+	//steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2RealVectorType}))
+	//steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetLeft, "produce"}}, []string{"produce"}, offset, ""))
+	//offsetLeft = offset + 1
+	//offset = offset + 2
+
+	stepsRetype, err = createUpdateSemanticTypes("", rightJoinCols, nil, offset)
+	if err != nil {
+		return nil, err
+	}
+	steps = append(steps, stepsRetype...)
+	offset += len(stepsRetype)
+	if len(stepsRetype) > 0 {
 		offsetRight = offset - 1
 	}
+	//	steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2RealVectorType}))
+	//	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetRight, "produce"}}, []string{"produce"}, offset, ""))
+	//	offsetRight = offset + 1
+	//	offset = offset + 2
 
 	// merge two intput streams via a single join call
+	leftColNames := make([]string, len(leftJoinCols))
+	for i := range leftJoinCols {
+		leftColNames[i] = leftJoinCols[i].HeaderName
+	}
+	rightColNames := make([]string, len(rightJoinCols))
+	for i := range rightJoinCols {
+		rightColNames[i] = rightJoinCols[i].HeaderName
+	}
 	steps = append(steps, NewJoinStep(
 		map[string]DataRef{"left": &StepDataRef{offsetLeft, "produce"}, "right": &StepDataRef{offsetRight, "produce"}},
-		[]string{"produce"},
-		[]string{leftJoinCol.HeaderName}, []string{rightJoinCol.HeaderName}, accuracy,
+		[]string{"produce"}, leftColNames, rightColNames, accuracy,
 	))
 	steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 
