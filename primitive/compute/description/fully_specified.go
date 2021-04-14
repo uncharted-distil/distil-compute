@@ -669,10 +669,7 @@ func CreateGoatReversePipeline(name string, description string, lonSource *model
 func CreateJoinPipeline(name string, description string, leftJoinCols []*model.Variable, rightJoinCols []*model.Variable, accuracy float32) (*FullySpecifiedPipeline, error) {
 	steps := make([]Step, 0)
 	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
-	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}))
-	offset := 2
-	offsetLeft := 0
-	offsetRight := 1
+	offset := 1
 
 	// update semantic types as needed and parse vector types
 	stepsRetype, err := createUpdateSemanticTypes("", leftJoinCols, nil, offset)
@@ -681,23 +678,21 @@ func CreateJoinPipeline(name string, description string, leftJoinCols []*model.V
 	}
 	steps = append(steps, stepsRetype...)
 	offset += len(stepsRetype)
-	if len(stepsRetype) > 0 {
-		offsetLeft = offset - 1
-	}
+	offsetLeft := offset - 1
 	//steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2RealVectorType}))
 	//steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetLeft, "produce"}}, []string{"produce"}, offset, ""))
 	//offsetLeft = offset + 1
 	//offset = offset + 2
 
+	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}))
+	offset = offset + 1
 	stepsRetype, err = createUpdateSemanticTypes("", rightJoinCols, nil, offset)
 	if err != nil {
 		return nil, err
 	}
 	steps = append(steps, stepsRetype...)
 	offset += len(stepsRetype)
-	if len(stepsRetype) > 0 {
-		offsetRight = offset - 1
-	}
+	offsetRight := offset - 1
 	//	steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2RealVectorType}))
 	//	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetRight, "produce"}}, []string{"produce"}, offset, ""))
 	//	offsetRight = offset + 1
