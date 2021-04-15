@@ -530,26 +530,6 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int, off
 	return filterSteps, nil
 }
 
-func getSemanticTypeUpdates(v *model.Variable, inputIndex int, offset int) []Step {
-	addType := model.MapTA2Type(v.Type)
-	removeType := model.MapTA2Type(v.OriginalType)
-
-	add := &ColumnUpdate{
-		SemanticTypes: []string{addType},
-		Indices:       []int{v.Index},
-	}
-	remove := &ColumnUpdate{
-		SemanticTypes: []string{removeType},
-		Indices:       []int{v.Index},
-	}
-	return []Step{
-		NewAddSemanticTypeStep(nil, nil, add),
-		NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{inputIndex, "produce"}}, []string{"produce"}, offset, ""),
-		NewRemoveSemanticTypeStep(nil, nil, remove),
-		NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}, offset+2, ""),
-	}
-}
-
 func mapColumns(allFeatures []*model.Variable, selectedSet map[string]bool) map[string]int {
 	colIndices := make(map[string]int)
 	index := 0
