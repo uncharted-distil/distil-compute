@@ -678,7 +678,10 @@ func CreateJoinPipeline(name string, description string, leftJoinCols []*model.V
 	}
 	steps = append(steps, stepsRetype...)
 	offset += len(stepsRetype)
-	offsetLeft := offset - 1
+	steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType, model.TA2RealVectorType}))
+	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
+	offsetLeft := offset + 1
+	offset = offset + 2
 
 	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}))
 	offset = offset + 1
@@ -688,7 +691,10 @@ func CreateJoinPipeline(name string, description string, leftJoinCols []*model.V
 	}
 	steps = append(steps, stepsRetype...)
 	offset += len(stepsRetype)
-	offsetRight := offset - 1
+	steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType, model.TA2RealVectorType}))
+	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
+	offsetRight := offset + 1
+	offset = offset + 2
 
 	// merge two intput streams via a single join call
 	leftColNames := make([]string, len(leftJoinCols))
