@@ -735,7 +735,7 @@ func NewJoinStep(inputs map[string]DataRef, outputMethods []string, leftCol []st
 			Digest:     "",
 		},
 		outputMethods,
-		map[string]interface{}{"left_col": leftCol, "right_col": rightCol, "accuracy": accuracyRepeated},
+		map[string]interface{}{"left_col": leftCol, "right_col": rightCol, "accuracy": accuracyRepeated, "join_type": "left"},
 		inputs,
 	)
 }
