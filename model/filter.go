@@ -85,6 +85,18 @@ func NewBounds(minX float64, minY float64, width float64, height float64) *Bound
 	}
 }
 
+// FilterObject captures a collection of invertable filters.
+type FilterObject struct {
+	List   []*Filter `json:"list"`
+	Invert bool      `json:"invert"`
+}
+
+// FilterSet captures a set of filters representing one subset of data.
+type FilterSet struct {
+	FeatureFilters []FilterObject `json:"featureFilters"`
+	Mode           string         `json:"mode"`
+}
+
 // Filter defines a variable filter.
 type Filter struct {
 	Key              string   `json:"key"`
@@ -204,4 +216,35 @@ func NewRowFilter(mode string, d3mIndices []string) *Filter {
 		Mode:       mode,
 		D3mIndices: d3mIndices,
 	}
+}
+
+// IsValid verifies that a filter set is valid.
+func (fs *FilterSet) IsValid() bool {
+	// make sure every filter object is value
+	for _, fo := range fs.FeatureFilters {
+		if !fo.IsValid() {
+			return false
+		}
+	}
+
+	return true
+}
+
+// IsValid verifies that a filter object is valid.
+func (fo FilterObject) IsValid() bool {
+	// a filter object acts on a single filter, and they are all the same mode
+	mode := ""
+	key := ""
+	for _, f := range fo.List {
+		if key == "" {
+			key = f.Key
+			mode = f.Mode
+		} else if key != f.Key {
+			return false
+		} else if mode != f.Mode {
+			return false
+		}
+	}
+
+	return true
 }

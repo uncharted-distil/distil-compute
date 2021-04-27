@@ -56,6 +56,7 @@ type PrimitiveReference struct {
 // DataRef defines an interface for creating input reference strings that are used to connect primitive inputs
 // to outputs.
 type DataRef interface {
+	CreateDataRef() *pipeline.PrimitiveStepArgument
 	RefString() string
 }
 
@@ -71,6 +72,18 @@ func (i *StepDataRef) RefString() string {
 	return fmt.Sprintf("%s.%d.%s", stepKey, i.StepNum, i.Output)
 }
 
+// CreateDataRef creates a primitive step argument.
+func (i *StepDataRef) CreateDataRef() *pipeline.PrimitiveStepArgument {
+	return &pipeline.PrimitiveStepArgument{
+		// only handle container args rights now - extend to others if required
+		Argument: &pipeline.PrimitiveStepArgument_Container{
+			Container: &pipeline.ContainerArgument{
+				Data: i.RefString(),
+			},
+		},
+	}
+}
+
 // PipelineDataRef points to an input of the pipeline itself (typically a dataset) instead of the output
 // of another primitive.
 type PipelineDataRef struct {
@@ -80,6 +93,52 @@ type PipelineDataRef struct {
 // RefString creates a string representation of a PipelineDataRef.
 func (p *PipelineDataRef) RefString() string {
 	return fmt.Sprintf("%s.%d", stepInputsKey, p.InputNum)
+}
+
+// CreateDataRef creates a primitive step argument.
+func (p *PipelineDataRef) CreateDataRef() *pipeline.PrimitiveStepArgument {
+	return &pipeline.PrimitiveStepArgument{
+		// only handle container args rights now - extend to others if required
+		Argument: &pipeline.PrimitiveStepArgument_Container{
+			Container: &pipeline.ContainerArgument{
+				Data: p.RefString(),
+			},
+		},
+	}
+}
+
+// ListStepDataRef points to a list of data references.
+type ListStepDataRef struct {
+	dataReferences []DataRef
+}
+
+// AddDataRef adds a data reference to the list.
+func (s *ListStepDataRef) AddDataRef(dataRef DataRef) {
+	s.dataReferences = append(s.dataReferences, dataRef)
+}
+
+// RefString creates a string representation of a PipelineDataRef.
+func (s *ListStepDataRef) RefString() string {
+	// not valid since a list cannot be reduced to a simple string
+	return ""
+}
+
+// CreateDataRef creates a primitive step argument.
+func (s *ListStepDataRef) CreateDataRef() *pipeline.PrimitiveStepArgument {
+	// iterate over all contained data references to create the list of references
+	arguments := make([]string, len(s.dataReferences))
+	for i, dr := range s.dataReferences {
+		arguments[i] = dr.RefString()
+	}
+
+	return &pipeline.PrimitiveStepArgument{
+		// only handle container args rights now - extend to others if required
+		Argument: &pipeline.PrimitiveStepArgument_ContainerList{
+			ContainerList: &pipeline.ContainerArguments{
+				Data: arguments,
+			},
+		},
+	}
 }
 
 // NewStepData creates a pipeline step instance from the required field subset.  Hyperparameters, Arguments and

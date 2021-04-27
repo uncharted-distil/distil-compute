@@ -422,7 +422,7 @@ func CreateGroupingFieldComposePipeline(name string, description string, colIndi
 }
 
 // CreateDataFilterPipeline creates a pipeline that will filter a dataset.
-func CreateDataFilterPipeline(name string, description string, variables []*model.Variable, filters []*model.Filter) (*FullySpecifiedPipeline, error) {
+func CreateDataFilterPipeline(name string, description string, variables []*model.Variable, filters []*model.FilterSet) (*FullySpecifiedPipeline, error) {
 	steps := []Step{}
 	offset := 0
 
@@ -443,7 +443,7 @@ func CreateDataFilterPipeline(name string, description string, variables []*mode
 	for _, v := range variables {
 		featureSet[strings.ToLower(v.Key)] = v.Index
 	}
-	filterData, err := createFilterData(filters, featureSet, offset)
+	filterData, err := filterBySet(filters, featureSet, offset)
 	if err != nil {
 		return nil, err
 	}
