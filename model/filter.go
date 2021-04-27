@@ -17,6 +17,8 @@ package model
 
 import (
 	"sort"
+
+	"github.com/uncharted-distil/distil-compute/model"
 )
 
 const (
@@ -247,4 +249,16 @@ func (fo FilterObject) IsValid() bool {
 	}
 
 	return true
+}
+
+// GetBaselineFilter returns only filters that form the baseline.
+func (fo FilterObject) GetBaselineFilter() []*model.Filter {
+	baseline := []*model.Filter{}
+	for _, filter := range fo.List {
+		if filter.IsBaselineFilter {
+			baseline = append(baseline, filter)
+		}
+	}
+
+	return baseline
 }
