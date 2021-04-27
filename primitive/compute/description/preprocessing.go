@@ -493,7 +493,7 @@ func filterBySet(filterSets []*model.FilterSet, columnIndices map[string]int, of
 		offset += 2
 	}
 
-	return nil, nil
+	return steps, nil
 }
 
 func createFilterData(filters []*model.Filter, columnIndices map[string]int, offsetInput int, offsetStep int) ([]Step, error) {
