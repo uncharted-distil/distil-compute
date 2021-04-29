@@ -428,7 +428,8 @@ func NewVariable(index int, key, displayName, headerName, originalName, typ, ori
 		displayName = key
 	}
 	if headerName == "" {
-		headerName = key
+		// CSV is flexible with header names, but other formats like parquet are not
+		headerName = normalized
 	}
 	if originalType == "" {
 		originalType = typ
