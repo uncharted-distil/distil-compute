@@ -186,14 +186,7 @@ func (s *StepData) BuildDescriptionStep() (*pipeline.PipelineDescriptionStep, er
 	// generate arguments entries
 	arguments := map[string]*pipeline.PrimitiveStepArgument{}
 	for argName, argDataRef := range s.Arguments {
-		arguments[argName] = &pipeline.PrimitiveStepArgument{
-			// only handle container args rights now - extend to others if required
-			Argument: &pipeline.PrimitiveStepArgument_Container{
-				Container: &pipeline.ContainerArgument{
-					Data: argDataRef.RefString(),
-				},
-			},
-		}
+		arguments[argName] = argDataRef.CreateDataRef()
 	}
 
 	// Generate hyper parameter entries - accepted go-natives types are currently intXX, string, bool, as well as list, map[string]

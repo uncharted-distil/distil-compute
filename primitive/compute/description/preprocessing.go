@@ -203,7 +203,7 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 		// add the time indicator type to the time column
 		addTime := NewAddSemanticTypeStep(nil, nil, &ColumnUpdate{
 			SemanticTypes: []string{model.TA2TimeType},
-			Indices:       []int{columnIndices[timeseriesGrouping.XCol]},
+			Indices:       []int{columnIndices[strings.ToLower(timeseriesGrouping.XCol)]},
 		})
 		steps = append(steps, addTime)
 		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}, offset+5, ""))
@@ -484,12 +484,11 @@ func filterBySet(filterSets []*model.FilterSet, columnIndices map[string]int, of
 			}
 			steps = append(steps, stepsFeature...)
 			offset = offset + len(stepsFeature)
-			filterOutputs.AddDataRef(&StepDataRef{offset, "produce"})
+			filterOutputs.AddDataRef(&StepDataRef{offset - 1, "produce"})
 		}
 
 		// combine the outputs, removing duplicates
-		steps = append(steps, NewVerticalConcatenationPrimitiveStep(nil, nil, true))
-		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": filterOutputs}, []string{"produce"}, offset, ""))
+		steps = append(steps, NewVerticalConcatenationPrimitiveStep(map[string]DataRef{"inputs": filterOutputs}, []string{"produce"}, true))
 		offset += 2
 	}
 
@@ -512,13 +511,13 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int, off
 		switch f.Type {
 		case model.NumericalFilter:
 			filter = NewNumericRangeFilterStep(nil, nil, colIndex, inclusive, *f.Min, *f.Max, false)
-			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetInput, "")
+			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetStep, "")
 			filterSteps = append(filterSteps, filter, wrapper)
 			offsetStep += 2
 
 		case model.CategoricalFilter:
 			filter = NewTermFilterStep(nil, nil, colIndex, inclusive, f.Categories, true)
-			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetInput, "")
+			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetStep, "")
 			filterSteps = append(filterSteps, filter, wrapper)
 			offsetStep += 2
 
@@ -530,30 +529,30 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int, off
 			yColIndex := columnIndices[yCol]
 
 			filter = NewNumericRangeFilterStep(nil, nil, xColIndex, inclusive, f.Bounds.MinX, f.Bounds.MaxX, false)
-			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetInput, "")
+			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetStep, "")
 			filterSteps = append(filterSteps, filter, wrapper)
 
 			filter = NewNumericRangeFilterStep(nil, nil, yColIndex, inclusive, f.Bounds.MinY, f.Bounds.MaxY, false)
-			wrapper = NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetInput, "")
+			wrapper = NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetStep, "")
 			filterSteps = append(filterSteps, filter, wrapper)
 
 			offsetStep += 4
 
 		case model.RowFilter:
 			filter = NewTermFilterStep(nil, nil, colIndex, inclusive, f.D3mIndices, true)
-			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetInput, "")
+			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetStep, "")
 			filterSteps = append(filterSteps, filter, wrapper)
 			offsetStep += 2
 
 		case model.TextFilter:
 			filter = NewTermFilterStep(nil, nil, colIndex, inclusive, f.Categories, false)
-			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetInput, "")
+			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetStep, "")
 			filterSteps = append(filterSteps, filter, wrapper)
 			offsetStep += 2
 
 		case model.DatetimeFilter:
 			filter = NewDateTimeRangeFilterStep(nil, nil, colIndex, inclusive, *f.Min, *f.Max, false)
-			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetInput, "")
+			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetStep, "")
 			filterSteps = append(filterSteps, filter, wrapper)
 			offsetStep += 2
 
@@ -569,7 +568,7 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int, off
 			minValues := []float64{minX, minY, minX, minY, minX, minY, minX, minY}
 			maxValues := []float64{maxX, maxY, maxX, maxY, maxX, maxY, maxX, maxY}
 			filter = NewVectorBoundsFilterStep(nil, nil, colIndex, inclusive, minValues, maxValues, false)
-			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetInput, "")
+			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetStep, "")
 			filterSteps = append(filterSteps, filter, wrapper)
 
 			offsetStep += 2
@@ -581,11 +580,10 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int, off
 
 func mapColumns(allFeatures []*model.Variable, selectedSet map[string]bool) map[string]int {
 	colIndices := make(map[string]int)
-	index := 0
 	for _, f := range allFeatures {
-		if selectedSet[strings.ToLower(f.Key)] {
-			colIndices[f.Key] = index
-			index = index + 1
+		key := strings.ToLower(f.Key)
+		if selectedSet[key] {
+			colIndices[key] = f.Index
 		}
 	}
 
