@@ -843,3 +843,20 @@ func NewPrefeaturisedPoolingStep(inputs map[string]DataRef, outputMethods []stri
 		inputs,
 	)
 }
+
+// NewVerticalConcatenationPrimitiveStep takes inputs and combines them into a single output.
+func NewVerticalConcatenationPrimitiveStep(inputs map[string]DataRef, outputMethods []string, removeDuplicate bool) *StepData {
+	args := map[string]interface{}{"remove_duplicate_rows": removeDuplicate}
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "b93e3e85-c462-4290-8131-abc51d76a6dd",
+			Version:    "0.5.1",
+			Name:       "DistilVerticalConcat",
+			PythonPath: "d3m.primitives.data_transformation.concat.DistilVerticalConcat",
+			Digest:     "",
+		},
+		outputMethods,
+		args,
+		inputs,
+	)
+}

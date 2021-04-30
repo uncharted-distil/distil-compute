@@ -30,7 +30,7 @@ type UserDatasetDescription struct {
 	AllFeatures      []*model.Variable
 	TargetFeature    *model.Variable
 	SelectedFeatures []string
-	Filters          []*model.Filter
+	Filters          []*model.FilterSet
 }
 
 // UserDatasetAugmentation contains the augmentation parameters required
@@ -85,7 +85,7 @@ func CreatePreFeaturizedDatasetPipeline(name string, description string, dataset
 	offset += len(updateSemanticTypes)
 
 	// apply filters
-	filterData, err := createFilterData(datasetDescription.Filters, featureSet, offset)
+	filterData, err := filterBySet(datasetDescription.Filters, featureSet, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +203,7 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 		// add the time indicator type to the time column
 		addTime := NewAddSemanticTypeStep(nil, nil, &ColumnUpdate{
 			SemanticTypes: []string{model.TA2TimeType},
-			Indices:       []int{columnIndices[timeseriesGrouping.XCol]},
+			Indices:       []int{columnIndices[strings.ToLower(timeseriesGrouping.XCol)]},
 		})
 		steps = append(steps, addTime)
 		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 4, "produce"}}, []string{"produce"}, offset+5, ""))
@@ -252,7 +252,7 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 	offset += len(removeFeatures)
 
 	// add filter primitives
-	filterData, err := createFilterData(datasetDescription.Filters, columnIndices, offset)
+	filterData, err := filterBySet(datasetDescription.Filters, columnIndices, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -447,7 +447,55 @@ func createUpdateSemanticTypes(target string, allFeatures []*model.Variable, sel
 	return semanticTypeUpdates, nil
 }
 
-func createFilterData(filters []*model.Filter, columnIndices map[string]int, offset int) ([]Step, error) {
+func filterBySet(filterSets []*model.FilterSet, columnIndices map[string]int, offset int) ([]Step, error) {
+	// only support exclusive filters
+	for _, fs := range filterSets {
+		if !fs.IsValid() {
+			return nil, errors.Errorf("invalid filter set detected")
+		}
+
+		for _, ff := range fs.FeatureFilters {
+			for _, f := range ff.List {
+				if f.Mode == model.IncludeFilter {
+					return nil, errors.Errorf("pipeline filtering only supports exclusive filters")
+				}
+			}
+		}
+	}
+
+	// Handle each filter set as an independent set of filters to exclude.
+	// A filter set is composed of filter objects joined together using logical ANDs.
+	// Each filter object contains filters acting on a single feature joined using logical ORs.
+	// Since the filtes are exclusion filters, the logical joining operator is reversed.
+	// Filters can be ORed together by having each filter operate on the same input
+	// then combining the output (removing duplicates). Filters can be ANDed together
+	// by having the output of one filter be the input of the following filter.
+	steps := []Step{}
+
+	// all filter sets act on the same input
+	for _, fs := range filterSets {
+		offsetFS := offset
+		filterOutputs := &ListStepDataRef{[]DataRef{}}
+		for _, ff := range fs.FeatureFilters {
+			// add necessary filters for each filter
+			stepsFeature, err := createFilterData(ff.List, columnIndices, offsetFS, offset)
+			if err != nil {
+				return nil, err
+			}
+			steps = append(steps, stepsFeature...)
+			offset = offset + len(stepsFeature)
+			filterOutputs.AddDataRef(&StepDataRef{offset - 1, "produce"})
+		}
+
+		// combine the outputs, removing duplicates
+		steps = append(steps, NewVerticalConcatenationPrimitiveStep(map[string]DataRef{"inputs": filterOutputs}, []string{"produce"}, true))
+		offset += 2
+	}
+
+	return steps, nil
+}
+
+func createFilterData(filters []*model.Filter, columnIndices map[string]int, offsetInput int, offsetStep int) ([]Step, error) {
 
 	// Map the fiters to pipeline primitives
 	filterSteps := []Step{}
@@ -463,15 +511,15 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int, off
 		switch f.Type {
 		case model.NumericalFilter:
 			filter = NewNumericRangeFilterStep(nil, nil, colIndex, inclusive, *f.Min, *f.Max, false)
-			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetStep, "")
 			filterSteps = append(filterSteps, filter, wrapper)
-			offset += 2
+			offsetStep += 2
 
 		case model.CategoricalFilter:
 			filter = NewTermFilterStep(nil, nil, colIndex, inclusive, f.Categories, true)
-			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetStep, "")
 			filterSteps = append(filterSteps, filter, wrapper)
-			offset += 2
+			offsetStep += 2
 
 		case model.BivariateFilter:
 			split := strings.Split(filterKey, ":")
@@ -481,32 +529,32 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int, off
 			yColIndex := columnIndices[yCol]
 
 			filter = NewNumericRangeFilterStep(nil, nil, xColIndex, inclusive, f.Bounds.MinX, f.Bounds.MaxX, false)
-			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetStep, "")
 			filterSteps = append(filterSteps, filter, wrapper)
 
 			filter = NewNumericRangeFilterStep(nil, nil, yColIndex, inclusive, f.Bounds.MinY, f.Bounds.MaxY, false)
-			wrapper = NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+			wrapper = NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetStep, "")
 			filterSteps = append(filterSteps, filter, wrapper)
 
-			offset += 4
+			offsetStep += 4
 
 		case model.RowFilter:
 			filter = NewTermFilterStep(nil, nil, colIndex, inclusive, f.D3mIndices, true)
-			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetStep, "")
 			filterSteps = append(filterSteps, filter, wrapper)
-			offset += 2
+			offsetStep += 2
 
 		case model.TextFilter:
 			filter = NewTermFilterStep(nil, nil, colIndex, inclusive, f.Categories, false)
-			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetStep, "")
 			filterSteps = append(filterSteps, filter, wrapper)
-			offset += 2
+			offsetStep += 2
 
 		case model.DatetimeFilter:
 			filter = NewDateTimeRangeFilterStep(nil, nil, colIndex, inclusive, *f.Min, *f.Max, false)
-			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetStep, "")
 			filterSteps = append(filterSteps, filter, wrapper)
-			offset += 2
+			offsetStep += 2
 
 		case model.GeoBoundsFilter:
 			// This is a filter that assumes to be working on a vector that contains 4 points defining a geographic area.  The vector
@@ -520,23 +568,22 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int, off
 			minValues := []float64{minX, minY, minX, minY, minX, minY, minX, minY}
 			maxValues := []float64{maxX, maxY, maxX, maxY, maxX, maxY, maxX, maxY}
 			filter = NewVectorBoundsFilterStep(nil, nil, colIndex, inclusive, minValues, maxValues, false)
-			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+			wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offsetInput - 1, "produce"}}, []string{"produce"}, offsetStep, "")
 			filterSteps = append(filterSteps, filter, wrapper)
 
-			offset += 2
+			offsetStep += 2
 		}
-
+		offsetInput = offsetStep
 	}
 	return filterSteps, nil
 }
 
 func mapColumns(allFeatures []*model.Variable, selectedSet map[string]bool) map[string]int {
 	colIndices := make(map[string]int)
-	index := 0
 	for _, f := range allFeatures {
-		if selectedSet[strings.ToLower(f.Key)] {
-			colIndices[f.Key] = index
-			index = index + 1
+		key := strings.ToLower(f.Key)
+		if selectedSet[key] {
+			colIndices[key] = f.Index
 		}
 	}
 
