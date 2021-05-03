@@ -127,6 +127,19 @@ func TestParserNestedTuple(t *testing.T) {
 	assert.Equal(t, []interface{}{"40", "50", "60"}, field.arrayElements.elements[1].([]interface{}))
 }
 
+func TestParserSpaceSep(t *testing.T) {
+	field := &ComplexField{Buffer: "[10 20 30 'dog' 'cat dog' 10]"}
+	assert.NoError(t, field.Init())
+
+	err := field.Parse()
+	field.PrintSyntaxTree()
+	assert.NoError(t, err)
+
+	field.Execute()
+	assert.Equal(t, []interface{}{"10", "20", "30", "dog", "cat dog", "10"}, field.arrayElements.elements)
+
+}
+
 func TestParserNestedMixed(t *testing.T) {
 	field := &ComplexField{Buffer: "([10, 20, 30, (alpha, bravo)], [40, 50, 60])"}
 	assert.NoError(t, field.Init())
