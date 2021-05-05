@@ -587,9 +587,10 @@ func CreateTargetRankingPipeline(name string, description string, target *model.
 		),
 	)
 	offset += 2
-
+	steps = append(steps, NewEnrichDatesStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, true))
+	offset = offset + 1
 	// Apply target ranking
-	targetIdx := columnIndices[target.Key]
+	targetIdx := columnIndices[strings.ToLower(target.Key)]
 	steps = append(steps, NewTargetRankingStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, targetIdx))
 	offset++
 
@@ -887,7 +888,7 @@ func CreateMultiBandImageOutlierDetectionPipeline(name string, description strin
 
 		moreSteps := []Step{
 			NewListEncoderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}),
-			NewEnrichDatesStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}),
+			NewEnrichDatesStep(map[string]DataRef{"inputs": &StepDataRef{offset + 1, "produce"}}, []string{"produce"}, false),
 			NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{offset + 2, "produce"}}, []string{"produce"},
 				[]string{
 					"float",         // python type
@@ -992,7 +993,7 @@ func CreateTabularOutlierDetectionPipeline(name string, description string, data
 	steps = append(steps, NewExtractColumnsBySemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{parseStep, "produce"}}, []string{"produce"}, []string{"https://metadata.datadrivendiscovery.org/types/Target", "https://metadata.datadrivendiscovery.org/types/TrueTarget"}))
 	offset = offset + 1
 	targetStep := offset
-	steps = append(steps, NewEnrichDatesStep(map[string]DataRef{"inputs": &StepDataRef{attributeStep, "produce"}}, []string{"produce"}))
+	steps = append(steps, NewEnrichDatesStep(map[string]DataRef{"inputs": &StepDataRef{attributeStep, "produce"}}, []string{"produce"}, false))
 	offset = offset + 1
 	steps = append(steps, NewListEncoderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 	offset = offset + 1
