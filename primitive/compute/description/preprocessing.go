@@ -579,11 +579,19 @@ func createFilterData(filters []*model.Filter, columnIndices map[string]int, off
 }
 
 func mapColumns(allFeatures []*model.Variable, selectedSet map[string]bool) map[string]int {
+	// sort the features by column index to make sure the order matches what will be processed
+	sort.SliceStable(allFeatures, func(i, j int) bool {
+		return allFeatures[i].Index < allFeatures[j].Index
+	})
+
+	// determine the index of the selected features (not selected features are dropped)
 	colIndices := make(map[string]int)
+	index := 0
 	for _, f := range allFeatures {
 		key := strings.ToLower(f.Key)
 		if selectedSet[key] {
-			colIndices[key] = f.Index
+			colIndices[key] = index
+			index = index + 1
 		}
 	}
 
