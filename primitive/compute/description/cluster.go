@@ -63,7 +63,7 @@ func CreateGeneralClusteringPipeline(name string, description string, datasetDes
 	offset = offset + 1
 	targetStep := offset
 
-	steps = append(steps, NewEnrichDatesStep(map[string]DataRef{"inputs": &StepDataRef{attributeStep, "produce"}}, []string{"produce"}))
+	steps = append(steps, NewEnrichDatesStep(map[string]DataRef{"inputs": &StepDataRef{attributeStep, "produce"}}, []string{"produce"}, false))
 	offset = offset + 1
 
 	steps = append(steps, NewListEncoderStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
@@ -372,7 +372,7 @@ func NewExtractColumnsByStructuralTypeStep(inputs map[string]DataRef, outputMeth
 }
 
 // NewEnrichDatesStep adds extra information for date fields.
-func NewEnrichDatesStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+func NewEnrichDatesStep(inputs map[string]DataRef, outputMethods []string, replace bool) *StepData {
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "b1367f5b-bab1-4dfc-a1a9-6a56430e516a",
@@ -382,7 +382,7 @@ func NewEnrichDatesStep(inputs map[string]DataRef, outputMethods []string) *Step
 			Digest:     "176228cabb6746d544fc045f43ed02e5ae2a3747c39b492c008b2ce473fac650",
 		},
 		outputMethods,
-		map[string]interface{}{},
+		map[string]interface{}{"replace": replace},
 		inputs,
 	)
 }
