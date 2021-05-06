@@ -10,6 +10,11 @@ package result
 #
 # []interface{"10", "20", "30", "forty & fifty"}
 #
+# String output of an ndarray (which uses space as a separator and will insert newlines)
+# is also handled.  Example:
+#
+# "[10 20  30 40  50 60\n
+#   70 80]"
 
 # generated go struct - accessible via `p` in attached code blocks
 type ComplexField Peg {
@@ -21,14 +26,15 @@ ComplexField <- array !.
 # non-terminals
 array <- ws* obracket { p.pushArray() } ws* array_contents ws* cbracket { p.popArray() } /
     ws* oparen { p.pushArray() } ws* tuple_contents ws* cparen { p.popArray() }
-array_contents <- (item sep)* item ws*
+array_contents <- (array_item sep)* array_item ws*
 tuple_contents <- (item ws* comma ws*)+ (ws* item ws*)?
+array_item <- item lf*
 item <- array / string / <value> { p.addElement(buffer[begin:end]) }
 string <- dquote_string / squote_string
 dquote_string <- escdquote <(textdata / squote / lf / cr / obracket / cbracket / oparen / cparen / comma)*> escdquote { p.addElement(buffer[begin:end]) }
 squote_string <- squote <(escsquote / escdquote / textdata / lf / cr / obracket / cbracket / oparen / cparen)*> squote { p.addElement(buffer[begin:end]) }
 value <- negative? number+ (decimal_point (number+ (negative / positive)? number*)?)?
-sep <- (ws+ comma? ws*) / ws* comma ws* / lf
+sep <- (ws+ comma? ws*) / ws* comma ws*
 
 # terminals
 ws <- ' '
