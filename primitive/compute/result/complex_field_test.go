@@ -22,6 +22,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestParserCommaSep(t *testing.T) {
+	field := &ComplexField{Buffer: "[  10  , 11, 12  ]"} // single quote can be escaped in python
+	assert.NoError(t, field.Init())
+
+	err := field.Parse()
+	assert.NoError(t, err)
+
+	field.Execute()
+	assert.Equal(t, []interface{}{"10", "11", "12"}, field.arrayElements.elements)
+}
+
+func TestParserNumpySep(t *testing.T) {
+	field := &ComplexField{Buffer: "[ 10 11\n 12 13\n14 ]"} // single quote can be escaped in python
+	assert.NoError(t, field.Init())
+
+	err := field.Parse()
+	assert.NoError(t, err)
+
+	field.Execute()
+	assert.Equal(t, []interface{}{"10", "11", "12", "13", "14"}, field.arrayElements.elements)
+}
+
 func TestParserSingleQuoted(t *testing.T) {
 	field := &ComplexField{Buffer: "  ['c ar'  , '\\'plane', 'b* oat']"} // single quote can be escaped in python
 	assert.NoError(t, field.Init())
@@ -125,19 +147,6 @@ func TestParserNestedTuple(t *testing.T) {
 
 	assert.Equal(t, []interface{}{"alpha", "bravo"}, field.arrayElements.elements[0].([]interface{})[3].([]interface{}))
 	assert.Equal(t, []interface{}{"40", "50", "60"}, field.arrayElements.elements[1].([]interface{}))
-}
-
-func TestParserSpaceSepNewline(t *testing.T) {
-	field := &ComplexField{Buffer: "[10 20  30 40\n\n 'dog'\n 'cat dog' 10]"}
-	assert.NoError(t, field.Init())
-
-	err := field.Parse()
-	field.PrintSyntaxTree()
-	assert.NoError(t, err)
-
-	field.Execute()
-	assert.Equal(t, []interface{}{"10", "20", "30", "40", "dog", "cat dog", "10"}, field.arrayElements.elements)
-
 }
 
 func TestParserNestedMixed(t *testing.T) {

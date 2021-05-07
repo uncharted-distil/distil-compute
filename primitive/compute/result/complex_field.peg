@@ -2,7 +2,7 @@ package result
 
 # Parser for an array field exported from a Python PANDAS dataframe via its to_csv() method.
 # The exported file is RFC 4180 compatible, and is loaded using the CSV loader from the golang
-# standard lib.  The loader handles most of the escaping.
+# standard lib.  The loader handles most of the escaping.  The parser can handle standard
 #
 # "[10, 20, 30, \"forty  & fifty\"]"
 #
@@ -21,20 +21,21 @@ type ComplexField Peg {
     arrayElements
 }
 
-ComplexField <- array !.
+ComplexField <- (array / nd_array) !.
 
 # non-terminals
 array <- ws* obracket { p.pushArray() } ws* array_contents ws* cbracket { p.popArray() } /
     ws* oparen { p.pushArray() } ws* tuple_contents ws* cparen { p.popArray() }
-array_contents <- (array_item sep)* array_item ws*
+array_contents <- (item ws* comma ws*)* item ws*
 tuple_contents <- (item ws* comma ws*)+ (ws* item ws*)?
-array_item <- item lf*
+nd_array <- ws* obracket { p.pushArray() } ws* nd_array_contents ws* cbracket { p.popArray() }
+nd_array_contents <- (nd_item (ws / (lf ws?)))* (nd_item ws*)?
 item <- array / string / <value> { p.addElement(buffer[begin:end]) }
+nd_item <- nd_array / string / <value> { p.addElement(buffer[begin:end]) }
 string <- dquote_string / squote_string
 dquote_string <- escdquote <(textdata / squote / lf / cr / obracket / cbracket / oparen / cparen / comma)*> escdquote { p.addElement(buffer[begin:end]) }
 squote_string <- squote <(escsquote / escdquote / textdata / lf / cr / obracket / cbracket / oparen / cparen)*> squote { p.addElement(buffer[begin:end]) }
 value <- negative? number+ (decimal_point (number+ (negative / positive)? number*)?)?
-sep <- (ws+ comma? ws*) / ws* comma ws*
 
 # terminals
 ws <- ' '
