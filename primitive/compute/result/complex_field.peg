@@ -32,7 +32,7 @@ item <- array / string / <value> { p.addElement(buffer[begin:end]) }
 
 # non-terminals for numpy arrays
 nd_array <- ws* obracket { p.pushArray() } ws* nd_array_contents ws* cbracket { p.popArray() }
-nd_array_contents <- (nd_item (ws / (lf ws?)))* (nd_item ws*)?
+nd_array_contents <- (nd_item ((lf ws*) / ws+))* (nd_item ws*)?
 nd_item <- nd_array / string / <value> { p.addElement(buffer[begin:end]) }
 
 # non-terminals for gradcam output

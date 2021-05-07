@@ -34,7 +34,7 @@ func TestParserCommaSep(t *testing.T) {
 }
 
 func TestParserNumpySep(t *testing.T) {
-	field := &ComplexField{Buffer: "[ 10 11\n 12 13\n14 ]"} // single quote can be escaped in python
+	field := &ComplexField{Buffer: "[ 10 11\n  12  13\n14 ]"} // single quote can be escaped in python
 	assert.NoError(t, field.Init())
 
 	err := field.Parse()
