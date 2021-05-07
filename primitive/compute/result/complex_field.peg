@@ -21,17 +21,26 @@ type ComplexField Peg {
     arrayElements
 }
 
-ComplexField <- (array / nd_array) !.
+ComplexField <- (array / nd_array / gc_array) !.
 
-# non-terminals
+# non-terminals for python arrays and tuples
 array <- ws* obracket { p.pushArray() } ws* array_contents ws* cbracket { p.popArray() } /
     ws* oparen { p.pushArray() } ws* tuple_contents ws* cparen { p.popArray() }
 array_contents <- (item ws* comma ws*)* item ws*
 tuple_contents <- (item ws* comma ws*)+ (ws* item ws*)?
+item <- array / string / <value> { p.addElement(buffer[begin:end]) }
+
+# non-terminals for numpy arrays
 nd_array <- ws* obracket { p.pushArray() } ws* nd_array_contents ws* cbracket { p.popArray() }
 nd_array_contents <- (nd_item (ws / (lf ws?)))* (nd_item ws*)?
-item <- array / string / <value> { p.addElement(buffer[begin:end]) }
 nd_item <- nd_array / string / <value> { p.addElement(buffer[begin:end]) }
+
+# non-terminals for gradcam output
+gc_array <- ws* obracket { p.pushArray() } ws* gc_array_contents ws* cbracket { p.popArray() }
+gc_array_contents <- (gc_item (comma / lf) ws*)* (gc_item ws*)?
+gc_item <- gc_array / string / <value> { p.addElement(buffer[begin:end]) }
+
+# common non-terminals
 string <- dquote_string / squote_string
 dquote_string <- escdquote <(textdata / squote / lf / cr / obracket / cbracket / oparen / cparen / comma)*> escdquote { p.addElement(buffer[begin:end]) }
 squote_string <- squote <(escsquote / escdquote / textdata / lf / cr / obracket / cbracket / oparen / cparen)*> squote { p.addElement(buffer[begin:end]) }

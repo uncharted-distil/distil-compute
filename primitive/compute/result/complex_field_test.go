@@ -44,6 +44,17 @@ func TestParserNumpySep(t *testing.T) {
 	assert.Equal(t, []interface{}{"10", "11", "12", "13", "14"}, field.arrayElements.elements)
 }
 
+func TestGradCamSep(t *testing.T) {
+	field := &ComplexField{Buffer: "[[10, 11]\n[12, 13, 14]]"} // single quote can be escaped in python
+	assert.NoError(t, field.Init())
+
+	err := field.Parse()
+	assert.NoError(t, err)
+
+	field.Execute()
+	assert.Equal(t, []interface{}{[]interface{}{"10", "11"}, []interface{}{"12", "13", "14"}}, field.arrayElements.elements)
+}
+
 func TestParserSingleQuoted(t *testing.T) {
 	field := &ComplexField{Buffer: "  ['c ar'  , '\\'plane', 'b* oat']"} // single quote can be escaped in python
 	assert.NoError(t, field.Init())
