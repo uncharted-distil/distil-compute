@@ -718,6 +718,9 @@ func parseSuggestedTypes(m *model.Metadata, name string, index int, labels [][]s
 	probabilitiesCol := probabilities[index]
 	var suggested []*model.SuggestedType
 	for index, typ := range labelsCol {
+		if index >= len(probabilitiesCol) {
+			continue
+		}
 		probability := probabilitiesCol[index]
 
 		// adjust the probability for complex suggested types
