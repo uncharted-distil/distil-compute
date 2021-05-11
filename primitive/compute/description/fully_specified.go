@@ -667,7 +667,8 @@ func CreateGoatReversePipeline(name string, description string, lonSource *model
 
 // CreateJoinPipeline creates a pipeline that joins two input datasets using a caller supplied column.
 // Accuracy is a normalized value that controls how exact the join has to be.
-func CreateJoinPipeline(name string, description string, leftJoinCols []*model.Variable, rightJoinCols []*model.Variable, accuracy float32) (*FullySpecifiedPipeline, error) {
+func CreateJoinPipeline(name string, description string, leftJoinCols []*model.Variable, rightJoinCols []*model.Variable,
+	leftExcludes []*model.Variable, rightExcludes []*model.Variable, accuracy float32) (*FullySpecifiedPipeline, error) {
 	steps := make([]Step, 0)
 	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
 	offset := 1
@@ -681,8 +682,16 @@ func CreateJoinPipeline(name string, description string, leftJoinCols []*model.V
 	offset += len(stepsRetype)
 	steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType, model.TA2RealVectorType}))
 	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
+	offset += 2
+
+	excludeLeftIndices := make([]int, len(leftExcludes))
+	for i, v := range leftExcludes {
+		excludeLeftIndices[i] = v.Index
+	}
+	steps = append(steps, NewRemoveColumnsStep(nil, nil, excludeLeftIndices))
+	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
 	offsetLeft := offset + 1
-	offset = offset + 2
+	offset += 2
 
 	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}))
 	offset = offset + 1
@@ -692,10 +701,19 @@ func CreateJoinPipeline(name string, description string, leftJoinCols []*model.V
 	}
 	steps = append(steps, stepsRetype...)
 	offset += len(stepsRetype)
+
 	steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType, model.TA2RealVectorType}))
 	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
-	offsetRight := offset + 1
 	offset = offset + 2
+
+	excludeRightIndices := make([]int, len(rightExcludes))
+	for i, v := range rightExcludes {
+		excludeRightIndices[i] = v.Index
+	}
+	steps = append(steps, NewRemoveColumnsStep(nil, nil, excludeRightIndices))
+	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
+	offsetRight := offset + 1
+	offset += 2
 
 	// merge two intput streams via a single join call
 	leftColNames := make([]string, len(leftJoinCols))
