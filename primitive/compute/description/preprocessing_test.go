@@ -529,7 +529,8 @@ func TestCreateGoatReversePipeline(t *testing.T) {
 
 func TestCreateJoinPipeline(t *testing.T) {
 	pipeline, err := CreateJoinPipeline("join_test", "test join pipeline",
-		[]*model.Variable{{HeaderName: "Doubles", Type: "real", OriginalType: "string"}}, []*model.Variable{{HeaderName: "horsepower", Type: "real", OriginalType: "string"}}, 0.8)
+		[]*model.Variable{{HeaderName: "Doubles", Type: "real", OriginalType: "string"}}, []*model.Variable{{HeaderName: "horsepower", Type: "real", OriginalType: "string"}},
+		[]*model.Variable{}, []*model.Variable{}, 0.8)
 	assert.NoError(t, err)
 
 	data, err := proto.Marshal(pipeline.Pipeline)
