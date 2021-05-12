@@ -25,11 +25,32 @@ import (
 	"github.com/uncharted-distil/distil-compute/primitive/compute"
 )
 
+const (
+	// JoinTypeLeft represents a left outer join operation
+	JoinTypeLeft = "left"
+	// JoinTypeRight represents a right outer join operation
+	JoinTypeRight = "right"
+	// JoinTypeOuter represents an outer join operation
+	JoinTypeOuter = "outer"
+	// JoinTypeInner represents an inner join operation
+	JoinTypeInner = "inner"
+	// JoinTypeCross represents a cross join operation
+	JoinTypeCross = "cross"
+)
+
 // FullySpecifiedPipeline wraps a fully specified pipeline along with
 // the fields which can be used to determine equivalent pipelines.
 type FullySpecifiedPipeline struct {
 	Pipeline         *pipeline.PipelineDescription
 	EquivalentValues []interface{}
+}
+
+// Join captures a specific join relationship and constraint to be used
+// in dataset joining.
+type Join struct {
+	Left     *model.Variable
+	Right    *model.Variable
+	Accuracy float64
 }
 
 // MarshalSteps marshals a pipeline description into a json representation.
@@ -667,11 +688,20 @@ func CreateGoatReversePipeline(name string, description string, lonSource *model
 
 // CreateJoinPipeline creates a pipeline that joins two input datasets using a caller supplied column.
 // Accuracy is a normalized value that controls how exact the join has to be.
-func CreateJoinPipeline(name string, description string, leftJoinCols []*model.Variable, rightJoinCols []*model.Variable,
-	leftExcludes []*model.Variable, rightExcludes []*model.Variable, accuracy float32) (*FullySpecifiedPipeline, error) {
+func CreateJoinPipeline(name string, description string, joins []*Join,
+	leftExcludes []*model.Variable, rightExcludes []*model.Variable, joinType string) (*FullySpecifiedPipeline, error) {
 	steps := make([]Step, 0)
 	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
 	offset := 1
+
+	leftJoinCols := make([]*model.Variable, len(joins))
+	rightJoinCols := make([]*model.Variable, len(joins))
+	accuracies := make([]float64, len(joins))
+	for i, j := range joins {
+		leftJoinCols[i] = j.Left
+		rightJoinCols[i] = j.Right
+		accuracies[i] = j.Accuracy
+	}
 
 	// update semantic types as needed and parse vector types
 	stepsRetype, err := createUpdateSemanticTypes("", leftJoinCols, nil, offset)
@@ -726,7 +756,7 @@ func CreateJoinPipeline(name string, description string, leftJoinCols []*model.V
 	}
 	steps = append(steps, NewJoinStep(
 		map[string]DataRef{"left": &StepDataRef{offsetLeft, "produce"}, "right": &StepDataRef{offsetRight, "produce"}},
-		[]string{"produce"}, leftColNames, rightColNames, accuracy,
+		[]string{"produce"}, leftColNames, rightColNames, accuracies, joinType,
 	))
 	steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 

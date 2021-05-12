@@ -721,11 +721,7 @@ func NewGoatReverseStep(inputs map[string]DataRef, outputMethods []string, lonCo
 
 // NewJoinStep creates a step that will attempt to join two datasets a key column
 // from each.  This is currently a placeholder for testing/debugging only.
-func NewJoinStep(inputs map[string]DataRef, outputMethods []string, leftCol []string, rightCol []string, accuracy float32) *StepData {
-	accuracyRepeated := make([]float32, len(leftCol))
-	for i := range leftCol {
-		accuracyRepeated[i] = accuracy
-	}
+func NewJoinStep(inputs map[string]DataRef, outputMethods []string, leftCol []string, rightCol []string, accuracies []float64, joinType string) *StepData {
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "6c3188bf-322d-4f9b-bb91-68151bf1f17f",
@@ -735,7 +731,7 @@ func NewJoinStep(inputs map[string]DataRef, outputMethods []string, leftCol []st
 			Digest:     "",
 		},
 		outputMethods,
-		map[string]interface{}{"left_col": leftCol, "right_col": rightCol, "accuracy": accuracyRepeated, "join_type": "left"},
+		map[string]interface{}{"left_col": leftCol, "right_col": rightCol, "accuracy": accuracies, "join_type": joinType},
 		inputs,
 	)
 }
