@@ -540,22 +540,6 @@ func NewHDBScanStep(inputs map[string]DataRef, outputMethods []string) *StepData
 	)
 }
 
-// NewExtractColumnsStep extracts columns by supplied indices.
-func NewExtractColumnsStep(inputs map[string]DataRef, outputMethods []string, indices []int) *StepData {
-	return NewStepData(
-		&pipeline.Primitive{
-			Id:         "81d7e261-e25b-4721-b091-a31cd46e99ae",
-			Version:    "0.1.0",
-			Name:       "Extracts columns",
-			PythonPath: "d3m.primitives.data_transformation.extract_columns.Common",
-			Digest:     "a464aab467ad8b400c6c4d013a7bfa27574d4d0d7bf7333fe067b2e3bf1475e0",
-		},
-		outputMethods,
-		map[string]interface{}{"columns": indices},
-		inputs,
-	)
-}
-
 // NewSatelliteImageLoaderStep loads multi band images.
 func NewSatelliteImageLoaderStep(inputs map[string]DataRef, outputMethods []string, numJobs int) *StepData {
 	return NewStepData(

@@ -257,24 +257,24 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 		},
 		nil,
 	)
-	assert.Equal(t, 14, len(pipeline.GetSteps()))
+	assert.Equal(t, 16, len(pipeline.GetSteps()))
 
 	pythonPath := pipeline.GetSteps()[0].GetPrimitive().GetPrimitive().GetPythonPath()
-	assert.Equal(t, "d3m.primitives.data_transformation.denormalize.Common", pythonPath)
-	inputs := pipeline.GetSteps()[0].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
-	assert.Equal(t, "inputs.0", inputs)
+	assert.Equal(t, "d3m.primitives.data_transformation.extract_columns.Common", pythonPath)
 
 	pythonPath = pipeline.GetSteps()[1].GetPrimitive().GetPrimitive().GetPythonPath()
-	assert.Equal(t, "d3m.primitives.data_transformation.column_parser.DistilColumnParser", pythonPath)
+	assert.Equal(t, "d3m.primitives.operator.dataset_map.DataFrameCommon", pythonPath)
+	assert.Equal(t, int32(0), pipeline.GetSteps()[0].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
+	inputs := pipeline.GetSteps()[1].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
+	assert.Equal(t, "inputs.0", inputs)
 
 	pythonPath = pipeline.GetSteps()[2].GetPrimitive().GetPrimitive().GetPythonPath()
-	assert.Equal(t, "d3m.primitives.operator.dataset_map.DataFrameCommon", pythonPath)
-	assert.Equal(t, int32(1), pipeline.GetSteps()[2].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
+	assert.Equal(t, "d3m.primitives.data_transformation.denormalize.Common", pythonPath)
 	inputs = pipeline.GetSteps()[2].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
-	assert.Equal(t, "steps.0.produce", inputs)
+	assert.Equal(t, "steps.1.produce", inputs)
 
 	pythonPath = pipeline.GetSteps()[3].GetPrimitive().GetPrimitive().GetPythonPath()
-	assert.Equal(t, "d3m.primitives.data_cleaning.data_cleaning.Datacleaning", pythonPath)
+	assert.Equal(t, "d3m.primitives.data_transformation.column_parser.DistilColumnParser", pythonPath)
 
 	pythonPath = pipeline.GetSteps()[4].GetPrimitive().GetPrimitive().GetPythonPath()
 	assert.Equal(t, "d3m.primitives.operator.dataset_map.DataFrameCommon", pythonPath)
@@ -282,46 +282,55 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 	inputs = pipeline.GetSteps()[4].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
 	assert.Equal(t, "steps.2.produce", inputs)
 
-	// add semantic type integer to cols 1,3
-	hyperParams := pipeline.GetSteps()[5].GetPrimitive().GetHyperparams()
-	assert.Equal(t, []int64{1, 3}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
-	assert.Equal(t, []string{"http://schema.org/Integer"}, ConvertToStringArray(hyperParams["semantic_types"].GetValue().GetData().GetRaw().GetList()))
+	pythonPath = pipeline.GetSteps()[5].GetPrimitive().GetPrimitive().GetPythonPath()
+	assert.Equal(t, "d3m.primitives.data_cleaning.data_cleaning.Datacleaning", pythonPath)
 
+	pythonPath = pipeline.GetSteps()[6].GetPrimitive().GetPrimitive().GetPythonPath()
+	assert.Equal(t, "d3m.primitives.operator.dataset_map.DataFrameCommon", pythonPath)
 	assert.Equal(t, int32(5), pipeline.GetSteps()[6].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
 	inputs = pipeline.GetSteps()[6].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
 	assert.Equal(t, "steps.4.produce", inputs)
 
-	// remove semantic type categorical from cols 1,3
-	hyperParams = pipeline.GetSteps()[7].GetPrimitive().GetHyperparams()
+	// add semantic type integer to cols 1,3
+	hyperParams := pipeline.GetSteps()[7].GetPrimitive().GetHyperparams()
 	assert.Equal(t, []int64{1, 3}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
-	assert.Equal(t, []string{"https://metadata.datadrivendiscovery.org/types/CategoricalData"},
-		ConvertToStringArray(hyperParams["semantic_types"].GetValue().GetData().GetRaw().GetList()))
+	assert.Equal(t, []string{"http://schema.org/Integer"}, ConvertToStringArray(hyperParams["semantic_types"].GetValue().GetData().GetRaw().GetList()))
 
 	assert.Equal(t, int32(7), pipeline.GetSteps()[8].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
 	inputs = pipeline.GetSteps()[8].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
 	assert.Equal(t, "steps.6.produce", inputs)
 
-	// add attrobute semantic type
+	// remove semantic type categorical from cols 1,3
 	hyperParams = pipeline.GetSteps()[9].GetPrimitive().GetHyperparams()
-	assert.Equal(t, []int64{0, 1, 3}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
-	assert.Equal(t, []string{"https://metadata.datadrivendiscovery.org/types/Attribute"}, ConvertToStringArray(hyperParams["semantic_types"].GetValue().GetData().GetRaw().GetList()))
+	assert.Equal(t, []int64{1, 3}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
+	assert.Equal(t, []string{"https://metadata.datadrivendiscovery.org/types/CategoricalData"},
+		ConvertToStringArray(hyperParams["semantic_types"].GetValue().GetData().GetRaw().GetList()))
 
 	assert.Equal(t, int32(9), pipeline.GetSteps()[10].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
 	inputs = pipeline.GetSteps()[10].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
 	assert.Equal(t, "steps.8.produce", inputs)
 
-	// remove column from index two
+	// add attrobute semantic type
 	hyperParams = pipeline.GetSteps()[11].GetPrimitive().GetHyperparams()
-	assert.Equal(t, []int64{2}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
+	assert.Equal(t, []int64{0, 1, 3}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
+	assert.Equal(t, []string{"https://metadata.datadrivendiscovery.org/types/Attribute"}, ConvertToStringArray(hyperParams["semantic_types"].GetValue().GetData().GetRaw().GetList()))
 
 	assert.Equal(t, int32(11), pipeline.GetSteps()[12].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
 	inputs = pipeline.GetSteps()[12].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
 	assert.Equal(t, "steps.10.produce", inputs)
 
-	// next is the inference step, which doesn't have a primitive associated with it
-	assert.NotNil(t, pipeline.GetSteps()[13].GetPlaceholder())
-	inputs = pipeline.GetSteps()[13].GetPlaceholder().GetInputs()[0].GetData()
+	// remove column from index two
+	hyperParams = pipeline.GetSteps()[13].GetPrimitive().GetHyperparams()
+	assert.Equal(t, []int64{2}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
+
+	assert.Equal(t, int32(0), pipeline.GetSteps()[13].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
+	inputs = pipeline.GetSteps()[14].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
 	assert.Equal(t, "steps.12.produce", inputs)
+
+	// next is the inference step, which doesn't have a primitive associated with it
+	assert.NotNil(t, pipeline.GetSteps()[15].GetPlaceholder())
+	inputs = pipeline.GetSteps()[15].GetPlaceholder().GetInputs()[0].GetData()
+	assert.Equal(t, "steps.14.produce", inputs)
 
 	assert.NoError(t, err)
 }
@@ -365,25 +374,25 @@ func TestCreateUserDatasetEmpty(t *testing.T) {
 			SelectedFeatures: []string{"test_var_0"},
 			Filters:          nil,
 		}, nil)
-	assert.Equal(t, 8, len(pipeline.GetSteps()))
+	assert.Equal(t, 10, len(pipeline.GetSteps()))
 	assert.Nil(t, err)
 
 	pythonPath := pipeline.GetSteps()[0].GetPrimitive().GetPrimitive().GetPythonPath()
-	assert.Equal(t, "d3m.primitives.data_transformation.denormalize.Common", pythonPath)
-	inputs := pipeline.GetSteps()[0].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
-	assert.Equal(t, "inputs.0", inputs)
+	assert.Equal(t, "d3m.primitives.data_transformation.extract_columns.Common", pythonPath)
 
 	pythonPath = pipeline.GetSteps()[1].GetPrimitive().GetPrimitive().GetPythonPath()
-	assert.Equal(t, "d3m.primitives.data_transformation.column_parser.DistilColumnParser", pythonPath)
+	assert.Equal(t, "d3m.primitives.operator.dataset_map.DataFrameCommon", pythonPath)
+	assert.Equal(t, int32(0), pipeline.GetSteps()[0].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
+	inputs := pipeline.GetSteps()[1].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
+	assert.Equal(t, "inputs.0", inputs)
 
 	pythonPath = pipeline.GetSteps()[2].GetPrimitive().GetPrimitive().GetPythonPath()
-	assert.Equal(t, "d3m.primitives.operator.dataset_map.DataFrameCommon", pythonPath)
-	assert.Equal(t, int32(1), pipeline.GetSteps()[2].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
+	assert.Equal(t, "d3m.primitives.data_transformation.denormalize.Common", pythonPath)
 	inputs = pipeline.GetSteps()[2].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
-	assert.Equal(t, "steps.0.produce", inputs)
+	assert.Equal(t, "steps.1.produce", inputs)
 
 	pythonPath = pipeline.GetSteps()[3].GetPrimitive().GetPrimitive().GetPythonPath()
-	assert.Equal(t, "d3m.primitives.data_cleaning.data_cleaning.Datacleaning", pythonPath)
+	assert.Equal(t, "d3m.primitives.data_transformation.column_parser.DistilColumnParser", pythonPath)
 
 	pythonPath = pipeline.GetSteps()[4].GetPrimitive().GetPrimitive().GetPythonPath()
 	assert.Equal(t, "d3m.primitives.operator.dataset_map.DataFrameCommon", pythonPath)
@@ -391,19 +400,28 @@ func TestCreateUserDatasetEmpty(t *testing.T) {
 	inputs = pipeline.GetSteps()[4].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
 	assert.Equal(t, "steps.2.produce", inputs)
 
-	// add attrobute semantic type
-	hyperParams := pipeline.GetSteps()[5].GetPrimitive().GetHyperparams()
-	assert.Equal(t, []int64{0}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
-	assert.Equal(t, []string{"https://metadata.datadrivendiscovery.org/types/Attribute"}, ConvertToStringArray(hyperParams["semantic_types"].GetValue().GetData().GetRaw().GetList()))
+	pythonPath = pipeline.GetSteps()[5].GetPrimitive().GetPrimitive().GetPythonPath()
+	assert.Equal(t, "d3m.primitives.data_cleaning.data_cleaning.Datacleaning", pythonPath)
 
+	pythonPath = pipeline.GetSteps()[6].GetPrimitive().GetPrimitive().GetPythonPath()
+	assert.Equal(t, "d3m.primitives.operator.dataset_map.DataFrameCommon", pythonPath)
 	assert.Equal(t, int32(5), pipeline.GetSteps()[6].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
 	inputs = pipeline.GetSteps()[6].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
 	assert.Equal(t, "steps.4.produce", inputs)
 
-	// next is the inference step, which doesn't have a primitive associated with it
-	assert.NotNil(t, pipeline.GetSteps()[7].GetPlaceholder())
-	inputs = pipeline.GetSteps()[7].GetPlaceholder().GetInputs()[0].GetData()
+	// add attrobute semantic type
+	hyperParams := pipeline.GetSteps()[7].GetPrimitive().GetHyperparams()
+	assert.Equal(t, []int64{0}, ConvertToIntArray(hyperParams["columns"].GetValue().GetData().GetRaw().GetList()))
+	assert.Equal(t, []string{"https://metadata.datadrivendiscovery.org/types/Attribute"}, ConvertToStringArray(hyperParams["semantic_types"].GetValue().GetData().GetRaw().GetList()))
+
+	assert.Equal(t, int32(7), pipeline.GetSteps()[8].GetPrimitive().GetHyperparams()["primitive"].GetPrimitive().GetData())
+	inputs = pipeline.GetSteps()[8].GetPrimitive().GetArguments()["inputs"].GetContainer().GetData()
 	assert.Equal(t, "steps.6.produce", inputs)
+
+	// next is the inference step, which doesn't have a primitive associated with it
+	assert.NotNil(t, pipeline.GetSteps()[9].GetPlaceholder())
+	inputs = pipeline.GetSteps()[9].GetPlaceholder().GetInputs()[0].GetData()
+	assert.Equal(t, "steps.8.produce", inputs)
 }
 
 func TestCreatePCAFeaturesPipeline(t *testing.T) {

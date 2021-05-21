@@ -70,7 +70,17 @@ func CreatePreFeaturizedDatasetPipeline(name string, description string, dataset
 	steps := []Step{}
 	offset := 0
 
-	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
+	// First step is to select all features.  This is done to allow a dataset containing features that are a superset
+	// off those found in the original training dataset to be passed into this pipeline once it has been trained.  For instance,
+	// given this pipline is trained on a dataset with features {A, B, D}, we may want to pass a dataset consisting of {A, B, C, D}
+	// into the trained model in the prediction phase.  By inserting this initial select in the pipeline, we will first reduce
+	// {A, B, C, D} to {A, B, D}, which will leave the prediction set aligned with the inputs required by the remainder of the
+	// pipeline.
+	operatingFeatures := createSelectFeatures(datasetDescription.AllFeatures, 0, 0)
+	steps = append(steps, operatingFeatures...)
+	offset += 2
+
+	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}))
 	steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType, model.TA2RealVectorType}))
 	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, ""))
 	steps = append(steps, NewDataCleaningStep(nil, nil))
@@ -141,7 +151,6 @@ func CreateUserDatasetPipeline(name string, description string, datasetDescripti
 
 func generatePrependSteps(datasetDescription *UserDatasetDescription,
 	augmentations []*UserDatasetAugmentation) ([]Step, error) {
-	offset := 0
 
 	// filter out group variables
 	datasetFeatures := []*model.Variable{}
@@ -176,25 +185,32 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 		targetName = timeseriesGrouping.YCol
 	}
 
+	// First step is to select all features.  This is done to allow a dataset containing features that are a superset
+	// off those found in the original training dataset to be passed into this pipeline once it has been trained.  For instance,
+	// given this pipline is trained on a dataset with features {A, B, D}, we may want to pass a dataset consisting of {A, B, C, D}
+	// into the trained model in the prediction phase.  By inserting this initial select in the pipeline, we will first reduce
+	// {A, B, C, D} to {A, B, D}, which will leave the prediction set aligned with the inputs required by the remainder of the
+	// pipeline.
+	operatingFeatures := createSelectFeatures(datasetFeatures, 0, 0)
+	steps = append(steps, operatingFeatures...)
+	offset := 2
+
 	// augment the dataset if needed
 	// need to track the initial dataref and set the offset properly
-	var dataRef DataRef
-	dataRef = &PipelineDataRef{0}
 	if augmentations != nil {
 		for i := 0; i < len(augmentations); i++ {
 			steps = append(steps, NewDatamartAugmentStep(
-				map[string]DataRef{"inputs": dataRef},
+				map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}},
 				[]string{"produce"},
 				augmentations[i].SearchResult,
 				augmentations[i].SystemID,
 			))
-			dataRef = &StepDataRef{offset, "produce"}
 			offset++
 		}
 	}
 
 	if isTimeseries {
-		steps = append(steps, NewTimeseriesFormatterStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}, "", -1))
+		steps = append(steps, NewTimeseriesFormatterStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, "", -1))
 		steps = append(steps, NewGroupingFieldComposeStep(nil, nil, groupingIndices, "-", "__grouping"))
 		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, ""))
 		steps = append(steps, NewColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType}))
@@ -217,7 +233,7 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset + 6, "produce"}}, []string{"produce"}, offset+7, ""))
 		offset += 9
 	} else {
-		steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": dataRef}, []string{"produce"}))
+		steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}))
 		steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType, model.TA2RealVectorType}))
 		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, ""))
 		steps = append(steps, NewDataCleaningStep(nil, nil))
@@ -232,7 +248,7 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 				Indices:       []int{multiBandImageGrouping.Index},
 			}
 			multiBandImageUpdate := NewAddSemanticTypeStep(nil, nil, attribs)
-			multiBandImageWrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+			multiBandImageWrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, offset+1, "")
 			steps = append(steps, multiBandImageUpdate, multiBandImageWrapper)
 			offset += 2
 		}
@@ -302,6 +318,18 @@ func getMultiBandImageGrouping(datasetDescription *UserDatasetDescription) *mode
 	}
 
 	return nil
+}
+
+func createSelectFeatures(allFeatures []*model.Variable, pipelineInput int, offset int) []Step {
+	selectFeatures := []int{}
+	for _, v := range allFeatures {
+		selectFeatures = append(selectFeatures, v.Index)
+	}
+
+	// instantiate the feature remove primitive
+	featureSelect := NewExtractColumnsStep(nil, nil, selectFeatures)
+	wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &PipelineDataRef{pipelineInput}}, []string{"produce"}, offset, "")
+	return []Step{featureSelect, wrapper}
 }
 
 func createRemoveFeatures(allFeatures []*model.Variable, selectedSet map[string]bool, offset int) []Step {

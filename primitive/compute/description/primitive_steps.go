@@ -524,7 +524,7 @@ func NewDistilColumnParserStep(inputs map[string]DataRef, outputMethods []string
 }
 
 // NewRemoveColumnsStep removes columns from an input dataframe.  Columns
-// are specified by name and the match is case insensitive.
+// are specified by numerical index (not our decision).
 func NewRemoveColumnsStep(inputs map[string]DataRef, outputMethods []string, colIndices []int) *StepData {
 	return NewStepData(
 		&pipeline.Primitive{
@@ -538,6 +538,23 @@ func NewRemoveColumnsStep(inputs map[string]DataRef, outputMethods []string, col
 		map[string]interface{}{
 			"columns": colIndices,
 		},
+		inputs,
+	)
+}
+
+// NewExtractColumnsStep retains columns in the index list in an input dataframe.  Columns
+// are specified by numiercal index (not our decision).
+func NewExtractColumnsStep(inputs map[string]DataRef, outputMethods []string, indices []int) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "81d7e261-e25b-4721-b091-a31cd46e99ae",
+			Version:    "0.1.0",
+			Name:       "Extracts columns",
+			PythonPath: "d3m.primitives.data_transformation.extract_columns.Common",
+			Digest:     "a464aab467ad8b400c6c4d013a7bfa27574d4d0d7bf7333fe067b2e3bf1475e0",
+		},
+		outputMethods,
+		map[string]interface{}{"columns": indices},
 		inputs,
 	)
 }
