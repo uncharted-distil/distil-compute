@@ -51,6 +51,7 @@ type Join struct {
 	Left     *model.Variable
 	Right    *model.Variable
 	Accuracy float64
+	Absolute bool
 }
 
 // MarshalSteps marshals a pipeline description into a json representation.
@@ -697,10 +698,12 @@ func CreateJoinPipeline(name string, description string, joins []*Join,
 	leftJoinCols := make([]*model.Variable, len(joins))
 	rightJoinCols := make([]*model.Variable, len(joins))
 	accuracies := make([]float64, len(joins))
+	absoluteAccuracies := make([]bool, len(joins))
 	for i, j := range joins {
 		leftJoinCols[i] = j.Left
 		rightJoinCols[i] = j.Right
 		accuracies[i] = j.Accuracy
+		absoluteAccuracies[i] = j.Absolute
 	}
 
 	// update semantic types as needed and parse vector types
@@ -756,7 +759,7 @@ func CreateJoinPipeline(name string, description string, joins []*Join,
 	}
 	steps = append(steps, NewJoinStep(
 		map[string]DataRef{"left": &StepDataRef{offsetLeft, "produce"}, "right": &StepDataRef{offsetRight, "produce"}},
-		[]string{"produce"}, leftColNames, rightColNames, accuracies, joinType,
+		[]string{"produce"}, leftColNames, rightColNames, accuracies, absoluteAccuracies, joinType,
 	))
 	steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 
