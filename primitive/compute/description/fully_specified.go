@@ -699,11 +699,19 @@ func CreateJoinPipeline(name string, description string, joins []*Join,
 	rightJoinCols := make([]*model.Variable, len(joins))
 	accuracies := make([]float64, len(joins))
 	absoluteAccuracies := make([]bool, len(joins))
+	leftJoinGeoBounds := []int{}
+	rightJoinGeoBounds := []int{}
 	for i, j := range joins {
 		leftJoinCols[i] = j.Left
 		rightJoinCols[i] = j.Right
 		accuracies[i] = j.Accuracy
 		absoluteAccuracies[i] = j.Absolute
+		if model.IsGeoBounds(j.Left.Type) {
+			leftJoinGeoBounds = append(leftJoinGeoBounds, i)
+		}
+		if model.IsGeoBounds(j.Right.Type) {
+			rightJoinGeoBounds = append(rightJoinGeoBounds, i)
+		}
 	}
 
 	// update semantic types as needed and parse vector types
@@ -713,6 +721,19 @@ func CreateJoinPipeline(name string, description string, joins []*Join,
 	}
 	steps = append(steps, stepsRetype...)
 	offset += len(stepsRetype)
+
+	// geobounds fields should be tagged with bounding polygon to trigger the appropriate join type
+	if len(leftJoinGeoBounds) > 0 {
+		leftGeoUpdate := &ColumnUpdate{
+			SemanticTypes: []string{model.TA2BoundingPolygon},
+			Indices:       leftJoinGeoBounds,
+		}
+		leftUpdate := NewAddSemanticTypeStep(nil, nil, leftGeoUpdate)
+		leftWrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+		steps = append(steps, leftUpdate, leftWrapper)
+		offset += 2
+	}
+
 	steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType, model.TA2RealVectorType}))
 	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
 	offset += 2
@@ -734,6 +755,18 @@ func CreateJoinPipeline(name string, description string, joins []*Join,
 	}
 	steps = append(steps, stepsRetype...)
 	offset += len(stepsRetype)
+
+	// geobounds fields should be tagged with bounding polygon to trigger the appropriate join type
+	if len(rightJoinGeoBounds) > 0 {
+		rightGeoUpdates := &ColumnUpdate{
+			SemanticTypes: []string{model.TA2BoundingPolygon},
+			Indices:       rightJoinGeoBounds,
+		}
+		rightUpdate := NewAddSemanticTypeStep(nil, nil, rightGeoUpdates)
+		rightWrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+		steps = append(steps, rightUpdate, rightWrapper)
+		offset += 2
+	}
 
 	steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType, model.TA2RealVectorType}))
 	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
