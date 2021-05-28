@@ -577,7 +577,7 @@ func (v *Variable) Clone() *Variable {
 
 // IsTA2Field indicates whether or not a particular variable is recognized by a TA2.
 func IsTA2Field(distilRole string, selectedRole string) bool {
-	if distilRole == VarDistilRoleData || distilRole == VarDistilRoleIndex {
+	if distilRole == VarDistilRoleData || distilRole == VarDistilRoleIndex || distilRole == VarDistilRoleSystemData {
 		return true
 	}
 
@@ -586,13 +586,6 @@ func IsTA2Field(distilRole string, selectedRole string) bool {
 	}
 
 	return false
-}
-
-// ExcludedDistilRoles are Distil roles that are excluded from processing by the TA2.
-var ExcludedDistilRoles = map[string]bool{
-	VarDistilRoleAugmented:  true,
-	VarDistilRoleMetadata:   true,
-	VarDistilRoleSystemData: true,
 }
 
 // IsIndexRole returns true if the d3m role is an index role.

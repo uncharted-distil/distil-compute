@@ -227,24 +227,28 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 			OriginalType: "ordinal",
 			Type:         "categorical",
 			Index:        0,
+			DistilRole:   model.VarDistilRoleData,
 		},
 		{
 			Key:          "test_var_1",
 			OriginalType: "categorical",
 			Type:         "integer",
 			Index:        1,
+			DistilRole:   model.VarDistilRoleData,
 		},
 		{
 			Key:          "test_var_2",
 			OriginalType: "categorical",
 			Type:         "integer",
 			Index:        2,
+			DistilRole:   model.VarDistilRoleData,
 		},
 		{
 			Key:          "test_var_3",
 			OriginalType: "categorical",
 			Type:         "integer",
 			Index:        3,
+			DistilRole:   model.VarDistilRoleData,
 		},
 	}
 

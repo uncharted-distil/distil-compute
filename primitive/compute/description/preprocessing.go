@@ -55,14 +55,13 @@ func CreatePreFeaturizedDatasetPipeline(name string, description string, dataset
 	// type all features
 	featureSet := map[string]int{}
 	colsToDrop := []int{}
-	for _, v := range datasetDescription.AllFeatures {
-		if model.IsTA2Field(v.DistilRole, v.SelectedRole) {
-			variableKey := strings.ToLower(v.Key)
-			featureSet[variableKey] = v.Index
-			if !selectedSet[variableKey] {
-				if v.Index != datasetDescription.TargetFeature.Index && !model.IsIndexRole(v.SelectedRole) {
-					colsToDrop = append(colsToDrop, v.Index)
-				}
+	ta2Features := getTA2Features(datasetDescription.AllFeatures)
+	for _, v := range ta2Features {
+		variableKey := strings.ToLower(v.Key)
+		featureSet[variableKey] = v.Index
+		if !selectedSet[variableKey] {
+			if v.Index != datasetDescription.TargetFeature.Index && !model.IsIndexRole(v.SelectedRole) {
+				colsToDrop = append(colsToDrop, v.Index)
 			}
 		}
 	}
@@ -153,12 +152,7 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 	augmentations []*UserDatasetAugmentation) ([]Step, error) {
 
 	// filter out group variables
-	datasetFeatures := []*model.Variable{}
-	for _, v := range datasetDescription.AllFeatures {
-		if v.Grouping == nil && !model.ExcludedDistilRoles[v.DistilRole] {
-			datasetFeatures = append(datasetFeatures, v)
-		}
-	}
+	datasetFeatures := getTA2Features(datasetDescription.AllFeatures)
 
 	// save the selected features in a set for quick lookup
 	selectedSet := map[string]bool{}
@@ -281,6 +275,16 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 	}
 
 	return steps, nil
+}
+
+func getTA2Features(features []*model.Variable) []*model.Variable {
+	ta2Features := []*model.Variable{}
+	for _, v := range features {
+		if model.IsTA2Field(v.DistilRole, v.SelectedRole) {
+			ta2Features = append(ta2Features, v)
+		}
+	}
+	return ta2Features
 }
 
 func getTimeseriesGrouping(datasetDescription *UserDatasetDescription) *model.TimeseriesGrouping {
