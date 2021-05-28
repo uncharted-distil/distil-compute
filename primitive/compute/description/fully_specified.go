@@ -475,7 +475,7 @@ func CreateDataFilterPipeline(name string, description string, variables []*mode
 	// drop excluded distil roles columns since we do not want them in the final output
 	colsToDrop := []int{}
 	for _, v := range variables {
-		if model.ExcludedDistilRoles[v.DistilRole] {
+		if !model.IsTA2Field(v.DistilRole, v.SelectedRole) {
 			colsToDrop = append(colsToDrop, v.Index)
 		}
 	}
@@ -568,12 +568,7 @@ func CreateTargetRankingPipeline(name string, description string, target *model.
 
 	// ignore group and metadata variables - they are system-only variables that aren't part of the
 	// dataset that is passed into the pipeline
-	datasetFeatures := []*model.Variable{}
-	for _, v := range features {
-		if v.Grouping == nil && !model.ExcludedDistilRoles[v.DistilRole] {
-			datasetFeatures = append(datasetFeatures, v)
-		}
-	}
+	datasetFeatures := getTA2Features(features)
 
 	// recompute indices based on selected data subset
 	columnIndices := mapColumns(datasetFeatures, selectedFeatures)
