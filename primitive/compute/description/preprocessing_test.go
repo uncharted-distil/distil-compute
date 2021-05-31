@@ -552,7 +552,11 @@ func TestCreateJoinPipeline(t *testing.T) {
 		Accuracy: 0.8,
 	},
 	}
-	pipeline, err := CreateJoinPipeline("join_test", "test join pipeline", joins, nil, nil, "left")
+	joinInfo := &JoinDescription{
+		Joins: joins,
+		Type:  "left",
+	}
+	pipeline, err := CreateJoinPipeline("join_test", "test join pipeline", joinInfo)
 	assert.NoError(t, err)
 
 	data, err := proto.Marshal(pipeline.Pipeline)
