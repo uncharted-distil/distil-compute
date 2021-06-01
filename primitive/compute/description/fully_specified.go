@@ -757,14 +757,16 @@ func CreateJoinPipeline(name string, description string, join *JoinDescription) 
 	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
 	offset += 2
 
-	excludeLeftIndices := make([]int, len(join.LeftExcludes))
-	for i, v := range join.LeftExcludes {
-		excludeLeftIndices[i] = v.Index
+	if len(join.LeftExcludes) > 0 {
+		excludeLeftIndices := make([]int, len(join.LeftExcludes))
+		for i, v := range join.LeftExcludes {
+			excludeLeftIndices[i] = v.Index
+		}
+		steps = append(steps, NewRemoveColumnsStep(nil, nil, excludeLeftIndices))
+		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
+		offset += 2
 	}
-	steps = append(steps, NewRemoveColumnsStep(nil, nil, excludeLeftIndices))
-	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
-	offsetLeft := offset + 1
-	offset += 2
+	offsetLeft := offset - 1
 
 	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}))
 	offset = offset + 1
@@ -791,14 +793,17 @@ func CreateJoinPipeline(name string, description string, join *JoinDescription) 
 	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
 	offset = offset + 2
 
-	excludeRightIndices := make([]int, len(join.RightExcludes))
-	for i, v := range join.RightExcludes {
-		excludeRightIndices[i] = v.Index
+	if len(join.RightExcludes) > 0 {
+		excludeRightIndices := make([]int, len(join.RightExcludes))
+		for i, v := range join.RightExcludes {
+			excludeRightIndices[i] = v.Index
+		}
+		steps = append(steps, NewRemoveColumnsStep(nil, nil, excludeRightIndices))
+		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
+
+		offset += 2
 	}
-	steps = append(steps, NewRemoveColumnsStep(nil, nil, excludeRightIndices))
-	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
-	offsetRight := offset + 1
-	offset += 2
+	offsetRight := offset - 1
 
 	// merge two intput streams via a single join call
 	leftColNames := make([]string, len(leftJoinCols))
