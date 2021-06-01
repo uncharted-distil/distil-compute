@@ -54,6 +54,17 @@ type Join struct {
 	Absolute bool
 }
 
+// JoinDescription represents the complete information necessary to join
+// two datasets via a join pipeline.
+type JoinDescription struct {
+	Type           string
+	Joins          []*Join
+	RightExcludes  []*model.Variable
+	RightVariables []*model.Variable
+	LeftExcludes   []*model.Variable
+	LeftVariables  []*model.Variable
+}
+
 // MarshalSteps marshals a pipeline description into a json representation.
 func MarshalSteps(step *pipeline.PipelineDescription) (string, error) {
 	stepJSON, err := json.Marshal(step)
@@ -684,21 +695,37 @@ func CreateGoatReversePipeline(name string, description string, lonSource *model
 
 // CreateJoinPipeline creates a pipeline that joins two input datasets using a caller supplied column.
 // Accuracy is a normalized value that controls how exact the join has to be.
-func CreateJoinPipeline(name string, description string, joins []*Join,
-	leftExcludes []*model.Variable, rightExcludes []*model.Variable, joinType string) (*FullySpecifiedPipeline, error) {
+func CreateJoinPipeline(name string, description string, join *JoinDescription) (*FullySpecifiedPipeline, error) {
 	steps := make([]Step, 0)
 	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}))
 	offset := 1
 
-	leftJoinCols := make([]*model.Variable, len(joins))
-	rightJoinCols := make([]*model.Variable, len(joins))
-	accuracies := make([]float64, len(joins))
-	absoluteAccuracies := make([]bool, len(joins))
-	for i, j := range joins {
+	leftVars := mapVariables(join.LeftVariables)
+	rightVars := mapVariables(join.RightVariables)
+
+	leftJoinCols := make([]*model.Variable, len(join.Joins))
+	rightJoinCols := make([]*model.Variable, len(join.Joins))
+	accuracies := make([]float64, len(join.Joins))
+	absoluteAccuracies := make([]bool, len(join.Joins))
+	leftJoinGeoBounds := []int{}
+	rightJoinGeoBounds := []int{}
+	for i, j := range join.Joins {
 		leftJoinCols[i] = j.Left
 		rightJoinCols[i] = j.Right
 		accuracies[i] = j.Accuracy
 		absoluteAccuracies[i] = j.Absolute
+
+		// geobounds groups join on the underlying coordinate column
+		if j.Left.IsGrouping() && model.IsGeoBounds(j.Left.Type) {
+			group := j.Left.Grouping.(*model.GeoBoundsGrouping)
+			leftJoinGeoBounds = append(leftJoinGeoBounds, leftVars[group.CoordinatesCol].Index)
+			leftJoinCols[i] = leftVars[group.CoordinatesCol]
+		}
+		if j.Right.IsGrouping() && model.IsGeoBounds(j.Right.Type) {
+			group := j.Right.Grouping.(*model.GeoBoundsGrouping)
+			rightJoinGeoBounds = append(rightJoinGeoBounds, rightVars[group.CoordinatesCol].Index)
+			rightJoinCols[i] = rightVars[group.CoordinatesCol]
+		}
 	}
 
 	// update semantic types as needed and parse vector types
@@ -708,18 +735,33 @@ func CreateJoinPipeline(name string, description string, joins []*Join,
 	}
 	steps = append(steps, stepsRetype...)
 	offset += len(stepsRetype)
+
+	// geobounds fields should be tagged with bounding polygon to trigger the appropriate join type
+	if len(leftJoinGeoBounds) > 0 {
+		leftGeoUpdate := &ColumnUpdate{
+			SemanticTypes: []string{model.TA2BoundingPolygon, model.TA2RealVectorType},
+			Indices:       leftJoinGeoBounds,
+		}
+		leftUpdate := NewAddSemanticTypeStep(nil, nil, leftGeoUpdate)
+		leftWrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+		steps = append(steps, leftUpdate, leftWrapper)
+		offset += 2
+	}
+
 	steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType, model.TA2RealVectorType}))
 	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
 	offset += 2
 
-	excludeLeftIndices := make([]int, len(leftExcludes))
-	for i, v := range leftExcludes {
-		excludeLeftIndices[i] = v.Index
+	if len(join.LeftExcludes) > 0 {
+		excludeLeftIndices := make([]int, len(join.LeftExcludes))
+		for i, v := range join.LeftExcludes {
+			excludeLeftIndices[i] = v.Index
+		}
+		steps = append(steps, NewRemoveColumnsStep(nil, nil, excludeLeftIndices))
+		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
+		offset += 2
 	}
-	steps = append(steps, NewRemoveColumnsStep(nil, nil, excludeLeftIndices))
-	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
-	offsetLeft := offset + 1
-	offset += 2
+	offsetLeft := offset - 1
 
 	steps = append(steps, NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}))
 	offset = offset + 1
@@ -730,18 +772,33 @@ func CreateJoinPipeline(name string, description string, joins []*Join,
 	steps = append(steps, stepsRetype...)
 	offset += len(stepsRetype)
 
+	// geobounds fields should be tagged with bounding polygon to trigger the appropriate join type
+	if len(rightJoinGeoBounds) > 0 {
+		rightGeoUpdates := &ColumnUpdate{
+			SemanticTypes: []string{model.TA2BoundingPolygon, model.TA2RealVectorType},
+			Indices:       rightJoinGeoBounds,
+		}
+		rightUpdate := NewAddSemanticTypeStep(nil, nil, rightGeoUpdates)
+		rightWrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, "")
+		steps = append(steps, rightUpdate, rightWrapper)
+		offset += 2
+	}
+
 	steps = append(steps, NewDistilColumnParserStep(nil, nil, []string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType, model.TA2RealVectorType}))
 	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
 	offset = offset + 2
 
-	excludeRightIndices := make([]int, len(rightExcludes))
-	for i, v := range rightExcludes {
-		excludeRightIndices[i] = v.Index
+	if len(join.RightExcludes) > 0 {
+		excludeRightIndices := make([]int, len(join.RightExcludes))
+		for i, v := range join.RightExcludes {
+			excludeRightIndices[i] = v.Index
+		}
+		steps = append(steps, NewRemoveColumnsStep(nil, nil, excludeRightIndices))
+		steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
+
+		offset += 2
 	}
-	steps = append(steps, NewRemoveColumnsStep(nil, nil, excludeRightIndices))
-	steps = append(steps, NewDatasetWrapperStep(map[string]DataRef{"inputs": &StepDataRef{offset - 1, "produce"}}, []string{"produce"}, offset, ""))
-	offsetRight := offset + 1
-	offset += 2
+	offsetRight := offset - 1
 
 	// merge two intput streams via a single join call
 	leftColNames := make([]string, len(leftJoinCols))
@@ -754,7 +811,7 @@ func CreateJoinPipeline(name string, description string, joins []*Join,
 	}
 	steps = append(steps, NewJoinStep(
 		map[string]DataRef{"left": &StepDataRef{offsetLeft, "produce"}, "right": &StepDataRef{offsetRight, "produce"}},
-		[]string{"produce"}, leftColNames, rightColNames, accuracies, absoluteAccuracies, joinType,
+		[]string{"produce"}, leftColNames, rightColNames, accuracies, absoluteAccuracies, join.Type,
 	))
 	steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 
@@ -1106,4 +1163,13 @@ func CreateDatamartAugmentPipeline(name string, description string, searchResult
 		EquivalentValues: []interface{}{pipelineJSON},
 	}
 	return fullySpecified, nil
+}
+
+func mapVariables(variables []*model.Variable) map[string]*model.Variable {
+	mapped := map[string]*model.Variable{}
+	for _, v := range variables {
+		mapped[v.Key] = v
+	}
+
+	return mapped
 }

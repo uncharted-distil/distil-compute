@@ -160,6 +160,8 @@ const (
 	TA2TimeSeriesType = "https://metadata.datadrivendiscovery.org/types/Timeseries"
 	// TA2RealVectorType is the TA2 semantic type for vector data
 	TA2RealVectorType = "https://metadata.datadrivendiscovery.org/types/FloatVector"
+	// TA2BoundingPolygon is the TA2 semantic type for a bounding polygon
+	TA2BoundingPolygon = "https://metadata.datadrivendiscovery.org/types/BoundingPolygon"
 
 	// TA2 Role keys
 
