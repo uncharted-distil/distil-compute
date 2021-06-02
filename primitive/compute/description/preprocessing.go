@@ -325,13 +325,21 @@ func getMultiBandImageGrouping(datasetDescription *UserDatasetDescription) *mode
 }
 
 func createSelectFeatures(allFeatures []*model.Variable, pipelineInput int, offset int) []Step {
-	selectFeatures := []int{}
+	// select features 0 through to max index
+	maxIndex := -1
 	for _, v := range allFeatures {
-		selectFeatures = append(selectFeatures, v.Index)
+		if v.Index > maxIndex {
+			maxIndex = v.Index
+		}
+	}
+
+	indices := make([]int, maxIndex+1)
+	for i := 0; i <= maxIndex; i++ {
+		indices[i] = i
 	}
 
 	// instantiate the feature remove primitive
-	featureSelect := NewExtractColumnsStep(nil, nil, selectFeatures)
+	featureSelect := NewExtractColumnsStep(nil, nil, indices)
 	wrapper := NewDatasetWrapperStep(map[string]DataRef{"inputs": &PipelineDataRef{pipelineInput}}, []string{"produce"}, offset, "")
 	return []Step{featureSelect, wrapper}
 }
