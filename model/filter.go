@@ -229,7 +229,25 @@ func (fs *FilterSet) IsValid() bool {
 
 	return true
 }
-
+// Clone a FilterSet 
+func (fs *FilterSet) Clone() *FilterSet {
+	featureSet := &FilterSet{
+		Mode:           fs.Mode,
+		FeatureFilters: []FilterObject{},
+	}
+	for _, fo := range fs.FeatureFilters {
+		cloneFilterObject := FilterObject{
+			Invert: fo.Invert,
+			List:   []*Filter{},
+		}
+		for _, f := range fo.List {
+			c := *f
+			cloneFilterObject.List = append(cloneFilterObject.List, &c)
+		}
+		featureSet.FeatureFilters = append(featureSet.FeatureFilters, cloneFilterObject)
+	}
+	return featureSet
+}
 // IsValid verifies that a filter object is valid.
 func (fo FilterObject) IsValid() bool {
 	// a filter object acts on a single filter, and they are all the same mode
