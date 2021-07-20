@@ -229,7 +229,8 @@ func (fs *FilterSet) IsValid() bool {
 
 	return true
 }
-// Clone a FilterSet 
+
+// Clone a FilterSet
 func (fs *FilterSet) Clone() *FilterSet {
 	featureSet := &FilterSet{
 		Mode:           fs.Mode,
@@ -248,6 +249,7 @@ func (fs *FilterSet) Clone() *FilterSet {
 	}
 	return featureSet
 }
+
 // IsValid verifies that a filter object is valid.
 func (fo FilterObject) IsValid() bool {
 	// a filter object acts on a single filter, and they are all the same mode
