@@ -628,7 +628,7 @@ func mapColumns(allFeatures []*model.Variable, selectedSet map[string]bool) map[
 
 	// determine the index of the selected features (not selected features are dropped)
 	colIndices := make(map[string]int)
-	index := 0
+	index := 1 // account for d3mIndex
 	for _, f := range allFeatures {
 		key := strings.ToLower(f.Key)
 		if selectedSet[key] {
