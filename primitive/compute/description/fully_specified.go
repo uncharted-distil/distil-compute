@@ -837,7 +837,7 @@ func CreateJoinPipeline(name string, description string, join *JoinDescription) 
 }
 
 // CreateVerticalConcatPipeline creates a pipeline that will vertically concat two datasets (union).
-func CreateVerticalConcatPipeline(name string, description string, join *JoinDescription) (*FullySpecifiedPipeline, error) {
+func CreateVerticalConcatPipeline(name string, description string) (*FullySpecifiedPipeline, error) {
 
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{4, "produce"}}
