@@ -839,17 +839,16 @@ func CreateJoinPipeline(name string, description string, join *JoinDescription) 
 // CreateVerticalConcatPipeline creates a pipeline that will vertically concat two datasets (union).
 func CreateVerticalConcatPipeline(name string, description string) (*FullySpecifiedPipeline, error) {
 
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{4, "produce"}}
+	inputs := []string{"top", "bottom"}
+	outputs := []DataRef{&StepDataRef{3, "produce"}}
 
 	// instantiate the pipeline - this merges two intput streams via a single vertical concat call
-	dataToConcat := &ListStepDataRef{[]DataRef{&StepDataRef{1, "produce"}, &StepDataRef{3, "produce"}}}
+	dataToConcat := &ListStepDataRef{[]DataRef{&StepDataRef{0, "produce"}, &StepDataRef{1, "produce"}}}
 	steps := []Step{
 		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}),
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
 		NewVerticalConcatenationPrimitiveStep(map[string]DataRef{"inputs": dataToConcat}, []string{"produce"}, false),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
 	}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
