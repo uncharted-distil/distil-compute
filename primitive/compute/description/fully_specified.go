@@ -836,11 +836,43 @@ func CreateJoinPipeline(name string, description string, join *JoinDescription) 
 	return fullySpecified, nil
 }
 
+// CreateVerticalConcatPipeline creates a pipeline that will vertically concat two datasets (union).
+func CreateVerticalConcatPipeline(name string, description string) (*FullySpecifiedPipeline, error) {
+
+	inputs := []string{"top", "bottom"}
+	outputs := []DataRef{&StepDataRef{3, "produce"}}
+
+	// instantiate the pipeline - this merges two intput streams via a single vertical concat call
+	dataToConcat := &ListStepDataRef{[]DataRef{&StepDataRef{0, "produce"}, &StepDataRef{1, "produce"}}}
+	steps := []Step{
+		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}),
+		NewVerticalConcatenationPrimitiveStep(map[string]DataRef{"inputs": dataToConcat}, []string{"produce"}, false),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+	}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipelineJSON},
+	}
+	return fullySpecified, nil
+}
+
 // CreateDSBoxJoinPipeline creates a pipeline that joins two input datasets
 // using caller supplied columns.
 func CreateDSBoxJoinPipeline(name string, description string, leftJoinCols []string, rightJoinCols []string, accuracy float32) (*FullySpecifiedPipeline, error) {
 	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{2, "produce"}}
+	outputs := []DataRef{&StepDataRef{3, "produce"}}
 
 	// instantiate the pipeline - this merges two intput streams via a single join call
 	steps := []Step{
