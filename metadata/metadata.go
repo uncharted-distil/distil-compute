@@ -16,7 +16,6 @@
 package metadata
 
 import (
-	"bytes"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -456,22 +455,14 @@ func LoadSummaryMachine(m *model.Metadata, summaryFile string) error {
 }
 
 func numLines(r io.Reader) (int, error) {
-	buf := make([]byte, 32*1024)
-	count := 0
-	lineSep := []byte{'\n'}
+	csvReader := csv.NewReader(r)
+	data, err := csvReader.ReadAll()
 
-	for {
-		c, err := r.Read(buf)
-		count += bytes.Count(buf[:c], lineSep)
-
-		switch {
-		case err == io.EOF:
-			return count, nil
-
-		case err != nil:
-			return count, err
-		}
+	if err != nil {
+		return -1, err
 	}
+
+	return len(data), nil
 }
 
 // LoadDatasetStats loads the dataset and computes various stats.
@@ -482,6 +473,7 @@ func LoadDatasetStats(m *model.Metadata, datasetPath string) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to open dataset file")
 	}
+	defer f.Close()
 
 	fi, err := f.Stat()
 	if err != nil {
