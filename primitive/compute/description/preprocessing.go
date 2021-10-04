@@ -162,8 +162,8 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 	}
 	columnIndices := map[string]int{}
 	for i, f := range datasetFeatures {
-		columnIndices[f.Key] = i
 		fk := strings.ToLower(f.Key)
+		columnIndices[fk] = i
 		_, ok := selectedSet[fk]
 		if ok {
 			selectedSet[fk] = true
