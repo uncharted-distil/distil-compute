@@ -347,6 +347,7 @@ func TestCreateUserDatasetPipelineMappingError(t *testing.T) {
 			OriginalType: "blordinal",
 			Type:         "categorical",
 			Index:        0,
+			DistilRole:   "data",
 		},
 	}
 
@@ -368,6 +369,7 @@ func TestCreateUserDatasetEmpty(t *testing.T) {
 			OriginalType: "categorical",
 			Type:         "categorical",
 			Index:        0,
+			DistilRole:   "data",
 		},
 	}
 

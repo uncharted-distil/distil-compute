@@ -155,13 +155,19 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 	datasetFeatures := getTA2Features(datasetDescription.AllFeatures)
 
 	// save the selected features in a set for quick lookup
+	// note that a to be selected, a feature needs to be a valid TA2 feature
 	selectedSet := map[string]bool{}
 	for _, v := range datasetDescription.SelectedFeatures {
-		selectedSet[strings.ToLower(v)] = true
+		selectedSet[strings.ToLower(v)] = false
 	}
 	columnIndices := map[string]int{}
 	for i, f := range datasetFeatures {
 		columnIndices[f.Key] = i
+		fk := strings.ToLower(f.Key)
+		_, ok := selectedSet[fk]
+		if ok {
+			selectedSet[fk] = true
+		}
 	}
 	// create pipeline nodes for step we need to execute
 	steps := []Step{} // add the denorm primitive
