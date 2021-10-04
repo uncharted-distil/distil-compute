@@ -161,7 +161,7 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 	}
 	columnIndices := map[string]int{}
 	for i, f := range datasetFeatures {
-		columnIndices[f.Key] = i
+		columnIndices[strings.ToLower(f.Key)] = i
 	}
 	// create pipeline nodes for step we need to execute
 	steps := []Step{} // add the denorm primitive
