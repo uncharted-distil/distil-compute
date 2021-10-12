@@ -139,8 +139,10 @@ func CreateImageClusteringPipeline(name string, description string, imageVariabl
 			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 			NewDataframeImageReaderStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, cols),
 			NewImageTransferStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
-			NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
-			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
+			NewSKImputerStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+			NewSKMissingIndicatorStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
+			NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
 		}
 	} else {
 		add := &ColumnUpdate{
@@ -155,9 +157,11 @@ func CreateImageClusteringPipeline(name string, description string, imageVariabl
 			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
 			NewDataframeImageReaderStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, cols),
 			NewImageTransferStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
-			NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
-			NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, []int{-1}),
-			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{3, "produce"}),
+			NewSKImputerStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
+			NewSKMissingIndicatorStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
+			NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}),
+			NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{8, "produce"}}, []string{"produce"}, []int{-1}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{9, "produce"}}, []string{"produce"}, &StepDataRef{3, "produce"}),
 		}
 	}
 
@@ -219,8 +223,10 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"},
 				[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType}),
 			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, batchSize, true),
-			NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
-			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{4, "produce"}),
+			NewSKImputerStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
+			NewSKMissingIndicatorStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}),
+			NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{8, "produce"}}, []string{"produce"}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{9, "produce"}}, []string{"produce"}, &StepDataRef{4, "produce"}),
 		}
 	} else {
 		addImage := &ColumnUpdate{
@@ -238,9 +244,11 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"},
 				[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType}),
 			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, batchSize, true),
-			NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}),
-			NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{8, "produce"}}, []string{"produce"}, []int{-1}),
-			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{9, "produce"}}, []string{"produce"}, &StepDataRef{5, "produce"}),
+			NewSKImputerStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}),
+			NewSKMissingIndicatorStep(map[string]DataRef{"inputs": &StepDataRef{8, "produce"}}, []string{"produce"}),
+			NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{9, "produce"}}, []string{"produce"}),
+			NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{10, "produce"}}, []string{"produce"}, []int{-1}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{11, "produce"}}, []string{"produce"}, &StepDataRef{5, "produce"}),
 		}
 	}
 
@@ -279,8 +287,10 @@ func CreatePreFeaturizedMultiBandImageClusteringPipeline(name string, descriptio
 						"numpy.float32", // numpy types
 						"numpy.float64",
 					}),
-				NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
-				NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
+				NewSKImputerStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+				NewSKMissingIndicatorStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+				NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
+				NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
 			}
 		} else {
 			steps = []Step{
@@ -293,8 +303,10 @@ func CreatePreFeaturizedMultiBandImageClusteringPipeline(name string, descriptio
 						"numpy.float32", // numpy types
 						"numpy.float64",
 					}),
-				NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
-				NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
+				NewSKImputerStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+				NewSKMissingIndicatorStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
+				NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}),
+				NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
 			}
 		}
 	} else {
@@ -307,15 +319,17 @@ func CreatePreFeaturizedMultiBandImageClusteringPipeline(name string, descriptio
 					"numpy.float32", // numpy types
 					"numpy.float64",
 				}),
-			NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
-			NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, []int{-1}),
+			NewSKImputerStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+			NewSKMissingIndicatorStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+			NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
+			NewExtractColumnsStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, []int{-1}),
 			// Needs to be added since the input dataset doesn't have a target, and hdbscan doesn't set the target itself.  Without this being
 			// set the subsequent ConstructPredictions step doesn't work.
-			NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, &ColumnUpdate{
+			NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, &ColumnUpdate{
 				Indices:       []int{0},
 				SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/PredictedTarget"},
 			}),
-			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
+			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
 		}
 	}
 
