@@ -112,6 +112,8 @@ const (
 	VarDistilRoleMetadata = "metadata"
 	// VarDistilRoleAugmented is the distil role for variables created for UX, not for model creation. i.e. Outliers detection
 	VarDistilRoleAugmented = "augmented"
+	// VarDistilRolePadding is the distil role for variables that are empty or dummy variables (their only purpose is to add alignment for pipelines)
+	VarDistilRolePadding = "padding"
 	// VarDeleted flags whether the variable is deleted.
 	VarDeleted = "deleted"
 	// VarImmutableField is the name for the flag indicating whether the variable is immutable.
