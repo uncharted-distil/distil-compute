@@ -396,19 +396,39 @@ func CreateSimonPipeline(name string, description string) (*FullySpecifiedPipeli
 }
 
 // CreateDataCleaningPipeline creates a pipeline to run data cleaning on a dataset.
-func CreateDataCleaningPipeline(name string, description string) (*FullySpecifiedPipeline, error) {
-	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{2, "produce"}}
+func CreateDataCleaningPipeline(name string, description string, variables []*model.Variable) (*FullySpecifiedPipeline, error) {
+	// dummy step since the update semantic type function requires it not be the initial step
+	steps := []Step{NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"})}
+	offset := 1
 
-	steps := []Step{
-		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
-		NewColumnParserStep(
-			map[string]DataRef{"inputs": &StepDataRef{0, "produce"}},
-			[]string{"produce"},
-			[]string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType},
-		),
-		NewDataCleaningStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}),
+	updateSemanticTypes, err := createUpdateSemanticTypes("", variables, nil, offset)
+	if err != nil {
+		return nil, err
 	}
+	steps = append(steps, updateSemanticTypes...)
+	offset += len(updateSemanticTypes) - 1
+
+	steps = append(steps, NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	offset++
+
+	steps = append(steps, NewColumnParserStep(
+		map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}},
+		[]string{"produce"},
+		[]string{model.TA2IntegerType, model.TA2BooleanType, model.TA2RealType},
+	))
+	offset++
+
+	steps = append(steps, NewDataCleaningStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	offset++
+
+	steps = append(steps, NewCategoricalImputerStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	offset++
+
+	steps = append(steps, NewSKImputerStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	offset++
+
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{offset, "produce"}}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
 	if err != nil {
