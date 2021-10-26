@@ -550,7 +550,7 @@ func (v *Variable) Clone() *Variable {
 		clone.SuggestedTypes = append(clone.SuggestedTypes, &cs)
 	}
 	if v.RefersTo != nil {
-		v.RefersTo = map[string]interface{}{}
+		clone.RefersTo = map[string]interface{}{}
 		for k, t := range v.RefersTo {
 			clone.RefersTo[k] = t
 		}
