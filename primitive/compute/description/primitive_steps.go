@@ -70,7 +70,11 @@ func NewImageTransferStep(inputs map[string]DataRef, outputMethods []string) *St
 }
 
 // NewKMeansClusteringStep clusters the input using a siple k-means clustering.
-func NewKMeansClusteringStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+func NewKMeansClusteringStep(inputs map[string]DataRef, outputMethods []string, clusterCount int) *StepData {
+	nClusters := 4
+	if clusterCount > 0 {
+		nClusters = clusterCount
+	}
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "3b09024e-a83b-418c-8ff4-cf3d30a9609e",
@@ -80,7 +84,7 @@ func NewKMeansClusteringStep(inputs map[string]DataRef, outputMethods []string) 
 			Digest:     "2e95d33622c9804911fe006581adec68220ebd41fc1f1b9c084bf5262dc0b964",
 		},
 		outputMethods,
-		map[string]interface{}{"n_clusters": 4},
+		map[string]interface{}{"n_clusters": nClusters},
 		inputs,
 	)
 }
