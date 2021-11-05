@@ -861,6 +861,22 @@ func NewPrefeaturisedPoolingStep(inputs map[string]DataRef, outputMethods []stri
 	)
 }
 
+// NewImageSegmentationPrimitiveStep takes inputs images and segments them.
+func NewImageSegmentationPrimitiveStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+	return NewStepData(
+		&pipeline.Primitive{
+			Id:         "9e01a4a6-67b9-4242-b4a3-ac648937f2bd",
+			Version:    "1.0.0",
+			Name:       "ImageSegmentation",
+			PythonPath: "d3m.primitives.remote_sensing.convolutional_neural_net.ImageSegmentation",
+			Digest:     "",
+		},
+		outputMethods,
+		map[string]interface{}{},
+		inputs,
+	)
+}
+
 // NewVerticalConcatenationPrimitiveStep takes inputs and combines them into a single output.
 func NewVerticalConcatenationPrimitiveStep(inputs map[string]DataRef, outputMethods []string, removeDuplicate bool) *StepData {
 	args := map[string]interface{}{"remove_duplicate_rows": removeDuplicate}

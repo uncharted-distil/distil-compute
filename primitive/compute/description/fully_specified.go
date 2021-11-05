@@ -474,6 +474,38 @@ func CreateGroupingFieldComposePipeline(name string, description string, colIndi
 	return fullySpecified, nil
 }
 
+// CreateRemoteSensingSegmentationPipeline creates a pipeline to segment remote
+// sensing images.
+func CreateRemoteSensingSegmentationPipeline(name string, description string, numJobs int) (*FullySpecifiedPipeline, error) {
+	inputs := []string{"inputs"}
+	outputs := []DataRef{&StepDataRef{5, "produce"}}
+
+	steps := []Step{
+		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
+		NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, numJobs),
+		NewDistilColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}, []string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType}),
+		NewExtractColumnsBySemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, []string{"http://schema.org/ImageObject"}),
+		NewImageSegmentationPrimitiveStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
+	}
+
+	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	fullySpecified := &FullySpecifiedPipeline{
+		Pipeline:         pipeline,
+		EquivalentValues: []interface{}{pipelineJSON},
+	}
+	return fullySpecified, nil
+}
+
 // CreateDataFilterPipeline creates a pipeline that will filter a dataset.
 func CreateDataFilterPipeline(name string, description string, variables []*model.Variable, filters []*model.FilterSet) (*FullySpecifiedPipeline, error) {
 	steps := []Step{}
