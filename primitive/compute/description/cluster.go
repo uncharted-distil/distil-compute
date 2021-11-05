@@ -21,9 +21,16 @@ import (
 	"github.com/uncharted-distil/distil-compute/pipeline"
 )
 
+// ClusterParams defines parameters to use when clustering.
+type ClusterParams struct {
+	UseKMeans    bool
+	ClusterCount int
+	PoolFeatures bool
+}
+
 // CreateGeneralClusteringPipeline creates a pipeline that will cluster tabular data.
 func CreateGeneralClusteringPipeline(name string, description string, datasetDescription *UserDatasetDescription,
-	augmentations []*UserDatasetAugmentation, useKMeans bool) (*FullySpecifiedPipeline, error) {
+	augmentations []*UserDatasetAugmentation, params *ClusterParams) (*FullySpecifiedPipeline, error) {
 
 	steps, err := generatePrependSteps(datasetDescription, augmentations)
 	if err != nil {
@@ -90,8 +97,8 @@ func CreateGeneralClusteringPipeline(name string, description string, datasetDes
 	steps = append(steps, NewSKMissingIndicatorStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 	offset = offset + 1
 
-	if useKMeans {
-		steps = append(steps, NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+	if params.UseKMeans {
+		steps = append(steps, NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}, params.ClusterCount))
 		offset = offset + 1
 	} else {
 		steps = append(steps, NewHDBScanStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
@@ -125,7 +132,7 @@ func CreateGeneralClusteringPipeline(name string, description string, datasetDes
 
 // CreateImageClusteringPipeline creates a fully specified pipeline that will
 // cluster images together, returning a column with the resulting cluster.
-func CreateImageClusteringPipeline(name string, description string, imageVariables []*model.Variable, useKMeans bool) (*FullySpecifiedPipeline, error) {
+func CreateImageClusteringPipeline(name string, description string, imageVariables []*model.Variable, params *ClusterParams) (*FullySpecifiedPipeline, error) {
 
 	cols := make([]int, len(imageVariables))
 	for i, v := range imageVariables {
@@ -133,13 +140,13 @@ func CreateImageClusteringPipeline(name string, description string, imageVariabl
 	}
 
 	var steps []Step
-	if useKMeans {
+	if params.UseKMeans {
 		steps = []Step{
 			NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
 			NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 			NewDataframeImageReaderStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, cols),
 			NewImageTransferStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
-			NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+			NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, params.ClusterCount),
 			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
 		}
 	} else {
@@ -184,7 +191,7 @@ func CreateImageClusteringPipeline(name string, description string, imageVariabl
 // CreateMultiBandImageClusteringPipeline creates a fully specified pipeline that will
 // cluster multiband images together, returning a column with the resulting cluster.
 func CreateMultiBandImageClusteringPipeline(name string, description string,
-	grouping *model.MultiBandImageGrouping, variables []*model.Variable, useKMeans bool,
+	grouping *model.MultiBandImageGrouping, variables []*model.Variable, params *ClusterParams,
 	batchSize int, numJobs int) (*FullySpecifiedPipeline, error) {
 
 	var imageVar *model.Variable
@@ -209,7 +216,7 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 	}
 
 	var steps []Step
-	if useKMeans {
+	if params.UseKMeans {
 		steps = []Step{
 			NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
 			NewAddSemanticTypeStep(nil, nil, addGroup),
@@ -219,7 +226,7 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 			NewColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"},
 				[]string{model.TA2BooleanType, model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType}),
 			NewRemoteSensingPretrainedStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}}, []string{"produce"}, batchSize, true),
-			NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
+			NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}}, []string{"produce"}, params.ClusterCount),
 			NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{4, "produce"}),
 		}
 	} else {
@@ -266,10 +273,10 @@ func CreateMultiBandImageClusteringPipeline(name string, description string,
 
 // CreatePreFeaturizedMultiBandImageClusteringPipeline creates a fully specified pipeline that will
 // cluster multiband images together, returning a column with the resulting cluster.
-func CreatePreFeaturizedMultiBandImageClusteringPipeline(name string, description string, variables []*model.Variable, useKMeans bool, poolFeatures bool) (*FullySpecifiedPipeline, error) {
+func CreatePreFeaturizedMultiBandImageClusteringPipeline(name string, description string, variables []*model.Variable, params *ClusterParams) (*FullySpecifiedPipeline, error) {
 	var steps []Step
-	if useKMeans {
-		if poolFeatures {
+	if params.UseKMeans {
+		if params.PoolFeatures {
 			steps = []Step{
 				NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
 				NewDistilColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, []string{model.TA2RealType}),
@@ -279,7 +286,7 @@ func CreatePreFeaturizedMultiBandImageClusteringPipeline(name string, descriptio
 						"numpy.float32", // numpy types
 						"numpy.float64",
 					}),
-				NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
+				NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}, params.ClusterCount),
 				NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
 			}
 		} else {
@@ -293,7 +300,7 @@ func CreatePreFeaturizedMultiBandImageClusteringPipeline(name string, descriptio
 						"numpy.float32", // numpy types
 						"numpy.float64",
 					}),
-				NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}),
+				NewKMeansClusteringStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, params.ClusterCount),
 				NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, &StepDataRef{1, "produce"}),
 			}
 		}
