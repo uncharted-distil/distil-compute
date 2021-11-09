@@ -288,7 +288,7 @@ func generatePrependSteps(datasetDescription *UserDatasetDescription,
 func getTA2Features(features []*model.Variable) []*model.Variable {
 	ta2Features := []*model.Variable{}
 	for _, v := range features {
-		if model.IsTA2Field(v.DistilRole, v.SelectedRole) {
+		if v.IsTA2Field() {
 			ta2Features = append(ta2Features, v)
 		}
 	}
@@ -324,7 +324,7 @@ func getMultiBandImageGrouping(datasetDescription *UserDatasetDescription) *mode
 
 	// grouping role will identify the grouping key to use
 	for _, v := range datasetDescription.AllFeatures {
-		if v.DistilRole == model.VarDistilRoleGrouping {
+		if v.HasRole(model.VarDistilRoleGrouping) {
 			return v
 		}
 	}

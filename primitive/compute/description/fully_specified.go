@@ -506,7 +506,7 @@ func CreateDataFilterPipeline(name string, description string, variables []*mode
 	// drop excluded distil roles columns since we do not want them in the final output
 	colsToDrop := []int{}
 	for _, v := range variables {
-		if !model.IsTA2Field(v.DistilRole, v.SelectedRole) {
+		if !v.IsTA2Field() {
 			colsToDrop = append(colsToDrop, v.Index)
 		}
 	}

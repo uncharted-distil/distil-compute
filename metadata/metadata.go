@@ -337,7 +337,7 @@ func loadRawVariables(datasetPath string) (*model.DataResource, error) {
 			model.UnknownType,
 			"",
 			[]string{"attribute"},
-			model.VarDistilRoleData,
+			[]string{model.VarDistilRoleData},
 			nil,
 			dataResource.Variables,
 			true)
@@ -579,9 +579,16 @@ func parseSchemaVariable(v *gabs.Container, existingVariables []*model.Variable,
 		}
 	}
 
-	varDistilRole := ""
+	varDistilRole := []string{}
 	if v.Path("distilRole").Data() != nil {
-		varDistilRole = v.Path("distilRole").Data().(string)
+		rawDistilRole := v.Path("distilRole").Children()
+		if rawDistilRole == nil {
+			return nil, errors.New("unable to parse distil role")
+		}
+		varDistilRole = make([]string, len(rawDistilRole))
+		for i, rawRole := range rawDistilRole {
+			varDistilRole[i] = rawRole.Data().(string)
+		}
 	}
 
 	varOriginalName := ""
@@ -748,7 +755,7 @@ func AugmentVariablesFromHeader(dr *model.DataResource, header []string) []*mode
 		if i < len(augmentedVars) {
 			v := metaVars[i]
 			if v == nil {
-				v = model.NewVariable(i, c, c, c, c, model.UnknownType, model.UnknownType, "", []string{"attribute"}, model.VarDistilRoleData, nil, augmentedVars, true)
+				v = model.NewVariable(i, c, c, c, c, model.UnknownType, model.UnknownType, "", []string{"attribute"}, []string{model.VarDistilRoleData}, nil, augmentedVars, true)
 			}
 			augmentedVars[i] = v
 		}

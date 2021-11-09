@@ -251,7 +251,7 @@ type Variable struct {
 	OriginalType     string                 `json:"colOriginalType,omitempty"`
 	SelectedRole     string                 `json:"selectedRole,omitempty"`
 	Role             []string               `json:"role,omitempty"`
-	DistilRole       string                 `json:"distilRole,omitempty"`
+	DistilRole       []string               `json:"distilRole,omitempty"`
 	OriginalVariable string                 `json:"colOriginalName"`
 	DisplayName      string                 `json:"colDisplayName,omitempty"`
 	Importance       float64                `json:"importance"`
@@ -405,7 +405,7 @@ func ensureUniqueKey(key string, existingVariables []*Variable) string {
 }
 
 // NewVariable creates a new variable.
-func NewVariable(index int, key, displayName, headerName, originalName, typ, originalType, description string, role []string, distilRole string, refersTo map[string]interface{}, existingVariables []*Variable, normalizeName bool) *Variable {
+func NewVariable(index int, key, displayName, headerName, originalName, typ, originalType, description string, role []string, distilRole []string, refersTo map[string]interface{}, existingVariables []*Variable, normalizeName bool) *Variable {
 	normalized := key
 	if normalizeName {
 		// normalize name
@@ -420,8 +420,8 @@ func NewVariable(index int, key, displayName, headerName, originalName, typ, ori
 	if len(role) > 0 {
 		selectedRole = role[0]
 	}
-	if distilRole == "" {
-		distilRole = VarDistilRoleData
+	if len(distilRole) == 0 {
+		distilRole = []string{VarDistilRoleData}
 	}
 	if originalName == "" {
 		originalName = normalized
@@ -455,7 +455,7 @@ func NewVariable(index int, key, displayName, headerName, originalName, typ, ori
 }
 
 // AddVariable creates and add a new variable to the data resource.
-func (dr *DataResource) AddVariable(name string, originalName string, typ string, description string, role []string, distilRole string) {
+func (dr *DataResource) AddVariable(name string, originalName string, typ string, description string, role []string, distilRole []string) {
 	v := NewVariable(len(dr.Variables), name, "", name, originalName, typ, typ, description, role, distilRole, nil, dr.Variables, false)
 	dr.Variables = append(dr.Variables, v)
 }
@@ -578,12 +578,12 @@ func (v *Variable) Clone() *Variable {
 }
 
 // IsTA2Field indicates whether or not a particular variable is recognized by a TA2.
-func IsTA2Field(distilRole string, selectedRole string) bool {
-	if distilRole == VarDistilRoleData || distilRole == VarDistilRoleIndex || distilRole == VarDistilRoleSystemData {
+func (v *Variable) IsTA2Field() bool {
+	if v.HasAnyRole([]string{VarDistilRoleData, VarDistilRoleIndex, VarDistilRoleSystemData}) {
 		return true
 	}
 
-	if distilRole == VarDistilRoleGrouping && IsAttributeRole(selectedRole) {
+	if v.HasRole(VarDistilRoleGrouping) && IsAttributeRole(v.SelectedRole) {
 		return true
 	}
 
@@ -598,4 +598,52 @@ func IsIndexRole(role string) bool {
 // IsAttributeRole returns true if the d3m role is an attribute role.
 func IsAttributeRole(role string) bool {
 	return role == RoleAttribute
+}
+
+// HasRole checks to see if the supplied role exists within the variable's DistilRole property
+func (v *Variable) HasRole(role string) bool {
+
+	for _, element := range v.DistilRole {
+		if element == role {
+			return true
+		}
+	}
+
+	return false
+}
+
+// HasAnyRole checks that at least 1 of the supplied roles exist within the variable's DistilRole property
+// equivalent to OR operation
+func (v *Variable) HasAnyRole(roles []string) bool {
+	roleMap := map[string]bool{}
+
+	for _, role := range roles {
+		roleMap[role] = true
+	}
+
+	for _, role := range v.DistilRole {
+		if _, ok := roleMap[role]; ok {
+			return true
+		}
+	}
+
+	return false
+}
+
+// HasAllRole checks that all supplied roles exist within the variable's DistilRole property
+// equivalent to AND operation
+func (v *Variable) HasAllRole(roles []string) bool {
+	roleMap := map[string]bool{}
+
+	for _, role := range roles {
+		roleMap[role] = true
+	}
+
+	for _, role := range v.DistilRole {
+		if _, ok := roleMap[role]; ok {
+			return false
+		}
+	}
+
+	return true
 }

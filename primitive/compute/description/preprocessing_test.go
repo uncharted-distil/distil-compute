@@ -227,28 +227,28 @@ func TestCreateUserDatasetPipeline(t *testing.T) {
 			OriginalType: "ordinal",
 			Type:         "categorical",
 			Index:        0,
-			DistilRole:   model.VarDistilRoleData,
+			DistilRole:   []string{model.VarDistilRoleData},
 		},
 		{
 			Key:          "test_var_1",
 			OriginalType: "categorical",
 			Type:         "integer",
 			Index:        1,
-			DistilRole:   model.VarDistilRoleData,
+			DistilRole:   []string{model.VarDistilRoleData},
 		},
 		{
 			Key:          "test_var_2",
 			OriginalType: "categorical",
 			Type:         "integer",
 			Index:        2,
-			DistilRole:   model.VarDistilRoleData,
+			DistilRole:   []string{model.VarDistilRoleData},
 		},
 		{
 			Key:          "test_var_3",
 			OriginalType: "categorical",
 			Type:         "integer",
 			Index:        3,
-			DistilRole:   model.VarDistilRoleData,
+			DistilRole:   []string{model.VarDistilRoleData},
 		},
 	}
 
@@ -347,7 +347,7 @@ func TestCreateUserDatasetPipelineMappingError(t *testing.T) {
 			OriginalType: "blordinal",
 			Type:         "categorical",
 			Index:        0,
-			DistilRole:   "data",
+			DistilRole:   []string{"data"},
 		},
 	}
 
@@ -369,7 +369,7 @@ func TestCreateUserDatasetEmpty(t *testing.T) {
 			OriginalType: "categorical",
 			Type:         "categorical",
 			Index:        0,
-			DistilRole:   "data",
+			DistilRole:   []string{"data"},
 		},
 	}
 
