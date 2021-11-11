@@ -78,15 +78,16 @@ func MarshalSteps(step *pipeline.PipelineDescription) (string, error) {
 // CreateImageQueryPipeline creates a pipeline that will perform image retrieval.  The cacheLocation parameter
 // is passed down to the image retrieval primitive, and is used to cache dot products across query operations.
 // When a new dataset is being labelled, the cache location should be updated.
-func CreateImageQueryPipeline(name string, description string, cacheLocation string) (*FullySpecifiedPipeline, error) {
+func CreateImageQueryPipeline(name string, description string, cacheLocation string, colsToDrop []int) (*FullySpecifiedPipeline, error) {
 	steps := []Step{
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
+		NewRemoveColumnsStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, colsToDrop),
 		NewDistilColumnParserStep(
-			map[string]DataRef{"inputs": &StepDataRef{0, "produce"}},
+			map[string]DataRef{"inputs": &StepDataRef{1, "produce"}},
 			[]string{"produce"},
 			[]string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType},
 		),
-		NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"},
+		NewExtractColumnsByStructuralTypeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"},
 			[]string{
 				"int",
 				"float",         // python type
@@ -94,29 +95,29 @@ func CreateImageQueryPipeline(name string, description string, cacheLocation str
 				"numpy.float64",
 			}),
 		NewExtractColumnsBySemanticTypeStep(
-			map[string]DataRef{"inputs": &StepDataRef{2, "produce"}},
+			map[string]DataRef{"inputs": &StepDataRef{3, "produce"}},
 			[]string{"produce"},
 			[]string{"https://metadata.datadrivendiscovery.org/types/Attribute", "https://metadata.datadrivendiscovery.org/types/PrimaryMultiKey"},
 		),
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &PipelineDataRef{1}}, []string{"produce"}),
 		NewDistilColumnParserStep(
-			map[string]DataRef{"inputs": &StepDataRef{4, "produce"}},
+			map[string]DataRef{"inputs": &StepDataRef{5, "produce"}},
 			[]string{"produce"},
 			[]string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType},
 		),
 		NewImageRetrievalStep(map[string]DataRef{
-			"inputs":  &StepDataRef{3, "produce"},
-			"outputs": &StepDataRef{5, "produce"}},
+			"inputs":  &StepDataRef{4, "produce"},
+			"outputs": &StepDataRef{6, "produce"}},
 			[]string{"produce"},
 			cacheLocation,
 		),
-		NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{6, "produce"}},
+		NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}},
 			[]string{"produce"},
 			&ColumnUpdate{
 				SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/PredictedTarget", "https://metadata.datadrivendiscovery.org/types/Score"},
 				Indices:       []int{1},
 			}),
-		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"}, &StepDataRef{2, "produce"}),
+		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{8, "produce"}}, []string{"produce"}, &StepDataRef{2, "produce"}),
 	}
 
 	inputs := []string{"inputs.0", "inputs.1"}

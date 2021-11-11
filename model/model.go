@@ -102,6 +102,10 @@ const (
 	VarDistilRole = "distilRole"
 	// VarDistilRoleSystemData indicates a var is important for the system but not intended for the user
 	VarDistilRoleSystemData = "system-data"
+	// VarDistilRoleFeaturized indicates a var has been featurized
+	VarDistilRoleFeaturized = "featurized-data"
+	// VarDistilRoleLabel indicates a var has been created through the label work flow
+	VarDistilRoleLabel = "label"
 	// VarDistilRoleIndex indicates a var has an index role in distil.
 	VarDistilRoleIndex = "index"
 	// VarDistilRoleData indicates a var has a data role in distil.
