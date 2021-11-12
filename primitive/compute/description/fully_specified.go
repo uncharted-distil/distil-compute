@@ -476,17 +476,31 @@ func CreateGroupingFieldComposePipeline(name string, description string, colIndi
 
 // CreateRemoteSensingSegmentationPipeline creates a pipeline to segment remote
 // sensing images.
-func CreateRemoteSensingSegmentationPipeline(name string, description string, numJobs int) (*FullySpecifiedPipeline, error) {
+func CreateRemoteSensingSegmentationPipeline(name string, description string, targetVariable *model.Variable, numJobs int) (*FullySpecifiedPipeline, error) {
+	add := &ColumnUpdate{
+		SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/TrueTarget"},
+		Indices:       []int{targetVariable.Index},
+	}
 	inputs := []string{"inputs"}
-	outputs := []DataRef{&StepDataRef{5, "produce"}}
+	outputs := []DataRef{&StepDataRef{9, "produce"}}
 
 	steps := []Step{
 		NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"}),
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
-		NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, numJobs),
-		NewDistilColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}, []string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType}),
-		NewExtractColumnsBySemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, []string{"http://schema.org/ImageObject"}),
-		NewImageSegmentationPrimitiveStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}),
+		NewAddSemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, add),
+		NewSatelliteImageLoaderStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}, numJobs),
+		NewDistilColumnParserStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, []string{model.TA2IntegerType, model.TA2RealType, model.TA2RealVectorType}),
+		NewExtractColumnsBySemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{4, "produce"}}, []string{"produce"}, []string{"http://schema.org/ImageObject"}),
+		NewExtractColumnsBySemanticTypeStep(map[string]DataRef{"inputs": &StepDataRef{3, "produce"}}, []string{"produce"}, []string{"https://metadata.datadrivendiscovery.org/types/Target", "https://metadata.datadrivendiscovery.org/types/TrueTarget"}),
+		NewImageSegmentationPrimitiveStep(map[string]DataRef{"inputs": &StepDataRef{5, "produce"}, "outputs": &StepDataRef{6, "produce"}}, []string{"produce"}),
+		NewAddSemanticTypeStep(
+			map[string]DataRef{"inputs": &StepDataRef{7, "produce"}}, []string{"produce"},
+			&ColumnUpdate{
+				SemanticTypes: []string{"https://metadata.datadrivendiscovery.org/types/PredictedTarget"},
+				Indices:       []int{0},
+			},
+		),
+		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{8, "produce"}}, []string{"produce"}, &StepDataRef{3, "produce"}),
 	}
 
 	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()

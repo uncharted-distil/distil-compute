@@ -872,7 +872,7 @@ func NewImageSegmentationPrimitiveStep(inputs map[string]DataRef, outputMethods 
 			Digest:     "",
 		},
 		outputMethods,
-		map[string]interface{}{},
+		map[string]interface{}{"decompress_data": true},
 		inputs,
 	)
 }
