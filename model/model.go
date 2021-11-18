@@ -104,6 +104,8 @@ const (
 	VarDistilRoleSystemData = "system-data"
 	// VarDistilRoleFeaturized indicates a var has been featurized
 	VarDistilRoleFeaturized = "featurized-data"
+	// VarDistilRoleGroupingSupplemental indicates a var that can be used to identify subgroups
+	VarDistilRoleGroupingSupplemental = "grouping-supplemental"
 	// VarDistilRoleLabel indicates a var has been created through the label work flow
 	VarDistilRoleLabel = "label"
 	// VarDistilRoleIndex indicates a var has an index role in distil.
