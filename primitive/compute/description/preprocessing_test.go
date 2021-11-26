@@ -455,7 +455,7 @@ func TestCreateSimonPipeline(t *testing.T) {
 }
 
 func TestCreateDataCleaningPipeline(t *testing.T) {
-	pipeline, err := CreateDataCleaningPipeline("data cleaning test", "test data cleaning pipeline", nil)
+	pipeline, err := CreateDataCleaningPipeline("data cleaning test", "test data cleaning pipeline", nil, true)
 	assert.NoError(t, err)
 
 	data, err := proto.Marshal(pipeline.Pipeline)
