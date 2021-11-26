@@ -397,7 +397,7 @@ func CreateSimonPipeline(name string, description string) (*FullySpecifiedPipeli
 }
 
 // CreateDataCleaningPipeline creates a pipeline to run data cleaning on a dataset.
-func CreateDataCleaningPipeline(name string, description string, variables []*model.Variable) (*FullySpecifiedPipeline, error) {
+func CreateDataCleaningPipeline(name string, description string, variables []*model.Variable, impute bool) (*FullySpecifiedPipeline, error) {
 	// dummy step since the update semantic type function requires it not be the initial step
 	steps := []Step{NewDenormalizeStep(map[string]DataRef{"inputs": &PipelineDataRef{0}}, []string{"produce"})}
 	offset := 1
@@ -422,11 +422,13 @@ func CreateDataCleaningPipeline(name string, description string, variables []*mo
 	steps = append(steps, NewDataCleaningStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
 	offset++
 
-	steps = append(steps, NewCategoricalImputerStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
-	offset++
+	if impute {
+		steps = append(steps, NewCategoricalImputerStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+		offset++
 
-	steps = append(steps, NewSKImputerStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
-	offset++
+		steps = append(steps, NewSKImputerStep(map[string]DataRef{"inputs": &StepDataRef{offset, "produce"}}, []string{"produce"}))
+		offset++
+	}
 
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{offset, "produce"}}
