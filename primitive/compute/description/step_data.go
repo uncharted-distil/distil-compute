@@ -37,6 +37,7 @@ type Step interface {
 	GetArguments() map[string]DataRef
 	GetHyperparameters() map[string]interface{}
 	GetOutputMethods() []string
+	SetArguments(map[string]DataRef)
 }
 
 // StepData contains the minimum amount of data used to describe a pipeline step
@@ -65,6 +66,10 @@ type DataRef interface {
 type StepDataRef struct {
 	StepNum int
 	Output  string
+}
+
+func (i *StepDataRef) clone() *StepDataRef {
+	return &StepDataRef{i.StepNum, i.Output}
 }
 
 // RefString creates a string representation of a StepDataRef.
@@ -167,6 +172,12 @@ func (s *StepData) GetPrimitive() *pipeline.Primitive {
 // of the primitive step.
 func (s *StepData) GetArguments() map[string]DataRef {
 	return s.Arguments
+}
+
+// SetArguments sets a map of arguments that will be passed to the methods
+// of the primitive step.
+func (s *StepData) SetArguments(args map[string]DataRef) {
+	s.Arguments = args
 }
 
 // GetHyperparameters returns a map of arguments that will be passed to the primitive methods

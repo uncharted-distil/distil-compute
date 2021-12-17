@@ -43,6 +43,11 @@ const (
 type FullySpecifiedPipeline struct {
 	Pipeline         *pipeline.PipelineDescription
 	EquivalentValues []interface{}
+	steps            []Step
+	name             string
+	description      string
+	inputs           []string
+	outputs          []DataRef
 }
 
 // Join captures a specific join relationship and constraint to be used
@@ -65,6 +70,18 @@ type JoinDescription struct {
 	LeftVariables  []*model.Variable
 }
 
+func NewFullySpecifiedPipeline(name string, description string, inputs []string, outputs []DataRef, steps []Step) (*FullySpecifiedPipeline, error) {
+	fullySpecified := &FullySpecifiedPipeline{
+		name:        name,
+		description: description,
+		inputs:      inputs,
+		outputs:     outputs,
+		steps:       steps,
+	}
+
+	return fullySpecified.Compile()
+}
+
 // MarshalSteps marshals a pipeline description into a json representation.
 func MarshalSteps(step *pipeline.PipelineDescription) (string, error) {
 	stepJSON, err := json.Marshal(step)
@@ -73,6 +90,91 @@ func MarshalSteps(step *pipeline.PipelineDescription) (string, error) {
 	}
 
 	return string(stepJSON), nil
+}
+
+func updateArgumentStepNumber(ref DataRef, offset int) (DataRef, error) {
+	// since the inputs are aligned, only step reference need to be updated
+	var result DataRef
+	switch s := ref.(type) {
+	case *ListStepDataRef:
+		return nil, errors.Errorf("adding steps that have list step data ref is unsupported")
+	case *StepDataRef:
+		resultClone := s.clone()
+		resultClone.StepNum = resultClone.StepNum + offset
+		result = resultClone
+	}
+
+	return result, nil
+}
+
+func (p *FullySpecifiedPipeline) AddPipeline(addition *FullySpecifiedPipeline) error {
+	// make sure inputs align
+	// TODO: COULD STRUCTURE IT SO THAT ADDING PIPELINES CAN ADD INPUTS IF OVERLAP MATCHES!
+	if len(p.inputs) != len(addition.inputs) {
+		return errors.Errorf("unableto add pipeline because addition has a different set of inputs")
+	}
+	for i := range p.inputs {
+		if p.inputs[i] != addition.inputs[i] {
+			return errors.Errorf("unable to add pipeline because inputs are not aligned")
+		}
+	}
+
+	stepOffset := len(p.steps)
+
+	// cycle through the steps to update the references
+	// TODO: SHOULD CLONE THE STEP!!!
+	for _, step := range addition.steps {
+		existingStepArg := step.GetArguments()
+		newStepArgs := map[string]DataRef{}
+		for k, sa := range existingStepArg {
+			newRef, err := updateArgumentStepNumber(sa, stepOffset)
+			if err != nil {
+				return err
+			}
+			newStepArgs[k] = newRef
+		}
+		// TODO: should clone step!
+		step.SetArguments(newStepArgs)
+	}
+
+	// append the steps
+	p.steps = append(p.steps, addition.steps...)
+
+	// update the output references to point to the updated step indices
+	newOutputs := make([]DataRef, len(addition.outputs))
+	for i, o := range addition.outputs {
+		newRef, err := updateArgumentStepNumber(o, stepOffset)
+		if err != nil {
+			return err
+		}
+		newOutputs[i] = newRef
+	}
+
+	// append the outputs
+	p.outputs = append(p.outputs, newOutputs...)
+
+	return nil
+}
+
+func (p *FullySpecifiedPipeline) Compile() (*FullySpecifiedPipeline, error) {
+	if p.Pipeline != nil {
+		return nil, errors.Errorf("unable to compile the pipeline because it has already been compiled")
+	}
+
+	pipeline, err := NewPipelineBuilder(p.name, p.description, p.inputs, p.outputs, p.steps).Compile()
+	if err != nil {
+		return nil, err
+	}
+
+	pipelineJSON, err := MarshalSteps(pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	p.Pipeline = pipeline
+	p.EquivalentValues = []interface{}{pipelineJSON}
+
+	return p, nil
 }
 
 // CreateImageQueryPipeline creates a pipeline that will perform image retrieval.  The cacheLocation parameter
@@ -123,21 +225,11 @@ func CreateImageQueryPipeline(name string, description string, cacheLocation str
 	inputs := []string{"inputs.0", "inputs.1"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateImageFeaturizationPipeline creates a pipline that will featurize images.
@@ -186,21 +278,11 @@ func CreateImageFeaturizationPipeline(name string, description string, variables
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateMultiBandImageFeaturizationPipeline creates a pipline that will featurize multiband images.
@@ -251,21 +333,11 @@ func CreateMultiBandImageFeaturizationPipeline(name string, description string, 
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateSlothPipeline creates a pipeline to peform timeseries clustering on a dataset.
@@ -318,21 +390,11 @@ func CreateSlothPipeline(name string, description string, timeColumn string, val
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateDukePipeline creates a pipeline to peform image featurization on a dataset.
@@ -345,21 +407,11 @@ func CreateDukePipeline(name string, description string) (*FullySpecifiedPipelin
 		NewDukeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 	}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateSimonPipeline creates a pipeline to run semantic type inference on a dataset's
@@ -379,21 +431,11 @@ func CreateSimonPipeline(name string, description string) (*FullySpecifiedPipeli
 	}
 
 	// produce metafeatures
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateDataCleaningPipeline creates a pipeline to run data cleaning on a dataset.
@@ -433,21 +475,11 @@ func CreateDataCleaningPipeline(name string, description string, variables []*mo
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{offset, "produce"}}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateGroupingFieldComposePipeline creates a pipeline to create a grouping key field for a dataset.
@@ -460,21 +492,11 @@ func CreateGroupingFieldComposePipeline(name string, description string, colIndi
 		NewGroupingFieldComposeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}, colIndices, joinChar, outputName),
 	}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateRemoteSensingSegmentationPipeline creates a pipeline to segment remote
@@ -506,21 +528,11 @@ func CreateRemoteSensingSegmentationPipeline(name string, description string, ta
 		NewConstructPredictionStep(map[string]DataRef{"inputs": &StepDataRef{8, "produce"}}, []string{"produce"}, &StepDataRef{3, "produce"}),
 	}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateDataFilterPipeline creates a pipeline that will filter a dataset.
@@ -569,21 +581,11 @@ func CreateDataFilterPipeline(name string, description string, variables []*mode
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{offset, "produce"}}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreatePCAFeaturesPipeline creates a pipeline to run feature ranking on an input dataset.
@@ -598,21 +600,11 @@ func CreatePCAFeaturesPipeline(name string, description string) (*FullySpecified
 		NewPCAFeaturesStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce_metafeatures"}),
 	}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateDenormalizePipeline creates a pipeline to run the denormalize primitive on an input dataset.
@@ -625,21 +617,11 @@ func CreateDenormalizePipeline(name string, description string) (*FullySpecified
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 	}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateTargetRankingPipeline creates a pipeline to run feature ranking on an input dataset.
@@ -694,16 +676,11 @@ func CreateTargetRankingPipeline(name string, description string, target *model.
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{offset - 1, "produce"}}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{name, target},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateGoatForwardPipeline creates a forward geocoding pipeline.
@@ -716,22 +693,11 @@ func CreateGoatForwardPipeline(name string, description string, placeCol *model.
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 		NewGoatForwardStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, placeCol.Index),
 	}
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
-
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateGoatReversePipeline creates a forward geocoding pipeline.
@@ -745,21 +711,11 @@ func CreateGoatReversePipeline(name string, description string, lonSource *model
 		NewGoatReverseStep(map[string]DataRef{"inputs": &StepDataRef{1, "produce"}}, []string{"produce"}, lonSource.Index, latSource.Index),
 	}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateJoinPipeline creates a pipeline that joins two input datasets using a caller supplied column.
@@ -888,21 +844,11 @@ func CreateJoinPipeline(name string, description string, join *JoinDescription) 
 	inputs := []string{"left", "right"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateVerticalConcatPipeline creates a pipeline that will vertically concat two datasets (union).
@@ -920,21 +866,11 @@ func CreateVerticalConcatPipeline(name string, description string) (*FullySpecif
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
 	}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateDSBoxJoinPipeline creates a pipeline that joins two input datasets
@@ -954,21 +890,11 @@ func CreateDSBoxJoinPipeline(name string, description string, leftJoinCols []str
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{2, "produce"}}, []string{"produce"}),
 	}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateTimeseriesFormatterPipeline creates a time series formatter pipeline.
@@ -982,21 +908,11 @@ func CreateTimeseriesFormatterPipeline(name string, description string, resource
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 	}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateDatamartDownloadPipeline creates a pipeline to download data from a datamart.
@@ -1009,21 +925,11 @@ func CreateDatamartDownloadPipeline(name string, description string, searchResul
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 	}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateImageOutlierDetectionPipeline makes a pipeline for
@@ -1047,21 +953,11 @@ func CreateImageOutlierDetectionPipeline(name string, description string, imageV
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateMultiBandImageOutlierDetectionPipeline does outlier detection for multiband images
@@ -1142,21 +1038,11 @@ func CreateMultiBandImageOutlierDetectionPipeline(name string, description strin
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateTabularOutlierDetectionPipeline makes a pipeline for
@@ -1222,21 +1108,11 @@ func CreateTabularOutlierDetectionPipeline(name string, description string, data
 	inputs := []string{"inputs"}
 	outputs := []DataRef{&StepDataRef{len(steps) - 1, "produce"}}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 // CreateDatamartAugmentPipeline creates a pipeline to augment data with datamart data.
@@ -1249,21 +1125,11 @@ func CreateDatamartAugmentPipeline(name string, description string, searchResult
 		NewDatasetToDataframeStep(map[string]DataRef{"inputs": &StepDataRef{0, "produce"}}, []string{"produce"}),
 	}
 
-	pipeline, err := NewPipelineBuilder(name, description, inputs, outputs, steps).Compile()
+	pipeline, err := NewFullySpecifiedPipeline(name, description, inputs, outputs, steps)
 	if err != nil {
 		return nil, err
 	}
-
-	pipelineJSON, err := MarshalSteps(pipeline)
-	if err != nil {
-		return nil, err
-	}
-
-	fullySpecified := &FullySpecifiedPipeline{
-		Pipeline:         pipeline,
-		EquivalentValues: []interface{}{pipelineJSON},
-	}
-	return fullySpecified, nil
+	return pipeline, nil
 }
 
 func mapVariables(variables []*model.Variable) map[string]*model.Variable {

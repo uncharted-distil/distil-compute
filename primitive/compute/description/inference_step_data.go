@@ -53,6 +53,12 @@ func (s *InferenceStepData) GetArguments() map[string]DataRef {
 	return s.inputRefs
 }
 
+// SetArguments sets a map of arguments that will be passed to the methods
+// of the primitive step.
+func (s *InferenceStepData) SetArguments(args map[string]DataRef) {
+	s.inputRefs = args
+}
+
 // GetHyperparameters returns an empty map since inference steps don't
 // take hyper parameters.
 func (s *InferenceStepData) GetHyperparameters() map[string]interface{} {
