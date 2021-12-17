@@ -70,6 +70,7 @@ type JoinDescription struct {
 	LeftVariables  []*model.Variable
 }
 
+// NewFullySpecifiedPipeline creates and compiles a fully specified pipeline.
 func NewFullySpecifiedPipeline(name string, description string, inputs []string, outputs []DataRef, steps []Step) (*FullySpecifiedPipeline, error) {
 	fullySpecified := &FullySpecifiedPipeline{
 		name:        name,
@@ -107,6 +108,8 @@ func updateArgumentStepNumber(ref DataRef, offset int) (DataRef, error) {
 	return result, nil
 }
 
+// AddPipeline appends a pipeline to the pipeline, updating step data references as needed.
+// It currently requires inputs to be identical.
 func (p *FullySpecifiedPipeline) AddPipeline(addition *FullySpecifiedPipeline) error {
 	// make sure inputs align
 	// TODO: COULD STRUCTURE IT SO THAT ADDING PIPELINES CAN ADD INPUTS IF OVERLAP MATCHES!
@@ -156,6 +159,7 @@ func (p *FullySpecifiedPipeline) AddPipeline(addition *FullySpecifiedPipeline) e
 	return nil
 }
 
+// Compile compiles a fully specified pipeline.
 func (p *FullySpecifiedPipeline) Compile() (*FullySpecifiedPipeline, error) {
 	if p.Pipeline != nil {
 		return nil, errors.Errorf("unable to compile the pipeline because it has already been compiled")

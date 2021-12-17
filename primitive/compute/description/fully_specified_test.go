@@ -32,6 +32,7 @@ func TestAddPipelineBadInputs(t *testing.T) {
 	step2a := createTestStep(2, []string{"produce"}, map[string]DataRef{"inputs": &StepDataRef{1, "produce"}})
 	pipelineStepsa := []Step{step0a, step1a, step2a}
 	desca, err := NewPipelineBuilder("testa", "testa pipeline", inputsa, outputsa, pipelineStepsa).Compile()
+	assert.NoError(t, err)
 	pipa := &FullySpecifiedPipeline{
 		Pipeline: desca,
 		steps:    pipelineStepsa,
@@ -45,6 +46,7 @@ func TestAddPipelineBadInputs(t *testing.T) {
 	step2b := createTestStep(2, []string{"produce"}, map[string]DataRef{"inputs": &StepDataRef{1, "produce"}})
 	pipelineStepsb := []Step{step0b, step1b, step2b}
 	descb, err := NewPipelineBuilder("testb", "testb pipeline", inputsb, outputsb, pipelineStepsb).Compile()
+	assert.NoError(t, err)
 	pipb := &FullySpecifiedPipeline{
 		Pipeline: descb,
 		steps:    pipelineStepsb,
@@ -91,6 +93,7 @@ func TestAddPipeline(t *testing.T) {
 	step2a := createTestStep(2, []string{"produce"}, map[string]DataRef{"inputs": &StepDataRef{1, "produce"}})
 	pipelineStepsa := []Step{step0a, step1a, step2a}
 	desca, err := NewPipelineBuilder("testa", "testa pipeline", inputs, outputsa, pipelineStepsa).Compile()
+	assert.NoError(t, err)
 	pipa := &FullySpecifiedPipeline{
 		Pipeline: desca,
 		steps:    pipelineStepsa,
@@ -104,6 +107,7 @@ func TestAddPipeline(t *testing.T) {
 	step2b := createTestStep(2, []string{"produce"}, map[string]DataRef{"inputs": &StepDataRef{1, "produce"}})
 	pipelineStepsb := []Step{step0b, step1b, step2b}
 	descb, err := NewPipelineBuilder("testb", "testb pipeline", inputs, outputsb, pipelineStepsb).Compile()
+	assert.NoError(t, err)
 	pipb := &FullySpecifiedPipeline{
 		Pipeline: descb,
 		steps:    pipelineStepsb,
