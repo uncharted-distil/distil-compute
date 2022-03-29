@@ -6,7 +6,7 @@ require (
 	github.com/Jeffail/gabs/v2 v2.2.0
 	github.com/araddon/dateparse v0.0.0-20190622164848-0fb0a474d195
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/gogo/protobuf v1.3.1
+	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.3.2
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mattn/go-colorable v0.1.6 // indirect
