@@ -39,6 +39,8 @@ const (
 	ForecastingTask = "forecasting"
 	// ClassificationTask represents a classification task on image, timeseries or basic tabular data
 	ClassificationTask = "classification"
+	// SegmentationTask represents a segmentation task on multi band image. NOTE: NOT A VALID TA2 TASK!
+	SegmentationTask = "segmentation"
 	// RegressionTask represents a regression task on image, timeseries or basic tabular data
 	RegressionTask = "regression"
 	// ClusteringTask represents an unsupervised clustering task on image, timeseries or basic tabular data
