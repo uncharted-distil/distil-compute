@@ -28,11 +28,12 @@ import (
 // ExecPipelineStatus contains status / result information for a pipeline status
 // request.
 type ExecPipelineStatus struct {
-	Progress  string
-	RequestID string
-	Error     error
-	Timestamp time.Time
-	ResultURI string
+	Progress         string
+	RequestID        string
+	Error            error
+	Timestamp        time.Time
+	ResultURI        string
+	FittedSolutionID string
 }
 
 // ExecPipelineStatusListener defines a function type for handling pipeline
@@ -220,7 +221,7 @@ func (e *ExecPipelineRequest) dispatchFit(statusChan chan ExecPipelineStatus, cl
 		err = errors.Errorf("unexpected result type '%v'", res)
 		e.notifyError(statusChan, requestID, err)
 	}
-	e.notifyResult(statusChan, requestID, uri)
+	e.notifyResult(statusChan, requestID, completed.FittedSolutionId, uri)
 }
 
 func (e *ExecPipelineRequest) notifyStatus(statusChan chan ExecPipelineStatus, requestID string, status string) {
@@ -241,11 +242,12 @@ func (e *ExecPipelineRequest) notifyError(statusChan chan ExecPipelineStatus, re
 	}
 }
 
-func (e *ExecPipelineRequest) notifyResult(statusChan chan ExecPipelineStatus, requestID string, resultURI string) {
+func (e *ExecPipelineRequest) notifyResult(statusChan chan ExecPipelineStatus, requestID string, fittedSolutionID string, resultURI string) {
 	statusChan <- ExecPipelineStatus{
-		RequestID: requestID,
-		Progress:  RequestCompletedStatus,
-		ResultURI: resultURI,
-		Timestamp: time.Now(),
+		RequestID:        requestID,
+		FittedSolutionID: fittedSolutionID,
+		Progress:         RequestCompletedStatus,
+		ResultURI:        resultURI,
+		Timestamp:        time.Now(),
 	}
 }
