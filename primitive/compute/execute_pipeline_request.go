@@ -33,6 +33,7 @@ type ExecPipelineStatus struct {
 	Error            error
 	Timestamp        time.Time
 	ResultURI        string
+	SolutionID       string
 	FittedSolutionID string
 }
 
@@ -221,7 +222,7 @@ func (e *ExecPipelineRequest) dispatchFit(statusChan chan ExecPipelineStatus, cl
 		err = errors.Errorf("unexpected result type '%v'", res)
 		e.notifyError(statusChan, requestID, err)
 	}
-	e.notifyResult(statusChan, requestID, completed.FittedSolutionId, uri)
+	e.notifyResult(statusChan, requestID, solutionID, completed.FittedSolutionId, uri)
 }
 
 func (e *ExecPipelineRequest) notifyStatus(statusChan chan ExecPipelineStatus, requestID string, status string) {
@@ -242,9 +243,11 @@ func (e *ExecPipelineRequest) notifyError(statusChan chan ExecPipelineStatus, re
 	}
 }
 
-func (e *ExecPipelineRequest) notifyResult(statusChan chan ExecPipelineStatus, requestID string, fittedSolutionID string, resultURI string) {
+func (e *ExecPipelineRequest) notifyResult(statusChan chan ExecPipelineStatus,
+	requestID string, solutionID string, fittedSolutionID string, resultURI string) {
 	statusChan <- ExecPipelineStatus{
 		RequestID:        requestID,
+		SolutionID:       solutionID,
 		FittedSolutionID: fittedSolutionID,
 		Progress:         RequestCompletedStatus,
 		ResultURI:        resultURI,
