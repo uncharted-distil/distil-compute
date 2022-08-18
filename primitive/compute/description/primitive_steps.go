@@ -862,7 +862,7 @@ func NewPrefeaturisedPoolingStep(inputs map[string]DataRef, outputMethods []stri
 }
 
 // NewImageSegmentationPrimitiveStep takes inputs images and segments them.
-func NewImageSegmentationPrimitiveStep(inputs map[string]DataRef, outputMethods []string) *StepData {
+func NewImageSegmentationPrimitiveStep(inputs map[string]DataRef, outputMethods []string, gpuBatchSize int) *StepData {
 	return NewStepData(
 		&pipeline.Primitive{
 			Id:         "9e01a4a6-67b9-4242-b4a3-ac648937f2bd",
@@ -872,7 +872,7 @@ func NewImageSegmentationPrimitiveStep(inputs map[string]DataRef, outputMethods 
 			Digest:     "",
 		},
 		outputMethods,
-		map[string]interface{}{"decompress_data": true},
+		map[string]interface{}{"decompress_data": true, "batch_size": gpuBatchSize},
 		inputs,
 	)
 }
